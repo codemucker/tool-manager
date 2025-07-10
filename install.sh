@@ -45,9 +45,46 @@ done
 
 # --- Bash Version Check ---
 if [[ ! "$(echo "${BASH_VERSION:-0}" | grep -e '^[5-9]\..*' )" ]]; then
-  _err "Incompatible bash version, expect bash version 5 or later, installed is '${BASH_VERSION:-0}'"
-  _err "On mac you can install bash(5) or later via homebrew"
-  exit 1
+  # Check if we're on macOS
+  if [[ "$(uname)" == "Darwin" ]]; then
+    echo "${log_prefix}Detected macOS with Bash version ${BASH_VERSION:-0}"
+    echo "${log_prefix}Attempting to install Bash 5+ via Homebrew..."
+
+    # Check if Homebrew is installed
+    if ! command -v brew &>/dev/null; then
+      echo "${log_prefix}Homebrew not found. Installing Homebrew..."
+      /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+      # Add Homebrew to PATH for the current session
+      if [[ -f /opt/homebrew/bin/brew ]]; then
+        eval "$(/opt/homebrew/bin/brew shellenv)"
+      elif [[ -f /usr/local/bin/brew ]]; then
+        eval "$(/usr/local/bin/brew shellenv)"
+      else
+        _err "Homebrew installation failed or path not found"
+        exit 1
+      fi
+    fi
+
+    # Install Bash 5+
+    echo "${log_prefix}Installing Bash 5+ via Homebrew..."
+    brew install bash
+
+    # Get the path to the new Bash
+    NEW_BASH="$(brew --prefix)/bin/bash"
+
+    if [[ -x "$NEW_BASH" ]]; then
+      echo "${log_prefix}Bash 5+ installed successfully. Re-executing script with new Bash..."
+      exec "$NEW_BASH" "$0" "$@"
+    else
+      _err "Failed to find or execute the newly installed Bash"
+      exit 1
+    fi
+  else
+    _err "Incompatible bash version, expect bash version 5 or later, installed is '${BASH_VERSION:-0}'"
+    _err "On mac you can install bash(5) or later via homebrew"
+    exit 1
+  fi
 fi
 
 # --- Determine Installation Path ---
