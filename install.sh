@@ -123,6 +123,8 @@ if [[ -n "$TM_HOME" ]] && [[ -d "$TM_HOME" ]]; then
 fi
 tm_bashrc="$tm_home/.bashrc"
 home_bashrc="$HOME/.bashrc"
+home_zshrc="$HOME/.zshrc"
+home_zprofile="$HOME/.zprofile"
 
 # --- Check if already installed ---
 if [[ -f "$tm_bashrc" ]]; then
@@ -185,6 +187,48 @@ if [[ -f "$tm_bashrc" ]]; then
 fi
 EOF
   echo "${log_prefix}tool-manager (tm) installed and configured at '$tm_home'"
+fi
+
+# --- Update user's .zshrc ---
+# Check if tm_bashrc is already sourced in .zshrc
+if [[ -f "$home_zshrc" ]]; then
+  if grep -q "source \".*\/\.tool-manager\/\.bashrc\"" "$home_zshrc" || grep -qFx "source \"$tm_bashrc\"" "$home_zshrc"; then
+    echo "${log_prefix}tool-manager already sourced in '$home_zshrc'. Skipping update"
+  else
+    echo "${log_prefix}Adding tool-manager source to '$home_zshrc'..."
+    cat << EOF >> "$home_zshrc"
+
+# Added by Tool Manager install script ($tm_git_repo/install.sh) on $(date)
+# Source Tool Manager environment if the file exists
+[[ -f "$tm_bashrc" ]] && source "$tm_bashrc"
+EOF
+    echo "${log_prefix}tool-manager (tm) configured in '$home_zshrc'"
+  fi
+else
+  echo "${log_prefix}Creating '$home_zshrc' with tool-manager source..."
+  cat << EOF > "$home_zshrc"
+# Created by Tool Manager install script ($tm_git_repo/install.sh) on $(date)
+# Source Tool Manager environment if the file exists
+[[ -f "$tm_bashrc" ]] && source "$tm_bashrc"
+EOF
+  echo "${log_prefix}tool-manager (tm) configured in newly created '$home_zshrc'"
+fi
+
+# --- Update user's .zprofile ---
+# Check if tm_bashrc is already sourced in .zprofile
+if [[ -f "$home_zprofile" ]]; then
+  if grep -q "source \".*\/\.tool-manager\/\.bashrc\"" "$home_zprofile" || grep -qFx "source \"$tm_bashrc\"" "$home_zprofile"; then
+    echo "${log_prefix}tool-manager already sourced in '$home_zprofile'. Skipping update"
+  else
+    echo "${log_prefix}Adding tool-manager source to '$home_zprofile'..."
+    cat << EOF >> "$home_zprofile"
+
+# Added by Tool Manager install script ($tm_git_repo/install.sh) on $(date)
+# Source Tool Manager environment if the file exists
+[[ -f "$tm_bashrc" ]] && source "$tm_bashrc"
+EOF
+    echo "${log_prefix}tool-manager (tm) configured in '$home_zprofile'"
+  fi
 fi
 
 source "$tm_bashrc"
