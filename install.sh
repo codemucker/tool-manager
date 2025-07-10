@@ -13,6 +13,29 @@ _err() {
   echo "[ERROR] [install.sh] $*" >&2
 }
 
+# Add Homebrew's bin to PATH in the specified file
+_add_homebrew_to_path() {
+  local file_path="$1"
+  local create_if_missing="$2"  # 0 or 1
+
+  if [[ -f "$file_path" ]]; then
+    if ! grep -q "export PATH=\"\$(brew --prefix)/bin:\$PATH\"" "$file_path"; then
+      echo "${log_prefix}Adding Homebrew's bin to PATH in $file_path..."
+      cat << EOF >> "$file_path"
+
+# Added by Tool Manager install script to ensure Homebrew's Bash is used
+export PATH="\$(brew --prefix)/bin:\$PATH"
+EOF
+    fi
+  elif [[ "$create_if_missing" == "1" ]]; then
+    echo "${log_prefix}Creating $file_path with Homebrew's bin in PATH..."
+    cat << EOF > "$file_path"
+# Added by Tool Manager install script to ensure Homebrew's Bash is used
+export PATH="\$(brew --prefix)/bin:\$PATH"
+EOF
+  fi
+}
+
 # --- Configuration ---
 log_prefix="[tool-manager install] "
 tm_git_repo="git@github.com:codemucker/tool-manager.git"
@@ -64,6 +87,13 @@ if [[ ! "$(echo "${BASH_VERSION:-0}" | grep -e '^[5-9]\..*' )" ]]; then
         _err "Homebrew installation failed or path not found"
         exit 1
       fi
+
+      # Update user's bash_profile to add Homebrew's bin to PATH
+      home_bash_profile="$HOME/.bash_profile"
+      _add_homebrew_to_path "$home_bash_profile" 1
+
+      # Also update .bashrc to ensure PATH is set in both files
+      _add_homebrew_to_path "$home_bashrc" 0
     fi
 
     # Install Bash 5+
