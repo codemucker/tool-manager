@@ -1,0 +1,151 @@
+#!/usr/bin/env env-tm-bash
+
+# Purpose: This script scans the codebase to find discrepancies between actual
+#          script dependencies (_include, source) and the dependencies
+#          documented in the .llm markdown files.
+# Args:
+#   None
+# Example:
+#   tm-dev-llm-verify
+
+set -euo pipefail
+
+PROJECT_ROOT="$TM_HOME"
+
+
+source "$TM_LIB_BASH/lib.log.sh"
+
+# For a given script file, extract all its source/include dependencies
+# and normalize them to a path relative to the project root.
+_get_actual_deps() {
+  local file="$1"
+  local file_dir
+  file_dir=$(dirname "$file")
+
+  # Grep for dependency lines and extract the raw path/filename
+  local raw_deps
+  raw_deps=$(grep -E '^\s*(_include|_include_once|source)\s+' "$file" 2>/dev/null |
+    sed -e 's/.*\(source\|_include_once\|_include\)\s*//' \
+        -e 's/["'\'']//g' \
+        -e 's/\s*#.*//' \
+        -e '/^\s*$/d'
+  )
+
+  if [[ -z "$raw_deps" ]]; then
+    return
+  fi
+
+  local resolved_deps=""
+  local dep
+  while IFS= read -r dep; do
+    local full_path
+    # Handle different ways paths can be specified
+    if [[ "$dep" == "\${PROJECT_ROOT}"* || "$dep" == "\$PROJECT_ROOT"* ]]; then
+      # Path from project root, e.g., ${PROJECT_ROOT}/lib-shared/foo.sh
+      full_path=${dep#*\/*/}
+    elif [[ "$dep" == "\$(dirname \"\$0\")"* ]]; then
+      # Path relative to the script's own directory
+      local rel_path=${dep#*\/*/}
+      full_path="$file_dir/$rel_path"
+    elif [[ "$dep" == *"/"* ]]; then
+      # A simple relative path, e.g., ../lib-shared/foo.sh
+      full_path="$file_dir/$dep"
+    else
+      # Assumed to be a library from the standard bash lib dir
+      full_path="lib-shared/tm/bash/$dep"
+    fi
+
+    # Resolve '..' and '.' and make path relative to project root
+    local real_path
+    real_path=$(realpath -m --relative-to=. "$full_path")
+    resolved_deps+="$real_path"$'\n'
+  done <<< "$raw_deps"
+
+  # Return a sorted, unique list of dependencies
+  echo -n "$resolved_deps" | sort -u | sed '/^$/d'
+}
+
+# For a given script file, find its corresponding .llm file and
+# parse the list of dependencies from the YAML frontmatter.
+_get_documented_deps() {
+  local file="$1"
+  local llm_file=".llm/${file}.md"
+
+  if [[ ! -f "$llm_file" ]]; then
+    _warn "No .llm file found for $file at $llm_file"
+    return
+  fi
+
+  # This awk script finds 'dependencies:', then prints all subsequent
+  # list items ('- ...') until another YAML key or '---' is found.
+  awk '
+    /^dependencies:/ { in_deps = 1; next }
+    /^[a-zA-Z0-9_]+:/ { if (in_deps) in_deps = 0 }
+    /^---/ { if (in_deps) in_deps = 0 }
+    in_deps && /^\s*-\s*/ {
+      sub(/^\s*-\s*/, "");
+      print $0;
+    }
+  ' "$llm_file" | sort -u
+}
+
+_main() {
+  local search_dirs=(
+    "bin"
+    "bin-dev"
+    "bin-internal"
+    "bin-defaults"
+    "lib-shared"
+  )
+
+  _info "Searching for source files in: ${search_dirs[*]}"
+  local all_files
+  all_files=$(find "${search_dirs[@]}" -type f -not -path '*/.git/*' -not -path 'bin-experimental/*' -not -name '*.md' -not -name '*~')
+
+  local discrepancies_found=0
+  local file
+  while IFS= read -r file; do
+    local actual_deps
+    actual_deps=$(_get_actual_deps "$file")
+
+    local documented_deps
+    documented_deps=$(_get_documented_deps "$file")
+
+    # If no dependencies are found or documented, skip to the next file
+    if [[ -z "$actual_deps" && -z "$documented_deps" ]]; then
+      continue
+    fi
+
+    # Find dependencies in code but not in docs (Missing)
+    local missing_docs
+    missing_docs=$(comm -23 <(echo "$actual_deps") <(echo "$documented_deps"))
+
+    # Find dependencies in docs but not in code (Stale)
+    local stale_docs
+    stale_docs=$(comm -13 <(echo "$actual_deps") <(echo "$documented_deps"))
+
+    if [[ -n "$missing_docs" || -n "$stale_docs" ]]; then
+      discrepancies_found=1
+      _error "Discrepancy found in $file"
+      if [[ -n "$missing_docs" ]]; then
+        echo "  Missing from .llm file:"
+        while IFS= read -r dep; do echo "    - $dep"; done <<< "$missing_docs"
+      fi
+      if [[ -n "$stale_docs" ]]; then
+        echo "  Stale in .llm file (not in code):"
+        while IFS= read -r dep; do echo "    - $dep"; done <<< "$stale_docs"
+      fi
+      echo ""
+    fi
+  done <<< "$all_files"
+
+  if [[ "$discrepancies_found" -ne 0 ]]; then
+    _error "Dependency discrepancies found. Please update the .llm files or the scripts."
+    return 1
+  fi
+
+  _info "No dependency discrepancies found."
+  return 0
+}
+
+_main "$@"
