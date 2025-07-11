@@ -13,6 +13,36 @@ _err() {
   echo "[ERROR] [install.sh] $*" >&2
 }
 
+# Configure shell config file to source tm_bashrc
+_configure_shell_file() {
+  local file_path="$1"
+  local create_if_missing="${2:-0}"  # 0 or 1, default is 0
+  local file_name=$(basename "$file_path")
+
+  if [[ -f "$file_path" ]]; then
+    if grep -q "source \".*\/\.tool-manager\/\.bashrc\"" "$file_path" || grep -qFx "source \"$tm_bashrc\"" "$file_path"; then
+      echo "${log_prefix}tool-manager already sourced in '$file_path'. Skipping update"
+    else
+      echo "${log_prefix}Adding tool-manager source to '$file_path'..."
+      cat << EOF >> "$file_path"
+
+# Added by Tool Manager install script ($tm_git_repo/install.sh) on $(date)
+# Source Tool Manager environment if the file exists
+[[ -f "$tm_bashrc" ]] && source "$tm_bashrc"
+EOF
+      echo "${log_prefix}tool-manager (tm) configured in '$file_path'"
+    fi
+  elif [[ "$create_if_missing" == "1" ]]; then
+    echo "${log_prefix}Creating '$file_path' with tool-manager source..."
+    cat << EOF > "$file_path"
+# Created by Tool Manager install script ($tm_git_repo/install.sh) on $(date)
+# Source Tool Manager environment if the file exists
+[[ -f "$tm_bashrc" ]] && source "$tm_bashrc"
+EOF
+    echo "${log_prefix}tool-manager (tm) configured in newly created '$file_path'"
+  fi
+}
+
 # Add Homebrew's bin to PATH in the specified file
 _add_homebrew_to_path() {
   local file_path="$1"
@@ -171,9 +201,7 @@ if [[ "$git_clone" == "1" ]]; then
 fi
 
 # --- Update user's .bashrc ---
-# Check if tm_bashrc is already sourced.
-# This pattern looks for a line starting with "source" followed by a path ending with "/tool-manager/.bashrc"
-# or the specific $tm_bashrc path.
+# Use a slightly different format for .bashrc to maintain compatibility
 if grep -q "source \".*\/\.tool-manager\/\.bashrc\"" "$home_bashrc" || grep -qFx "source \"$tm_bashrc\"" "$home_bashrc"; then
     echo "${log_prefix}tool-manager already sourced in '$home_bashrc'. Skipping update"
 else
@@ -190,45 +218,9 @@ EOF
 fi
 
 # --- Update user's .zshrc ---
-# Check if tm_bashrc is already sourced in .zshrc
-if [[ -f "$home_zshrc" ]]; then
-  if grep -q "source \".*\/\.tool-manager\/\.bashrc\"" "$home_zshrc" || grep -qFx "source \"$tm_bashrc\"" "$home_zshrc"; then
-    echo "${log_prefix}tool-manager already sourced in '$home_zshrc'. Skipping update"
-  else
-    echo "${log_prefix}Adding tool-manager source to '$home_zshrc'..."
-    cat << EOF >> "$home_zshrc"
-
-# Added by Tool Manager install script ($tm_git_repo/install.sh) on $(date)
-# Source Tool Manager environment if the file exists
-[[ -f "$tm_bashrc" ]] && source "$tm_bashrc"
-EOF
-    echo "${log_prefix}tool-manager (tm) configured in '$home_zshrc'"
-  fi
-else
-  echo "${log_prefix}Creating '$home_zshrc' with tool-manager source..."
-  cat << EOF > "$home_zshrc"
-# Created by Tool Manager install script ($tm_git_repo/install.sh) on $(date)
-# Source Tool Manager environment if the file exists
-[[ -f "$tm_bashrc" ]] && source "$tm_bashrc"
-EOF
-  echo "${log_prefix}tool-manager (tm) configured in newly created '$home_zshrc'"
-fi
+_configure_shell_file "$home_zshrc" 1
 
 # --- Update user's .zprofile ---
-# Check if tm_bashrc is already sourced in .zprofile
-if [[ -f "$home_zprofile" ]]; then
-  if grep -q "source \".*\/\.tool-manager\/\.bashrc\"" "$home_zprofile" || grep -qFx "source \"$tm_bashrc\"" "$home_zprofile"; then
-    echo "${log_prefix}tool-manager already sourced in '$home_zprofile'. Skipping update"
-  else
-    echo "${log_prefix}Adding tool-manager source to '$home_zprofile'..."
-    cat << EOF >> "$home_zprofile"
-
-# Added by Tool Manager install script ($tm_git_repo/install.sh) on $(date)
-# Source Tool Manager environment if the file exists
-[[ -f "$tm_bashrc" ]] && source "$tm_bashrc"
-EOF
-    echo "${log_prefix}tool-manager (tm) configured in '$home_zprofile'"
-  fi
-fi
+_configure_shell_file "$home_zprofile"
 
 source "$tm_bashrc"

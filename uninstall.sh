@@ -27,8 +27,6 @@ fi
 
 # Determine installation directory
 TM_HOME="${TM_HOME:-$HOME/.tool-manager}"
-HOME_BASHRC="$HOME/.bashrc"
-HOME_PROFILE="$HOME/.profile"
 
 # Source .tm.boot.sh to get the correct paths
 if [[ -f "$TM_HOME/bin/.tm.boot.sh" ]]; then
@@ -158,8 +156,9 @@ else
     echo "${log_prefix} No install directory found at '$TM_HOME'"
 fi
 
-_remove_tm_lines "$HOME_BASHRC"
-_remove_tm_lines "$HOME_PROFILE"
+_remove_tm_lines "$HOME/.bashrc"
+_remove_tm_lines "$HOME/.zshrc"
+_remove_tm_lines "$HOME/.zprofile"
 
 # Unset all environment variables that start with TM_ or __TM
 for var in $(env | grep -E "^(TM_|__TM)" | cut -d= -f1); do
