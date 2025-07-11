@@ -11,7 +11,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: ShellCheck
-        run: source .bashrc && tm-dev-shellcheck
+        run: source .bashrc && tm-dev-shellcheck --severity error
       - name: Run tests
         run: source .bashrc && tm-dev-tests
         env:
