@@ -73,8 +73,7 @@ or
   _include_once .my.common.sh  
 ```  
 
-  This will source the shared '@tm/lib.args.sh' library (@tm is the toolmanager namespace), the '.my.common.sh' (which is relative to your current script), and a thirdparty plugins exported lib '@some-vendor/some-plugin/lib.foo.sh'. The current
-  script directory issues are automatically taken care of.
+  This will source the shared '@tm/lib.args.sh' library (@tm is the toolmanager namespace), the '.my.common.sh' (which is relative to your current script), and a thirdparty plugins exported lib '@some-vendor/some-plugin/lib.foo.sh'. The current script directory issues are automatically taken care of.
 
 
   You can also include your own plugins exported lib (in folder <plugin-home>/lib-shared) using a '@this'
@@ -322,6 +321,15 @@ Use the `--force` option to skip all confirmation prompts during uninstallation.
 # Design
 
 see [OVERVIEW.md](./docs/OVERVIEW.md)
+
+## Codebase Intelligence (`.llm` Directory)
+To ensure the codebase is easy to understand for both human developers and AI assistants, this project uses a special `.llm` directory. This directory contains a "map" of the codebase, providing high-level context that is crucial for effective development and maintenance.
+
+The files inside `.llm` are Markdown files (`.md`) that mirror the project's `bin` and `lib-shared` structure. Each file documents a corresponding script or library and contains:
+1.  **YAML Frontmatter**: Structured metadata at the top of the file (e.g., `title`, `purpose`, `dependencies`) for quick, accurate lookups by tools and LLMs.
+2.  **Markdown Body**: A human-readable explanation of the code's design philosophy, key logic, and usage examples.
+
+This hybrid approach allows an AI to quickly grasp the architecture and intent of the code without having to parse the entire source every time. It serves as a living, high-level documentation of the project's design principles.
 
 # Contributing
 Pull requests are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on setup, coding style, and the pull request workflow.
