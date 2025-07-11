@@ -29,8 +29,8 @@ __tm::venv::__calc_env(){
     # script invocation much faster
 
     # Get a hash of the file, only regenerate if things changed, or the env needs updating (e.g. removed)
-    local current_checksum=$(stat -c %Y "$script_path" | md5sum | awk '{print $1}') # Hash concatenated mtimes. Probably good enough for now
-    local path_hash=$(echo "$script_path" | md5sum | awk '{print $1}') # Consistent cache file name
+    local current_checksum=$(_file_mtime "$script_path" | _md5) # Hash concatenated mtimes. Probably good enough for now
+    local path_hash=$(echo "$script_path" | _md5) # Consistent cache file name
     local cache_base_path="$TM_CACHE_DIR/env-tm-python/script-${path_hash}"
 
     # a file that has cached our previous analysis of this file. It includes a checksum of the file we analysed, so that we can detect when
@@ -233,7 +233,7 @@ __tm::venv::__calc_venv_dir(){
   }
 
   if [[ "${venv_type}" == 'script'  ]]; then
-    echo -n "${TM_PLUGINS_VENV_DIR}/script-$(echo -n "${script_file}" | base64 | md5sum | cut -d ' ' -f1)"
+    echo -n "${TM_PLUGINS_VENV_DIR}/script-$(echo -n "${script_file}" | base64 | _md5)"
   elif [[ "${script_file}" == "$TM_HOME/"* ]]; then
     echo -n "${TM_PLUGINS_VENV_DIR}/tool-manager"
   elif [[ -n "${TM_PLUGINS_INSTALL_DIR}" && "${script_file}" == "${TM_PLUGINS_INSTALL_DIR}/"* ]]; then
@@ -242,7 +242,7 @@ __tm::venv::__calc_venv_dir(){
     __calc_plugin_venv_dir "${script_file}" "${TM_PLUGINS_ENABLED_DIR}"
   else
     # per script venv atm, to improve isolation
-    echo -n "${TM_PLUGINS_VENV_DIR}/script-$(echo -n "${script_file}" | base64 | md5sum | cut -d ' ' -f1)"
+    echo -n "${TM_PLUGINS_VENV_DIR}/script-$(echo -n "${script_file}" | base64 | _md5)"
   fi
 }
 
@@ -346,7 +346,7 @@ __tm::venv::__invoke_in_docker(){
     _debug "using docker file '${docker_file}'"
 
     local env_dockerfile="${venv_path}/Dockerfile"
-    docker_container="tm-runner-$(echo "${venv_path}" | md5sum | awk '{print $1}')"
+    docker_container="tm-runner-$(echo "${venv_path}" | _md5)"
 
     if [[ ! -f "${env_dockerfile}" ]]; then
       cp "${docker_file}" "${env_dockerfile}"

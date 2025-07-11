@@ -374,7 +374,62 @@ _tm::util::array::get_first(){
       return
     fi
   done
-   _fail "Coud not find any values with keys matching one of ($@)"
+   _fail "Coud not find any values with keys matching one of ($*)"
+}
+
+# Cross-platform function to get file modification time
+#
+# Args:
+#   $1 - Path to the file
+#
+# Behavior:
+#   - Uses stat -c %Y on Linux
+#   - Uses stat -f %m on macOS
+#   - Returns the modification time in seconds since epoch
+#
+# Usage:
+#   _file_mtime "/path/to/file"
+#
+_file_mtime() {
+  if [[ "$OSTYPE" == "darwin"* ]]; then
+    # macOS uses different stat options
+    stat -f %m "$1"
+  else
+    # Linux and others
+    stat -c %Y "$1"
+  fi
+}
+
+# Cross-platform MD5 hash function
+#
+# Args:
+#   $1 - Input to hash (piped in or as argument)
+#
+# Behavior:
+#   - Uses md5sum on Linux
+#   - Uses md5 on macOS
+#   - Returns the MD5 hash
+#
+# Usage:
+#   echo "text" | _md5
+#   _md5 "text"
+#
+_md5() {
+  if [[ "$OSTYPE" == "darwin"* ]]; then
+    # macOS uses md5 command
+    if [[ $# -gt 0 && -n "${1:-}" ]]; then
+      echo "$1" | md5
+    else
+      md5
+    fi
+  else
+    # Linux and others use md5sum
+    if [[ $# -gt 0 && -n "${1:-}" ]]; then
+      echo "$1" | md5sum | awk '{print $1}'
+    else
+      md5sum | awk '{print $1}'
+    fi
+  fi
 }
 
 # Safe remove function that checks if a directory is not root and not empty

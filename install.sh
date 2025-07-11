@@ -99,7 +99,7 @@ done
 # --- Bash Version Check ---
 if [[ ! "$(echo "${BASH_VERSION:-0}" | grep -e '^[5-9]\..*' )" ]]; then
   # Check if we're on macOS
-  if [[ "$(uname)" == "Darwin" ]]; then
+  if [[ "$OSTYPE" == "darwin"* ]]; then
     echo "${log_prefix}Detected macOS with Bash version ${BASH_VERSION:-0}"
     echo "${log_prefix}Attempting to install Bash 5+ via Homebrew..."
 
@@ -134,7 +134,19 @@ if [[ ! "$(echo "${BASH_VERSION:-0}" | grep -e '^[5-9]\..*' )" ]]; then
     NEW_BASH="$(brew --prefix)/bin/bash"
 
     if [[ -x "$NEW_BASH" ]]; then
-      echo "${log_prefix}Bash 5+ installed successfully. Re-executing script with new Bash..."
+      echo "${log_prefix}Bash 5+ installed successfully."
+
+      # Suggest changing the default login shell to Homebrew's bash
+      current_shell=$(dscl . -read /Users/$USER UserShell | awk '{print $2}')
+      if [[ "$current_shell" != "$NEW_BASH" ]]; then
+        echo "${log_prefix}RECOMMENDATION: To use Bash 5+ for all interactive shells, change your default login shell:"
+        echo "${log_prefix}Run this command: chsh -s $(brew --prefix)/bin/bash"
+        echo "${log_prefix}This will ensure all interactive shells use Bash 5+ instead of the system default."
+        echo "${log_prefix}Press Enter to continue with the installation..."
+        read -r
+      fi
+
+      echo "${log_prefix}Re-executing script with new Bash..."
       exec "$NEW_BASH" "$0" "$@"
     else
       _err "Failed to find or execute the newly installed Bash"
