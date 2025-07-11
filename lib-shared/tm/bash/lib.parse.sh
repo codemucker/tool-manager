@@ -427,3 +427,22 @@ _tm::parse::__set_plugin_derived_vars(){
   result_ref_derived[cache_dir]="$TM_PLUGINS_CACHE_DIR/${qpath}" # the plugins cache dir, for data that can be lost and regenerated
   result_ref_derived[packages_dir]="$TM_PLUGINS_PACKAGES_DIR/${qpath}" # where to install plugin specific deps/progs
 }
+
+_to_boolean(){
+  _tm::parse::boolean "${1:-}"
+}
+#
+# Convert a boolean value to 1 or 0
+#
+# Arguments:
+# $1 - the value to parse. Case insensitive. Converts true|t|yes|enabled|1|yeah into '1', '0' in all other cases
+#
+_tm::parse::boolean(){
+  local value="${1:-}}"
+  case "${value,,}" in # bash lowercase
+    true|t|1|yes|enabled|yeah|yeah-but-nah)
+        echo "1";;
+    *)
+      echo "0";;
+  esac
+}

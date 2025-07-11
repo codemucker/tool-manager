@@ -61,7 +61,7 @@ fi
 export PATH="$SHUNIT2_INSTALL_DIR:$PATH"
 
 # The test script is executed directly. It is expected to source shunit2 itself.
-TM_LOG_NAME="$(basename "$script_path")"
+export TM_LOG_NAME="$(basename "$script_path")"
 set -- "${script_cmd_args[@]}" # set the '$@' args for the test script
 _info "running shunit2"
 bash "$script_path" "${runner_args[@]}" "${script_cmd_args[@]}"

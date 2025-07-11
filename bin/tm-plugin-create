@@ -91,10 +91,11 @@ main(){
         _fail "'dir '$plugin_dir' already exists. Aborting"
     fi
 
-    local name="${plugin[name]}"
-    local qname="${plugin[qname]}"
-    local home_var="$(echo "${name^^}_HOME" | sed 's/-/_/g')"
-    local home_bin_var="$(echo "${name^^}_BIN" | sed 's/-/_/g')"
+    local name qname home_var home_bin_var
+    name="${plugin[name]}"
+    qname="${plugin[qname]}"
+    home_var="$(echo "${name^^}_HOME" | sed 's/-/_/g')"
+    home_bin_var="$(echo "${name^^}_BIN" | sed 's/-/_/g')"
 
     local example_script_name="${name}-helloworld"
     if [[ -n "$script_name_prefix" ]]; then

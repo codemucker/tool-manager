@@ -1,0 +1,142 @@
+#!/usr/bin/env env-tm-bash
+#
+# Runs tests for a given plugin or for the tool-manager itself.
+#
+# Usage: tm-dev-tests [plugin_name|tool-manager]
+#
+
+_tm::source::include_once .tm.script.sh .tm.plugin.sh .tm.plugins.sh @tm/lib.test.bats.sh
+
+_trap_error
+
+declare -A args
+_parse_args \
+    --file "${BASH_SOURCE[0]}" \
+    --opt-plugin "|remainder|short=p|desc=The plugin, 'tool-manager', dir to test. If empty, test the tool-manager. Can pass a path to the tests dir" \
+    --opt-test "|short=t|desc=The name of the test to match on. Will have '*' pre/post appended" \
+    --opt-fix "|short=f|default=1|allowed=0,1,true,false|default=1|validator=boolean|desc=Auto fix and script issues that can be fixed such as execute perms etc" \
+    --opt-parallel "|flag|short=para|desc=If to run the tests in parallel" \
+    --result args \
+    -- "$@"
+
+main() {
+  local parallel="${args[parallel]}"
+  local target="${args[plugin]}"
+  local auto_fix="$(_tm::parse::boolean "${args[fix]}")"
+  local target_name=""
+  local -a tests=()
+
+  _tm::test::bats::install
+
+  if [[ -z "$target" ]] || [[ "$target" == "tool-manager" ]]; then
+    target_name="tool-manager"
+    __add_test_dirs_in tests "$TM_HOME"
+  elif [[ "$target" == "."* ]] || [[ "$target" == "/"* ]] ; then
+    tests+=("$target")
+    target_name=""
+  elif [[ -f "$target" ]]; then
+    tests+=("$target")
+    target_name="file '${target}'"
+  else
+    local qname
+    qname="$(_tm::plugins::installed::get_by_name "$target")"
+    if [[ -z "$qname" ]]; then
+      _fail "Plugin '$target' not found."
+    fi
+    local -A plugin
+    _tm::parse::plugin plugin "$qname"
+    
+    target_name="${qname}"
+    __add_test_dirs_in tests "${plugin[install_dir]}"
+  fi
+
+  if [[ -n "$target_name" ]]; then
+    _info "Running tests for '$target_name' in '${tests[*]}'"
+  else
+    _info "Running tests in '${tests[*]}'" 
+  fi
+
+  local -a test_files_sh=()
+  for test in "${tests[@]}"; do
+    if [[ -d "${test}" ]]; then
+      # Append found shell script files to test_files_sh
+      mapfile -t -O "${#test_files_sh[@]}" test_files_sh < <(find "$test" -type f -name "*.sh")
+    elif [[ -f "$test" ]] && [[ "$test" == *'.sh' ]] ; then
+      test_files_sh+=("$test")
+    fi
+  done
+  # Ensure the test_files_sh is a unique list of values
+  mapfile -t test_files_sh < <(printf "%s\n" "${test_files_sh[@]}" | sort -u)
+
+  local failures=0
+  # -- shell tests --
+  for test_file in "${test_files_sh[@]}"; do
+    if [[ -z "$test_file" ]]; then
+      continue
+    fi
+    if [[ "${parallel}" == "1" ]]; then
+      (
+        _info "--- Running tests in: $test_file ---"
+        if [[ ! -x "$test_file" ]] && [[ "${auto_fix}" == "1" ]]; then
+            _info "fixing exectuable flag on '${test_file}'"
+            chmod +x "$test_file" # auto set executable bit
+        fi
+        ( "$test_file" || failures=1 ) &
+        _info "--- Finished tests in: $test_file ---"
+      ) &
+    else
+      _info "--- Running tests in: $test_file ---"
+      if [[ ! -x "$test_file" ]] && [[ "${auto_fix}" == "1" ]]; then
+          _info "fixing exectuable flag on '${test_file}'"
+          chmod +x "$test_file" # auto set executable bit
+      fi
+      "$test_file" || failures=1
+      _info "--- Finished tests in: $test_file ---"
+    fi
+  done
+
+  # -- bats tests --
+  if [[ "${parallel}" == "1" ]]; then
+    _info "--- Running bats tests ---"
+    bats "${tests[@]}" || failures=1
+    _info "--- Finished bats tests ---"
+  else
+    _info "--- Running bats tests ---"
+    bats "${tests[@]}" || failures=1
+    _info "--- Finished bats tests ---"
+  fi
+
+  # wait for completion
+  if [[ "${parallel}" == "1" ]]; then
+    _info "waiting for parallel tests to complete..."
+    wait
+  fi
+  _info "All tests for '$target_name' completed."
+
+
+  if [[ "${failures}" == "1" ]]; then
+    _fail "There were test failures!"
+  fi
+}
+
+__add_test_dirs_in(){
+  local -n test_dirs_ref="$1"
+  local root_dir="$2"
+  local -a found_dirs=()
+
+  # Find directories named "test" or "tests" within root_dir, including subdirectories
+  if [[ -d "$root_dir/test" ]]; then
+    mapfile -t found_dirs < <(find "$root_dir/test" -type d 2>/dev/null)
+    for dir in "${found_dirs[@]}"; do
+      test_dirs_ref+=("$dir")
+    done
+  fi
+  if [[ -d "$root_dir/tests" ]]; then
+    mapfile -t found_dirs < <(find "$root_dir/tests" -type d 2>/dev/null)
+    for dir in "${found_dirs[@]}"; do
+      test_dirs_ref+=("$dir")
+    done
+  fi
+}
+
+main "$@"

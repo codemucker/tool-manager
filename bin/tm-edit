@@ -32,13 +32,14 @@ fi
 main(){
   local -A plugin
 
-  if [[ -z "$name" ]] && [[ -n "${args[tm]}" ]] then
+  if [[ -z "$name" ]] && [[ -n "${args[tm]}" ]]; then
       name="$__TM_NAME"
   fi
-  if [[ "$name" == "$__TM_NAME" ]] || [[ -z "$name" ]] then
+  if [[ "$name" == "$__TM_NAME" ]] || [[ -z "$name" ]]; then
       _tm::parse::plugin plugin "$__TM_PLUGIN_ID"
   else
-      local qname="$(_tm::plugins::enabled::get_by_name "${name}")"
+      local qname
+      qname="$(_tm::plugins::enabled::get_by_name "${name}")"
       _tm::parse::plugin plugin "$qname"
   fi
   # go to the the tool's home dir

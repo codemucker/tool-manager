@@ -458,7 +458,7 @@ _tm::plugins::install_from_registry(){
   # what section we are looking for
   local vendor_and_name="${vendor}/${plugin_name}"
 
-  _info "Attempting to install plugin: vendor="${vendor}", name='${plugin_name}', version='${version}', prefix='${prefix:-none}' (from input '$qualified_name')"
+  _info "Attempting to install plugin: vendor='${vendor}', name='${plugin_name}', version='${version}', prefix='${prefix:-none}' (from input '$qualified_name')"
 
   local -a plugin_files=()
   _tm::plugins::__plugin_files_to_array plugin_files
@@ -586,7 +586,7 @@ _tm::plugins::foreach_available_callback() {
     # --- Argument Parsing ---
   local -A args
   _parse_args \
-      --help                    "$FUNCNAME: For each available plugin, invoke the given function with the plugin associative array"\
+      --help                    "${FUNCNAME[0]}: For each available plugin, invoke the given function with the plugin associative array"\
       --opt-match               "|short=m|desc=the plugin name match" \
       --opt-default-commit     "|short=c|default=main|desc=the default commit/branch to use if none provided" \
       --opt-function            "|short=f|required|remainder|desc=the callback function" \

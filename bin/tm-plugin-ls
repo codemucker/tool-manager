@@ -374,7 +374,7 @@ _list_installed_plugins() {
     local -A plugin
     local -a installed_plugin_ids
     mapfile -t installed_plugin_ids < <(_tm::plugins::find_all_installed_plugin_ids)
-    _finest "installed plugin ids: ${installed_plugin_ids[@]}"
+    _finest "installed plugin ids: ${installed_plugin_ids[*]}"
     __list_plugins installed_plugin_ids
 }
 
@@ -387,7 +387,7 @@ _list_enabled_plugins() {
     local -A plugin
     local -a enabled_plugin_ids
     mapfile -t enabled_plugin_ids < <(_tm::plugins::find_all_enabled_plugin_ids)
-    _finest "enabled plugin ids: ${enabled_plugin_ids[@]}"
+    _finest "enabled plugin ids: ${enabled_plugin_ids[*]}"
     __list_plugins enabled_plugin_ids
 }
 

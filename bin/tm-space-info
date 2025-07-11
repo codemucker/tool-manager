@@ -14,7 +14,8 @@ _parse_args \
     -- "$@"
 
 main(){
-  local space_file="$(__find_file)"
+  local space_file
+  space_file="$(__find_file)"
 
   local -A space
   _tm::space::file::read_array space "${space_file}"

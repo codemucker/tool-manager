@@ -41,7 +41,7 @@ __tm_help() {
   #   tm-help-commands [--gui [port]]
   #   tm-help-commands [command-prefix-filter]
   _info "generating help..."
-  _trace "args:$@"
+  _trace "args:$*"
   if [[ "${1:-}" == "--gui" ]]; then
     __tm_help_serve "${2:-8000}" "${3:-}"
   else
@@ -57,7 +57,8 @@ __tm_help_console() {
   # Usage:
   #   __tm_help_console [command-prefix-filter]
   local cmd_filter="${1:-}"
-  local files="$(_tm::plugins::find_all_scripts "$cmd_filter")"
+  local files
+  files="$(_tm::plugins::find_all_scripts "$cmd_filter")"
 
   echo "$files" | while IFS= read -r file; do
     if [[ -n "$file" ]]; then # Ensure file is not empty if $files was empty
@@ -75,8 +76,9 @@ __tm_help_serve() {
   # Usage:
   #   __tm_help_serve [port]
   # Create temp directory if it doesn't exist
-  local temp_dir="$(mktemp -d)"
-  local temp_file="${temp_dir}/index.html"
+  local temp_dir temp_file
+  temp_dir="$(mktemp -d)"
+  temp_file="${temp_dir}/index.html"
   
   # Generate HTML to temp file
   __tm_help_generate_help_page > "$temp_file"
@@ -174,7 +176,8 @@ EOF
   declare -A section_has_matches
 
   while read -r file; do
-    local cmd_name=$(basename "$file")
+    local cmd_name
+    cmd_name=$(basename "$file")
     section=${cmd_name%%-*}
     sections["$section"]+="<div class='command' onclick='toggleHelp(event)'>
       <div class='name'>$cmd_name</div>

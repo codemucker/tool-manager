@@ -36,7 +36,8 @@ main(){
       IFS=' ' read -r -a plugin_names <<< "${args[plugins]}"
       declare -A plugin
       for name in "${plugin_names[@]}"; do
-        local qname="$(_tm::plugins::installed::get_by_name "${vendor_prefix}${name}")"
+        local qname
+        qname="$(_tm::plugins::installed::get_by_name "${vendor_prefix}${name}")"
         if [[ -z "$qname" ]]; then
           _fail "Couldn't find plugin"
         fi
