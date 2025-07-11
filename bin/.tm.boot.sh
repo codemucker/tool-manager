@@ -38,6 +38,12 @@ _source_once "$TM_LIB_BASH/lib.util.sh"
 _source_once "$TM_LIB_BASH/lib.path.sh"
 _source_once "$TM_LIB_BASH/lib.event.sh"
 
+# Check for required external commands
+_fail_if_not_installed yq "Please install 'yq' from https://github.com/mikefarah/yq"
+if ! command -v envsubst &> /dev/null; then
+  _warn "Command 'envsubst' not found. Install the 'gettext' package for full functionality."
+fi
+
 #
 # _tm::boot::reload
 #

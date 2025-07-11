@@ -174,6 +174,17 @@ Whether you are a solo developer keeping your dotfiles and scripts organized, or
 Tool Manager provides a high-level, benefits-focused solution. By **centralizing plugin management, automating environment setup, and offering easy commands**,
 it lets you spend more time using or writing useful tools and less time configuring them.
 
+## Prerequisites
+
+Tool Manager relies on a few external commands being available on your system:
+
+- `bash` **5.0** or newer (checked during bootstrap)
+- `git` and `curl` for fetching plugins and updates
+- `yq` for parsing YAML configuration files
+- `envsubst` from the `gettext` package for environment variable substitution
+
+If any of these commands are missing, the bootstrap scripts will provide a helpful error message.
+
 # Installation
 
 ```bash
