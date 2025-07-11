@@ -68,7 +68,7 @@ fi
 _tm::cfg2::plugin_init(){
   local cfg_file="$1"
   local expanded_default_val expanded_note_val
-  yq '.keys | to_entries[] | [.key, .value.default, .value.note, .value.required, .value.type] | @tsv' "$cfg_file" -r | \
+  _tm::prog::yq '.keys | to_entries[] | [.key, .value.default, .value.note, .value.required, .value.type] | @tsv' "$cfg_file" -r | \
   while IFS=$'\t' read -r key_name raw_default_val raw_note_val raw_required_val raw_type_val; do
     # Apply envsubst to the values that might contain environment variables
     expanded_default_val=$(echo "$raw_default_val" | $ENV_SUBST_CMD)
@@ -107,7 +107,7 @@ _tm::cfg2::__generate_sh_from_plugin_yaml(){
   local target_file="$2"
 
   local expanded_default_val expanded_note_val
-  yq '.keys | to_entries[] | [.key, .value.default, .value.note, .value.required, .value.type] | @tsv' "$cfg_file" -r | \
+  _tm::prog::yq '.keys | to_entries[] | [.key, .value.default, .value.note, .value.required, .value.type] | @tsv' "$cfg_file" -r | \
   mkdir -p "$(dirname "$target_file")"
   echo "" > "$target_file"
   while IFS=$'\t' read -r key_name raw_default_val raw_note_val raw_required_val raw_type_val; do

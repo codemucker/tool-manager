@@ -1,7 +1,10 @@
+declare __tm_yq_installed
 _tm::prog::yq(){
-  if ! commaqnd -v yq > /dev/null; then
+  if [[ ! "$__tm_yq_installed" == "1" ]] && ! command -v yq >/dev/null; then
     _tm::prog::__install_yq
   fi
+  __tm_yq_installed=1
+  yq "$@"
 }
 
 _tm::prog::__install_yq(){
@@ -9,12 +12,12 @@ _tm::prog::__install_yq(){
   if command -v brew >/dev/null 2>&1; then
     _tm::log::info "Using brew to install yq."
     brew install yq
-  elif command -v snap >/dev/null 2>&1; then
-    _tm::log::info "Using snap to install yq."
-    sudo snap install yq
   elif command -v apt-get >/dev/null 2>&1; then
     _tm::log::info "Using apt-get to install yq."
     sudo apt-get update && sudo apt-get install -y yq
+  elif command -v snap >/dev/null 2>&1; then
+    _tm::log::info "Using snap to install yq."
+    sudo snap install yq
   elif command -v dnf >/dev/null 2>&1; then
     _tm::log::info "Using dnf to install yq."
     sudo dnf install -y yq

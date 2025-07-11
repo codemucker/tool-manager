@@ -37,6 +37,7 @@ source "$TM_LIB_BASH/lib.source.sh" # then the '_tm::source' functions are avail
 _source_once "$TM_LIB_BASH/lib.util.sh" 
 _source_once "$TM_LIB_BASH/lib.path.sh"
 _source_once "$TM_LIB_BASH/lib.event.sh"
+_source_once "$TM_BIN/.tm.progs.sh"
 
 #
 # _tm::boot::reload
