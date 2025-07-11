@@ -9,9 +9,21 @@
 
 [[ -n "${__TM_BOOTSTRAP_SH_INITED:-}" ]] && return || __TM_BOOTSTRAP_SH_INITED=1;
 
-if [[ ! "$(echo "${BASH_VERSION:-0}" | grep -e '^[5-9]\..*' )" ]]; then
-  echo "ERROR: Incompatible bash version, expect bash version 5 or later, installed is '${BASH_VERSION:-0}'"  
-  return 1 # If this script is meant to be sourced, 'return 1' is appropriate.
+# Determine which shell we're running in and check version requirements
+if [[ -n "${ZSH_VERSION:-}" ]]; then
+  # We're in zsh, which is compatible with our scripts
+  # No version check needed for zsh
+  :
+elif [[ -n "${BASH_VERSION:-}" ]]; then
+  # We're in bash, check for minimum version 5
+  if [[ ! "$(echo "${BASH_VERSION}" | grep -e '^[5-9]\..*' )" ]]; then
+    echo "ERROR: Incompatible bash version, expect bash version 5 or later, installed is '${BASH_VERSION}'"  
+    return 1 # If this script is meant to be sourced, 'return 1' is appropriate.
+  fi
+else
+  # Neither bash nor zsh detected
+  echo "WARNING: Unable to determine shell type. Neither BASH_VERSION nor ZSH_VERSION is set."
+  echo "This script is designed to work with bash 5+ or zsh. Continuing with caution..."
 fi
 
 TM_LOG_TIMINGS="${TM_LOG_TIMINGS:-}"
@@ -183,7 +195,7 @@ _tm::boot::init() {
 
   # the tool-manager bins dirs.
   _tm::path::add_to_path "$TM_BIN" "$TM_PLUGINS_BIN_DIR" "$TM_BIN_DEFAULTS"
-  
+
   if _is_trace; then
     _tm::event::on '**' _tm::boot:__event_callback
   fi
