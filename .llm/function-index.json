@@ -671,7 +671,7 @@
     "file": "bin/.tm.plugin.sh",
     "start_line": 533
   },
-  "_tm::pluging::__print_alias_diff": {
+  "_tm::plugin::__print_alias_diff": {
     "file": "bin/.tm.plugin.sh",
     "start_line": 182
   },
