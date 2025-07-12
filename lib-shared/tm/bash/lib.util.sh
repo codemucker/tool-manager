@@ -87,6 +87,7 @@ _confirm(){
         default_val=''
       ;;
     esac
+    # how to ensure we can pass 'y' to this when we call '_confirm <<<"y"' ai!
     _read_yn "$prompt" yn "${default_val}"
     if [[ "${yn}" == 'y' ]]; then
       return $_true
