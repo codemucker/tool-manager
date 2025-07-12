@@ -19,9 +19,21 @@ _tm::prog::brew::install(){
               return 1 # Indicate failure
               ;;
       esac
+    elif [[ "$OS_NAME" == "Linux" ]]; then
+      echo "Homebrew is not installed."
+      read -r -p "Do you want to install Homebrew on Linux? (y/N) " response
+      case "$response" in
+          [yY][eE][sS]|[yY]) 
+              echo "Installing Homebrew for Linux..."
+              /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+              ;;
+          *)
+              echo "Homebrew installation skipped."
+              return 1 # Indicate failure
+              ;;
+      esac
     else
-    # homebrew can now be installe don linux and windows wsl. Ensure to prompt t install on these os's. ai!
-      echo "ERROR: Homebrew is primarily for macOS. Current OS: $OS_NAME." >&2
+      echo "ERROR: Unsupported operating system: $OS_NAME for Homebrew installation." >&2
       return 1 # Indicate failure
     fi
   fi
