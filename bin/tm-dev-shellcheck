@@ -23,7 +23,7 @@ _parse_args \
   -- "$@"
 
 main() {
-  _tm::prog::shellcheck:install
+  _tm::prog::shellcheck::install
 
   local target="${args[plugin]}"
   local target_name=""
