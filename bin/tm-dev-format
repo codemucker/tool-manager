@@ -59,7 +59,7 @@ main() {
     targets+=("${plugin_home}/bin" "${plugin_home}/bin-internal" "${plugin_home}/lib-shared/bash" "${plugin_home}/test" "$TM_HOME/tests")
   fi
 
-  echo "formatting scripts using shfmt..."
+  _info "formatting scripts using shfmt..."
 
   local -a bash_files=()
   local -a bats_files=()
@@ -110,7 +110,10 @@ main() {
     fi
     shfmt "${shfmt_opts[@]}" --language-dialect bats "${bats_files[@]}"
   fi
-  echo "script formatting done for '${target_name}'"
+  _info "script formatting done for '${target_name}'"
+  if [[ ${args[apply]} != "1" ]]; then
+    _info "Pass in '--apply' to have these changes applied"
+  fi
 }
 
 main "$@"

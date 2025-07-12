@@ -89,7 +89,7 @@ _tm::cfg::__process() {
         --opt-required  "|short=r|flag|group=behaviour |desc=Whether the value is required. If no value, and required, then will prompt for it, or if in silent mode, fail. Default is off" \
         --opt-allowed   "|       |    |group=validation|desc=Allowed values|multi" \
         --opt-default   "|short=d|    |value=DEFAULT-VALUE|desc=The default value if not set" \
-        --opt-empty    "|flag|desc=An empty default value if set" \
+        --opt-empty     "|       |flag|                |desc=An empty default value if set" \
         --opt-keys      "|short=k|remainder|long=key|value=KEY|desc=The key of the value to get|multi" \
         --opt-all       "|       |flag|desc=Get all the keys and values|" \
         --opt-note      "|       |    |desc=A note about this key. Only used when setting values |" \
@@ -122,11 +122,8 @@ _tm::cfg::__process() {
         value="${!key:-}"
         if [[ -z "${value:-}" ]]; then
             # key missing, load cfg
-            # find env files
-            if [[ "$empty" == "0" ]]; then
-              missing_keys+=("$key")
-              _trace "missing key:$key"
-            fi
+            missing_keys+=("$key")
+            _trace "missing key:$key"
         else
           if [[ $is_get == 1 ]]; then
             echo "$value"
@@ -144,7 +141,8 @@ _tm::cfg::__process() {
     local plugin_custom_cfg_file="$TM_PLUGINS_CFG_DIR/${plugin[qpath]}/config.sh"
     for key in "${missing_keys[@]}"; do
         if [[ "$prompt" == '0' ]] ; then
-            if [[ -n "$default_value" ]]; then # just use the default
+            if [[ -n "$default_value" ]] || [[ "$empty" == "1" ]]; then # just use the default
+                _finest "using default '$default_value'"
                 _finest "running: export $key=\"$default_value\""
                 eval "export $key=\"$default_value\""
                 if [[ $is_get == 1 ]]; then
@@ -163,8 +161,7 @@ _tm::cfg::__process() {
             _fail "No cfg with key '$key' set for plugin '${plugin[name]}', and no default supplied. Not in interactive shell so can't prompt"
         fi
         _tm::cfg::__prompt_for_key "${plugin[qname]}" "${plugin[qpath]}" "$plugin_custom_cfg_file" "$key" "$default_value" "$note"
-        # ensure the new key is rad by the caller
-
+        # ensure the new key can be read by the caller
         if [[ $is_get == 1 ]]; then
           echo "${!key:-}"
         fi
