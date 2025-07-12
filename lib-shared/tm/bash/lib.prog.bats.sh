@@ -1,4 +1,12 @@
-_tm::test::bats::install(){
+
+_tm::prog::bats(){
+  if ! command -v bats &> /dev/null; then
+    _tm::prog::bats::install
+  fi
+  bats "$@"
+}
+
+_tm::prog::bats::install(){
   if ! command -v bats &> /dev/null; then
       BATS_CORE_INSTALL_DIR="$TM_PACKAGES_DIR/bats-core"
       # tm-install tpkg:@bats/bats-core
@@ -15,7 +23,7 @@ _tm::test::bats::install(){
       export PATH="$PATH:${BATS_CORE_INSTALL_DIR}/bin"
   fi
 
-  if ! command -v bats &> /dev/null; then
+  if ! command -v batslib_err &> /dev/null; then
       BATS_SUPPORT_INSTALL_DIR="$TM_PACKAGES_DIR/bats-support"
       if [ ! -d "$BATS_SUPPORT_INSTALL_DIR" ]; then
           _info "bats-support not found. Cloning from git..."
@@ -36,5 +44,4 @@ _tm::test::bats::install(){
       fi
       source "${BATS_ASSERT_INSTALL_DIR}/load.bash"
   fi
-
 }

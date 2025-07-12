@@ -5,7 +5,7 @@
 # Usage: tm-dev-tests [plugin_name|tool-manager]
 #
 
-_tm::source::include_once .tm.script.sh .tm.plugin.sh .tm.plugins.sh @tm/lib.test.bats.sh
+_tm::source::include_once .tm.script.sh .tm.plugin.sh .tm.plugins.sh @tm/lib.prog.bats.sh
 
 _trap_error
 
@@ -26,7 +26,7 @@ main() {
   local target_name=""
   local -a tests=()
 
-  _tm::test::bats::install
+  _tm::prog::bats::install
 
   if [[ -z "$target" ]] || [[ "$target" == "tool-manager" ]]; then
     target_name="tool-manager"

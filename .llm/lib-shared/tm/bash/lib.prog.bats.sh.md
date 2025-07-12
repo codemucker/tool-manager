@@ -1,6 +1,6 @@
 ---
-title: lib.test.bats.sh
-path: lib-shared/tm/bash/lib.test.bats.sh
+title: lib.prog.bats.sh
+path: lib-shared/tm/bash/lib.prog.bats.sh
 type: library
 purpose: Manages the installation of the BATS testing framework and its common extensions.
 dependencies:
@@ -15,7 +15,7 @@ tags:
 ---
 
 ## Overview
-This library provides a single function, `_tm::test::bats::install`, responsible for setting up the BATS (Bash Automated Testing System) framework. It ensures that `bats-core`, `bats-support`, and `bats-assert` are available for use in test scripts, installing them from their official GitHub repositories if they are not already present.
+This library provides a single function, `_tm::prog::bats::install`, responsible for setting up the BATS (Bash Automated Testing System) framework. It ensures that `bats-core`, `bats-support`, and `bats-assert` are available for use in test scripts, installing them from their official GitHub repositories if they are not already present.
 
 ## Design Philosophy
 The script is designed to be an on-demand installer and environment loader for the BATS testing ecosystem. It abstracts the setup process away from the actual test scripts. A test runner script can simply call this one function to guarantee that the necessary testing tools are installed and loaded into the current shell session. The components are installed into the tool manager's shared packages directory (`$TM_PACKAGES_DIR`), avoiding the need for global system-wide installation and potential version conflicts.
@@ -32,8 +32,8 @@ This function is intended to be called from a test runner script or from the `se
 #!/usr/bin/env tm-bash
 
 # In a test runner script or setup_file function
-_tm::source::include_once @tm/lib.test.bats.sh
-_tm::test::bats::install
+_tm::source::include_once @tm/lib.prog.bats.sh
+_tm::prog::bats::install
 
 # Now the test environment is ready, and you can run bats tests
 # or use bats assertion functions.

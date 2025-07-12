@@ -1,13 +1,17 @@
 declare __tm_yq_installed
 _tm::prog::yq(){
   if [[ ! "$__tm_yq_installed" == "1" ]] && ! command -v yq >/dev/null; then
-    _tm::prog::__install_yq
+    _tm::prog::yq::install
   fi
   __tm_yq_installed=1
   yq "$@"
 }
 
-_tm::prog::__install_yq(){
+_tm::prog::yq::install(){
+  if command -v yq >/dev/null]]; then
+    return
+  fi
+  
   _tm::log::info "Attempting to install yq..."
   if command -v brew >/dev/null 2>&1; then
     _tm::log::info "Using brew to install yq."

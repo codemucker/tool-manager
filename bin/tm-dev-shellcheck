@@ -5,7 +5,7 @@
 # Usage: tm-dev-shellcheck [plugin_name|tool-manager]
 #
 
-_tm::source::include_once .tm.script.sh .tm.plugin.sh .tm.plugins.sh
+_tm::source::include_once .tm.script.sh .tm.plugin.sh .tm.plugins.sh @tm/lib.prog.shellcheck.sh
 
 _trap_error
 
@@ -23,13 +23,13 @@ _parse_args \
     -- "$@"
 
 main() {
-  __ensure_shellcheck_installed
+  _tm::prog::shellcheck:install
 
   local target="${args[plugin]}"
   local target_name=""
   local test_dir=""
   local -a shellcheck_dirs=()
-  local sources=()
+  local sources=() # used by shellcheck to find sourced files
 
   if [[ -z "$target" ]] || [[ "$target" == "tool-manager" ]]; then
     test_dir="$TM_HOME/test"
@@ -40,7 +40,6 @@ main() {
     test_dir="$target"
     target_name=""
     shellcheck_dirs+=("$test_dir")
-    shift # remaining args are shellcheck args
   elif [[ -f "$target" ]]; then
     test_dir="$(dirname "$target")"
     target_name="file '$target'"
@@ -57,7 +56,6 @@ main() {
     target_name="${qname}"
     shellcheck_dirs+=("${plugin_home}/bin" "${plugin_home}/bin-internal" "${plugin_home}/lib-shared/bash" "${plugin_home}/test" "$TM_HOME/tests")
     sources+=("$TM_HOME/bin" "$TM_HOME/lib-shared/tm/bash")
-    shift # remaining args are shellcheck args
   fi
 
   local -a shellcheck_opts=()
@@ -105,33 +103,5 @@ main() {
   echo "shellcheck done for '${target_name}'"
 }
 
-__ensure_shellcheck_installed(){
-  if ! command -v shellcheck &> /dev/null; then
-    _info "shellcheck not found. Attempting to install..."
-    if command -v apt-get &> /dev/null; then
-      sudo apt-get update && sudo apt-get install -y shellcheck
-    elif command -v dnf &> /dev/null; then
-      sudo dnf install -y ShellCheck
-    elif command -v yum &> /dev/null; then
-      sudo yum install -y ShellCheck
-    elif command -v pacman &> /dev/null; then
-      sudo pacman -S --noconfirm shellcheck
-    elif command -v apk &> /dev/null; then
-      sudo apk add shellcheck
-    elif command -v brew &> /dev/null; then
-      brew install shellcheck
-    else
-      _warn "Could not find a supported package manager (apt-get, dnf, yum, pacman, apk, brew) to install shellcheck."
-      _warn "Please install shellcheck manually."
-      return 1
-    fi
-
-    if ! command -v shellcheck &> /dev/null; then
-      _fail "Failed to install shellcheck."
-    else
-      _info "shellcheck installed successfully."
-    fi
-  fi
-}
 
 main "$@"

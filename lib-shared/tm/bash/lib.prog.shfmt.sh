@@ -6,6 +6,9 @@ _tm::prog::shfmt(){
 }
 
 _tm::prog::shfmt::install(){
+    if  command -v shfmt &> /dev/null; then
+        return
+    fi
     local OS_NAME=$(uname -s)
 
     if command -v go &> /dev/null; then
@@ -43,5 +46,4 @@ _tm::prog::shfmt::install(){
             return 1 # Indicate failure
             ;;
     esac
-
 }

@@ -1,0 +1,109 @@
+#!/usr/bin/env env-tm-bash
+#
+# Run shfmt (shell formatter) on all the scripts
+#
+# Usage: tm-dev-shfmt [plugin_name|tool-manager]
+#
+
+_tm::source::include_once .tm.script.sh .tm.plugin.sh .tm.plugins.sh @tm/lib.prog.shfmt.sh
+_trap_error
+
+declare -A args
+_parse_args \
+    --file "${BASH_SOURCE[0]}" \
+    --opt-plugin   "|remainder|short=p|desc=The plugin, 'tool-manager', or dir to check. If empty, test the tool-manager. Can pass a path to the check dir" \
+    --result args \
+    -- "$@"
+
+main() {
+  _tm::prog::shfmt::install
+  
+  local what="${args[plugin]}"
+  local target_name=""
+  local test_dir=""
+  local -a targets=()
+
+  if [[ -z "$what" ]] || [[ "$what" == "tool-manager" ]]; then
+    test_dir="$TM_HOME/test"
+    target_name="tool-manager"
+    targets+=("$TM_HOME/bin" "$TM_HOME/bin-defaults" "$TM_HOME/bin-internal" "$TM_HOME/lib-shared/tm/bash" "$TM_HOME/test" "$TM_HOME/tests")
+  elif [[ "$what" == "."* ]] || [[ "$what" == "/"* ]] ; then
+    test_dir="$what"
+    target_name=""
+    targets+=("$test_dir")
+  elif [[ -f "$what" ]]; then
+    test_dir="$(dirname "$what")"
+    target_name="file '$what'"
+    targets+=("$what")
+  else
+    local qname
+    qname="$(_tm::plugins::installed::get_by_name "$what")"
+    if [[ -z "$qname" ]]; then
+      _fail "Plugin '$what' not found."
+    fi
+    local -A plugin
+    _tm::parse::plugin plugin "$qname"
+    local plugin_home="${plugin[install_dir]}"
+    target_name="${qname}"
+    targets+=("${plugin_home}/bin" "${plugin_home}/bin-internal" "${plugin_home}/lib-shared/bash" "${plugin_home}/test" "$TM_HOME/tests")
+  fi
+
+  local -a shfmt_opts=()
+  # local opt_value
+  # for opt in "include" "exclude" "format" "severity" "shell"; do
+  #   opt_value="${args["${opt}"]:-}"
+  #   if [[ -n "${opt_value}" ]]; then
+  #     shfmt_opts+=("--${opt}" "${opt_value}" )
+  #   fi
+  # done
+  # if [[ "${args["${external-sources}"]:-}" ]]; then
+  #   shfmt_opts+=("--${external-sources}" )
+  # fi
+  echo "formatting scripts using shfmt..."
+
+  local -a bash_files=()
+  local -a bats_files=()
+  for target in "${targets[@]}"; do
+    if [[ -d "${target}" ]]; then
+      local file
+      # main scripts
+      while IFS= read -r -d $'\0' file; do
+        # Only check the first line for a shebang. `grep -I` on the output of `head`
+        # helps to ignore binary files. This avoids false positives on eg markdown files.
+        if head -n 1 "$file" 2>/dev/null | grep -qIE '^#!.*(bash|env-tm-bash)'; then
+          bash_files+=("$file")
+        fi
+      done < <(find "${target}" -type f -not -name '.*.sh' -print0)
+      # hidden shell files
+      while IFS= read -r -d $'\0' file; do
+          bash_files+=("$file")
+      done < <(find "${target}" -type f -name ".*.sh" -print0)
+      # bats files
+      while IFS= read -r -d $'\0' file; do
+          bats_files+=("$file")
+      done < <(find "${target}" -type f -name "*.bats" -print0)
+    elif [[ -f "${target}" ]]; then
+      if [[ "$target" == *".bats" ]]; then
+        bats_files+=("${target}")
+      else
+        bash_files+=("${target}")
+      fi
+    fi
+  done
+  shfmt_opts+=(--diff --simplify --indent 2 --case-indent --binary-next-line)
+  if [[ ${#bash_files[@]} -gt 0 ]]; then
+    if _is_debug; then
+      _debug "bash_files='$(IFS=$'\n'; echo "${bash_files[*]}")'"
+    fi
+    #shfmt "${shfmt_opts[@]}" --language-dialect bash "${bash_files[@]}"
+  fi
+  if [[ ${#bats_files[@]} -gt 0 ]]; then
+    if _is_debug; then
+      _debug "bats_files='$(IFS=$'\n'; echo "${bats_files[*]}")'"
+    fi
+    shfmt "${shfmt_opts[@]}" --language-dialect bats "${bats_files[@]}"
+  fi
+  echo "shfmt done for '${target_name}'"
+}
+
+main "$@"
