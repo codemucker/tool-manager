@@ -1,0 +1,96 @@
+#!/usr/bin/env bash
+
+# Purpose: This script generates a function index for the entire codebase.
+# Args: None
+# Example: tm-dev-llm-index-functions
+
+set -euo pipefail
+
+PROJECT_ROOT="$TM_HOME"
+
+cd "$PROJECT_ROOT"
+
+INDEX_FILE="$PROJECT_ROOT/.llm/function-index.json"
+SEARCH_DIRS=(
+  "bin"
+  "bin-dev"
+  "bin-internal"
+  "bin-defaults"
+  "lib-shared"
+)
+
+# Ensure the output directory exists
+mkdir -p "$(dirname "$INDEX_FILE")"
+
+# Use awk to process the grep output and generate a JSON object.
+# This is more robust than string manipulation with sed and loops.
+# -H includes the filename in the grep output.
+# -E uses extended regex.
+# The regex finds lines starting with 'function' or ending with '()'.
+# Step 1: Find all executable files, excluding common non-script extensions.
+# Step 2: Grep for function definitions.
+# Step 3: Process with awk to extract function name and file path.
+# Step 4: Sort alphabetically and keep the last entry for duplicates.
+# Step 5: Convert the sorted list to JSON.
+find "${SEARCH_DIRS[@]}" -type f -executable \
+  -not -path 'bin-experimental/*' \
+  -not -path '*.md' \
+  -not -path '*.json' \
+  -not -path '*.js' \
+  -not -path '*.ts' \
+  -not -path '*.py' \
+  -not -path '*.kts' \
+  -exec grep -H -n -E '^\s*(function\s+)?[a-zA-Z0-9_:]+\s*\(\s*\)' {} + | \
+  awk -F: '
+  {
+    filepath = $1
+    linenumber = $2
+    line = $0
+    # Reconstruct the line content by removing "filepath:linenumber:"
+    sub(filepath ":" linenumber ":", "", line)
+
+    # Trim leading space
+    sub(/^[ \t]+/, "", line)
+
+    # Case 1: "function foo" or "function foo ()"
+    if (substr(line, 1, 9) == "function ") {
+      line = substr(line, 10)
+      sub(/^[ \t]+/, "", line) # handle "function  foo"
+    }
+    
+    # Now, line is "foo ()" or "foo"
+    # Remove everything from the first parenthesis
+    sub(/\s*\(.*/, "", line)
+    
+    # Make path relative to TM_DIR
+    sub(/^(\.\/|\/home\/bert-sbs\/.tool-manager\/)/, "", filepath)
+
+    if (line != "") {
+      print line "\t" filepath "\t" linenumber
+    }
+  }' | \
+  sort -u -k1,1 | \
+  awk -F'\t' '
+  BEGIN {
+    printf "{\n"
+    first=1
+  }
+  {
+    if (!first) {
+      printf ",\n"
+    }
+    first=0
+    # $1: function_name, $2: file_path, $3: start_line
+    printf "  \"%s\": {\n", $1
+    printf "    \"file\": \"%s\",\n", $2
+    printf "    \"start_line\": %s\n", $3
+    printf "  }"
+  }
+  END {
+    if (!first) {
+      printf "\n"
+    }
+    printf "}\n"
+  }' > "$INDEX_FILE"
+
+echo "Function index generated at $INDEX_FILE"

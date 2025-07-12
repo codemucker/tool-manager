@@ -106,10 +106,10 @@ main(){
           done
 
           if [[ "$is_git_command" -eq 1 ]]; then
-              _log $level "running: git $full_command_string"
+              _log "$level" "running: git $full_command_string"
               __invoke "git $full_command_string" || _warn "Command 'git $full_command_string' failed in $actual_plugin_dir"
           else
-              _log $level "running: '$full_command_string'"
+              _log "$level" "running: '$full_command_string'"
               __invoke "$full_command_string" || _warn "Command '$full_command_string' failed in $actual_plugin_dir"
           fi
       else
@@ -150,9 +150,9 @@ main(){
 __invoke(){
     if [[ "${args[parallel]:-}" == "1" ]]; then
         # Using a subshell to ensure `set -e` doesn't kill the parent script
-        ( eval "$@" ) &
+        ( "$@" ) &
     else
-        ( eval "$@" )
+        ( "$@" )
     fi
 }
 

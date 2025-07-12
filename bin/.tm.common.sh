@@ -1,4 +1,4 @@
-[[ ! -z "${__TM_COMMON_SH_SOURCED:-}" ]] && return || __TM_COMMON_SH_SOURCED=1;
+[[ -n "${__TM_COMMON_SH_SOURCED:-}" ]] && return || __TM_COMMON_SH_SOURCED=1;
 
 
 _tm::util::save_rm_file(){

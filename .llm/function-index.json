@@ -1,0 +1,866 @@
+{
+  "__callback_format_csv": {
+    "file": "bin/tm-plugin-ls",
+    "start_line": 232
+  },
+  "__callback_format_dir": {
+    "file": "bin/tm-plugin-ls",
+    "start_line": 202
+  },
+  "__callback_format_id": {
+    "file": "bin/tm-plugin-ls",
+    "start_line": 207
+  },
+  "__callback_format_json": {
+    "file": "bin/tm-plugin-ls",
+    "start_line": 236
+  },
+  "__callback_format_name": {
+    "file": "bin/tm-plugin-ls",
+    "start_line": 193
+  },
+  "__callback_format_plain": {
+    "file": "bin/tm-plugin-ls",
+    "start_line": 216
+  },
+  "__callback_format_pretty": {
+    "file": "bin/tm-plugin-ls",
+    "start_line": 144
+  },
+  "__callback_format_script": {
+    "file": "bin/tm-plugin-ls",
+    "start_line": 326
+  },
+  "__callback_format_tsv": {
+    "file": "bin/tm-plugin-ls",
+    "start_line": 224
+  },
+  "_cfg_get": {
+    "file": "lib-shared/tm/bash/lib.cfg.sh",
+    "start_line": 15
+  },
+  "_cfg_load": {
+    "file": "lib-shared/tm/bash/lib.cfg.sh",
+    "start_line": 29
+  },
+  "_confirm": {
+    "file": "lib-shared/tm/bash/lib.util.sh",
+    "start_line": 72
+  },
+  "_debug": {
+    "file": "lib-shared/tm/bash/lib.log.sh",
+    "start_line": 286
+  },
+  "_die": {
+    "file": "lib-shared/tm/bash/lib.util.sh",
+    "start_line": 50
+  },
+  "__edit": {
+    "file": "bin/tm-plugin-cfg",
+    "start_line": 74
+  },
+  "__ensure_shellcheck_installed": {
+    "file": "bin/tm-dev-shellcheck",
+    "start_line": 102
+  },
+  "_err": {
+    "file": "lib-shared/tm/bash/lib.log.sh",
+    "start_line": 368
+  },
+  "_error": {
+    "file": "bin-dev/tm-dev-llm-verify",
+    "start_line": 21
+  },
+  "_fail": {
+    "file": "lib-shared/tm/bash/lib.util.sh",
+    "start_line": 31
+  },
+  "_fail_if_not_installed": {
+    "file": "lib-shared/tm/bash/lib.util.sh",
+    "start_line": 319
+  },
+  "filterCommand": {
+    "file": "bin/tm-help-commands",
+    "start_line": 156
+  },
+  "__filtered_callback": {
+    "file": "bin/tm-plugin-ls",
+    "start_line": 338
+  },
+  "__find_file": {
+    "file": "bin/tm-space-info",
+    "start_line": 25
+  },
+  "_finest": {
+    "file": "lib-shared/tm/bash/lib.log.sh",
+    "start_line": 272
+  },
+  "_fix_mode": {
+    "file": "bin-dev/tm-dev-llm-document",
+    "start_line": 96
+  },
+  "_format_with": {
+    "file": "bin/tm-plugin-ls",
+    "start_line": 245
+  },
+  "__generate_vscode_workspace_file": {
+    "file": "bin/tm-edit",
+    "start_line": 83
+  },
+  "__gen_wrappers_for_dir": {
+    "file": "bin/.tm.plugin.sh",
+    "start_line": 553
+  },
+  "_get_actual_dep": {
+    "file": "bin-dev/tm-dev-llm-verify",
+    "start_line": 29
+  },
+  "_get_all_function": {
+    "file": "bin-dev/tm-dev-llm-document",
+    "start_line": 24
+  },
+  "_get_all_shell_file": {
+    "file": "bin-dev/tm-dev-llm-document",
+    "start_line": 20
+  },
+  "_get_bashdoc_template": {
+    "file": "bin-dev/tm-dev-llm-document",
+    "start_line": 81
+  },
+  "_get_doc_statu": {
+    "file": "bin-dev/tm-dev-llm-document",
+    "start_line": 37
+  },
+  "_get_documented_dep": {
+    "file": "bin-dev/tm-dev-llm-verify",
+    "start_line": 79
+  },
+  "_get_function_source": {
+    "file": "bin-dev/tm-dev-llm-document",
+    "start_line": 121
+  },
+  "_grep": {
+    "file": "lib-shared/tm/bash/lib.util.sh",
+    "start_line": 227
+  },
+  "_include": {
+    "file": "lib-shared/tm/bash/lib.source.sh",
+    "start_line": 19
+  },
+  "_include_once": {
+    "file": "lib-shared/tm/bash/lib.source.sh",
+    "start_line": 24
+  },
+  "_info": {
+    "file": "bin-dev/tm-dev-llm-verify",
+    "start_line": 20
+  },
+  "__invoke": {
+    "file": "bin/tm-plugin-each",
+    "start_line": 150
+  },
+  "_is_debug": {
+    "file": "lib-shared/tm/bash/lib.log.sh",
+    "start_line": 287
+  },
+  "_is_finest": {
+    "file": "lib-shared/tm/bash/lib.log.sh",
+    "start_line": 273
+  },
+  "_is_info": {
+    "file": "lib-shared/tm/bash/lib.log.sh",
+    "start_line": 294
+  },
+  "_is_trace": {
+    "file": "lib-shared/tm/bash/lib.log.sh",
+    "start_line": 280
+  },
+  "_is_warn": {
+    "file": "lib-shared/tm/bash/lib.log.sh",
+    "start_line": 301
+  },
+  "_lint_mode": {
+    "file": "bin-dev/tm-dev-llm-document",
+    "start_line": 49
+  },
+  "_list_available_plugin": {
+    "file": "bin/tm-plugin-ls",
+    "start_line": 336
+  },
+  "_list_disabled_plugin": {
+    "file": "bin/tm-plugin-ls",
+    "start_line": 360
+  },
+  "_list_enabled_plugin": {
+    "file": "bin/tm-plugin-ls",
+    "start_line": 386
+  },
+  "_list_installed_plugin": {
+    "file": "bin/tm-plugin-ls",
+    "start_line": 373
+  },
+  "__list_plugin": {
+    "file": "bin/tm-plugin-ls",
+    "start_line": 395
+  },
+  "_log": {
+    "file": "lib-shared/tm/bash/lib.log.sh",
+    "start_line": 392
+  },
+  "_main": {
+    "file": "bin-dev/tm-dev-llm-verify",
+    "start_line": 101
+  },
+  "main": {
+    "file": "bin/tm-space-info",
+    "start_line": 16
+  },
+  "_match": {
+    "file": "bin/tm-plugin-ls",
+    "start_line": 62
+  },
+  "normalize_path": {
+    "file": "bin-dev/tm-dev-llm-diagram",
+    "start_line": 43
+  },
+  "__parse_allowed_value": {
+    "file": "lib-shared/tm/bash/lib.args.sh",
+    "start_line": 436
+  },
+  "_parse_arg": {
+    "file": "lib-shared/tm/bash/lib.args.sh",
+    "start_line": 72
+  },
+  "__parse_option_spec": {
+    "file": "lib-shared/tm/bash/lib.args.sh",
+    "start_line": 115
+  },
+  "_popd": {
+    "file": "lib-shared/tm/bash/lib.util.sh",
+    "start_line": 211
+  },
+  "__print": {
+    "file": "lib-shared/tm/bash/lib.args.sh",
+    "start_line": 403
+  },
+  "_print_array": {
+    "file": "lib-shared/tm/bash/lib.util.sh",
+    "start_line": 338
+  },
+  "__print_help": {
+    "file": "lib-shared/tm/bash/lib.args.sh",
+    "start_line": 246
+  },
+  "__println": {
+    "file": "lib-shared/tm/bash/lib.args.sh",
+    "start_line": 398
+  },
+  "__print_option": {
+    "file": "lib-shared/tm/bash/lib.args.sh",
+    "start_line": 323
+  },
+  "__process_plugin_from_file": {
+    "file": "bin/.tm.plugins.sh",
+    "start_line": 622
+  },
+  "_prompt_mode": {
+    "file": "bin-dev/tm-dev-llm-document",
+    "start_line": 127
+  },
+  "__prompt_value": {
+    "file": "bin/tm-space-create",
+    "start_line": 69
+  },
+  "_pushd": {
+    "file": "lib-shared/tm/bash/lib.util.sh",
+    "start_line": 198
+  },
+  "_python": {
+    "file": "lib-shared/tm/bash/lib.util.sh",
+    "start_line": 292
+  },
+  "_python3": {
+    "file": "lib-shared/tm/bash/lib.util.sh",
+    "start_line": 305
+  },
+  "_read": {
+    "file": "lib-shared/tm/bash/lib.util.sh",
+    "start_line": 164
+  },
+  "_read_not_empty": {
+    "file": "lib-shared/tm/bash/lib.util.sh",
+    "start_line": 141
+  },
+  "_read_yn": {
+    "file": "lib-shared/tm/bash/lib.util.sh",
+    "start_line": 110
+  },
+  "_realpath": {
+    "file": "lib-shared/tm/bash/lib.util.sh",
+    "start_line": 248
+  },
+  "_require_plugin": {
+    "file": "bin/.tm.boot.sh",
+    "start_line": 253
+  },
+  "_rm": {
+    "file": "lib-shared/tm/bash/lib.util.sh",
+    "start_line": 396
+  },
+  "_source": {
+    "file": "lib-shared/tm/bash/lib.source.sh",
+    "start_line": 9
+  },
+  "_source_once": {
+    "file": "lib-shared/tm/bash/lib.source.sh",
+    "start_line": 14
+  },
+  "super": {
+    "file": "bin/tm-gui",
+    "start_line": 34
+  },
+  "_tm::args::parse": {
+    "file": "lib-shared/tm/bash/lib.args.sh",
+    "start_line": 76
+  },
+  "_tm::args::print_help_from_file_comment": {
+    "file": "lib-shared/tm/bash/lib.args.sh",
+    "start_line": 698
+  },
+  "_tm::boot::__clear_cache": {
+    "file": "bin/.tm.boot.sh",
+    "start_line": 103
+  },
+  "_tm::boot:__event_callback": {
+    "file": "bin/.tm.boot.sh",
+    "start_line": 205
+  },
+  "_tm::boot::init": {
+    "file": "bin/.tm.boot.sh",
+    "start_line": 116
+  },
+  "_tm::boot::load": {
+    "file": "bin/.tm.boot.sh",
+    "start_line": 87
+  },
+  "_tm::boot::reload": {
+    "file": "bin/.tm.boot.sh",
+    "start_line": 56
+  },
+  "_tm::cfg2::__generate_sh_from_plugin_yaml": {
+    "file": "bin/.tm.cfg.sh",
+    "start_line": 105
+  },
+  "_tm::cfg2::plugin_generate_sh_cfg_file": {
+    "file": "bin/.tm.cfg.sh",
+    "start_line": 97
+  },
+  "_tm::cfg2::plugin_init": {
+    "file": "bin/.tm.cfg.sh",
+    "start_line": 68
+  },
+  "_tm::cfg::__ensure_config_has_required_value": {
+    "file": "lib-shared/tm/bash/lib.cfg.sh",
+    "start_line": 427
+  },
+  "_tm::cfg::env::__generate_merged_sh_file": {
+    "file": "lib-shared/tm/bash/lib.cfg.sh",
+    "start_line": 463
+  },
+  "_tm::cfg::__generate_hash_for": {
+    "file": "lib-shared/tm/bash/lib.cfg.sh",
+    "start_line": 439
+  },
+  "_tm::cfg::get": {
+    "file": "lib-shared/tm/bash/lib.cfg.sh",
+    "start_line": 33
+  },
+  "_tm::cfg::get_cfg_editor": {
+    "file": "bin/.tm.cfg.sh",
+    "start_line": 13
+  },
+  "_tm::cfg::get_editor": {
+    "file": "bin/.tm.cfg.sh",
+    "start_line": 24
+  },
+  "_tm::cfg::load": {
+    "file": "lib-shared/tm/bash/lib.cfg.sh",
+    "start_line": 37
+  },
+  "_tm::cfg::__load_cfg": {
+    "file": "lib-shared/tm/bash/lib.cfg.sh",
+    "start_line": 360
+  },
+  "_tm::cfg::__load_cfg_once": {
+    "file": "lib-shared/tm/bash/lib.cfg.sh",
+    "start_line": 352
+  },
+  "_tm::cfg::plugin::get_config_file": {
+    "file": "lib-shared/tm/bash/lib.cfg.sh",
+    "start_line": 208
+  },
+  "_tm::cfg::__proce": {
+    "file": "lib-shared/tm/bash/lib.cfg.sh",
+    "start_line": 49
+  },
+  "_tm::cfg::__prompt_for_key": {
+    "file": "lib-shared/tm/bash/lib.cfg.sh",
+    "start_line": 172
+  },
+  "_tm::cfg::__set_key_value_in_file": {
+    "file": "lib-shared/tm/bash/lib.cfg.sh",
+    "start_line": 320
+  },
+  "_tm::cfg::set_value": {
+    "file": "lib-shared/tm/bash/lib.cfg.sh",
+    "start_line": 245
+  },
+  "_tm::cfg::_tm::cfg::__add_config_files_to": {
+    "file": "lib-shared/tm/bash/lib.cfg.sh",
+    "start_line": 416
+  },
+  "_tm::event::__convert_pattern_to_regex": {
+    "file": "lib-shared/tm/bash/lib.event.sh",
+    "start_line": 144
+  },
+  "_tm::event::fire": {
+    "file": "lib-shared/tm/bash/lib.event.sh",
+    "start_line": 31
+  },
+  "_tm::event::__init": {
+    "file": "lib-shared/tm/bash/lib.event.sh",
+    "start_line": 13
+  },
+  "_tm::event::off": {
+    "file": "lib-shared/tm/bash/lib.event.sh",
+    "start_line": 116
+  },
+  "_tm::event::on": {
+    "file": "lib-shared/tm/bash/lib.event.sh",
+    "start_line": 95
+  },
+  "_tm::event::on::once": {
+    "file": "lib-shared/tm/bash/lib.event.sh",
+    "start_line": 65
+  },
+  "_tm::file::env::read": {
+    "file": "lib-shared/tm/bash/lib.file.env.sh",
+    "start_line": 10
+  },
+  "_tm::file::env::set": {
+    "file": "lib-shared/tm/bash/lib.file.env.sh",
+    "start_line": 88
+  },
+  "_tm::file::ini::has_section": {
+    "file": "lib-shared/tm/bash/lib.file.ini.sh",
+    "start_line": 195
+  },
+  "_tm::file::ini::read": {
+    "file": "lib-shared/tm/bash/lib.file.ini.sh",
+    "start_line": 20
+  },
+  "_tm::file::ini::read_section": {
+    "file": "lib-shared/tm/bash/lib.file.ini.sh",
+    "start_line": 77
+  },
+  "_tm::file::ini::__trim_string": {
+    "file": "lib-shared/tm/bash/lib.file.ini.sh",
+    "start_line": 227
+  },
+  "__tm_help": {
+    "file": "bin/tm-help-commands",
+    "start_line": 34
+  },
+  "__tm_help_console": {
+    "file": "bin/tm-help-commands",
+    "start_line": 52
+  },
+  "__tm_help_generate_help_page": {
+    "file": "bin/tm-help-commands",
+    "start_line": 110
+  },
+  "__tm_help_serve": {
+    "file": "bin/tm-help-commands",
+    "start_line": 70
+  },
+  "_tm::io::conf::read_file": {
+    "file": "lib-shared/tm/bash/lib.io.conf.sh",
+    "start_line": 29
+  },
+  "_tm::io::csv::to_array": {
+    "file": "lib-shared/tm/bash/lib.io.csv.sh",
+    "start_line": 9
+  },
+  "_tm_load": {
+    "file": "bin-internal/tm-run-script",
+    "start_line": 65
+  },
+  "_tm::log::__caller_file": {
+    "file": "lib-shared/tm/bash/lib.log.sh",
+    "start_line": 724
+  },
+  "_tm::log::__caller_file_func": {
+    "file": "lib-shared/tm/bash/lib.log.sh",
+    "start_line": 712
+  },
+  "_tm::log::__caller_func": {
+    "file": "lib-shared/tm/bash/lib.log.sh",
+    "start_line": 736
+  },
+  "_tm::log::debug": {
+    "file": "lib-shared/tm/bash/lib.log.sh",
+    "start_line": 473
+  },
+  "_tm::log::__detail": {
+    "file": "lib-shared/tm/bash/lib.log.sh",
+    "start_line": 268
+  },
+  "_tm::log::__elapsed_time": {
+    "file": "lib-shared/tm/bash/lib.log.sh",
+    "start_line": 708
+  },
+  "_tm::log::error": {
+    "file": "lib-shared/tm/bash/lib.log.sh",
+    "start_line": 427
+  },
+  "_tm::log::__filter": {
+    "file": "lib-shared/tm/bash/lib.log.sh",
+    "start_line": 309
+  },
+  "_tm::log::finest": {
+    "file": "lib-shared/tm/bash/lib.log.sh",
+    "start_line": 495
+  },
+  "_tm::log::info": {
+    "file": "lib-shared/tm/bash/lib.log.sh",
+    "start_line": 458
+  },
+  "_tm::log::init": {
+    "file": "lib-shared/tm/bash/lib.log.sh",
+    "start_line": 50
+  },
+  "_tm::log::is_console": {
+    "file": "lib-shared/tm/bash/lib.log.sh",
+    "start_line": 503
+  },
+  "_tm::log::__msg": {
+    "file": "lib-shared/tm/bash/lib.log.sh",
+    "start_line": 519
+  },
+  "_tm::log::pop": {
+    "file": "lib-shared/tm/bash/lib.log.sh",
+    "start_line": 671
+  },
+  "_tm::log::__print": {
+    "file": "lib-shared/tm/bash/lib.log.sh",
+    "start_line": 341
+  },
+  "_tm::log::print": {
+    "file": "lib-shared/tm/bash/lib.log.sh",
+    "start_line": 337
+  },
+  "_tm::log::println": {
+    "file": "lib-shared/tm/bash/lib.log.sh",
+    "start_line": 333
+  },
+  "_tm::log::push_child": {
+    "file": "lib-shared/tm/bash/lib.log.sh",
+    "start_line": 655
+  },
+  "_tm::log::push_name": {
+    "file": "lib-shared/tm/bash/lib.log.sh",
+    "start_line": 639
+  },
+  "_tm::log::_rotate_log_file": {
+    "file": "lib-shared/tm/bash/lib.log.sh",
+    "start_line": 585
+  },
+  "_tm::log::__safe_basename": {
+    "file": "lib-shared/tm/bash/lib.log.sh",
+    "start_line": 748
+  },
+  "_tm::log::set_opt": {
+    "file": "lib-shared/tm/bash/lib.log.sh",
+    "start_line": 61
+  },
+  "_tm::log::__stack": {
+    "file": "lib-shared/tm/bash/lib.log.sh",
+    "start_line": 77
+  },
+  "_tm::log::stacktrace": {
+    "file": "lib-shared/tm/bash/lib.log.sh",
+    "start_line": 679
+  },
+  "_tm::log::stacktrace::on_error": {
+    "file": "lib-shared/tm/bash/lib.log.sh",
+    "start_line": 693
+  },
+  "_tm::log::__to_console": {
+    "file": "lib-shared/tm/bash/lib.log.sh",
+    "start_line": 543
+  },
+  "_tm::log::__to_file": {
+    "file": "lib-shared/tm/bash/lib.log.sh",
+    "start_line": 564
+  },
+  "_tm::log::__to_syslog": {
+    "file": "lib-shared/tm/bash/lib.log.sh",
+    "start_line": 554
+  },
+  "_tm::log::trace": {
+    "file": "lib-shared/tm/bash/lib.log.sh",
+    "start_line": 484
+  },
+  "_tm::log::warn": {
+    "file": "lib-shared/tm/bash/lib.log.sh",
+    "start_line": 442
+  },
+  "_tm::path::add_to_path": {
+    "file": "lib-shared/tm/bash/lib.path.sh",
+    "start_line": 14
+  },
+  "_tm::path::tree": {
+    "file": "lib-shared/tm/bash/lib.path.sh",
+    "start_line": 48
+  },
+  "_tm::path::__tree_recursive": {
+    "file": "lib-shared/tm/bash/lib.path.sh",
+    "start_line": 71
+  },
+  "_tm::plugin::__add_scripts_to_path": {
+    "file": "bin/.tm.plugin.sh",
+    "start_line": 251
+  },
+  "_tm::plugin::create::__bashrc_template": {
+    "file": "bin/tm-plugin-create",
+    "start_line": 224
+  },
+  "_tm::plugin::create::__common_sh_template": {
+    "file": "bin/tm-plugin-create",
+    "start_line": 249
+  },
+  "_tm::plugin::create::__example_script_template": {
+    "file": "bin/tm-plugin-create",
+    "start_line": 262
+  },
+  "_tm::plugin::create::__plugin_disable_template": {
+    "file": "bin/tm-plugin-create",
+    "start_line": 242
+  },
+  "_tm::plugin::create::__plugin_enable_template": {
+    "file": "bin/tm-plugin-create",
+    "start_line": 235
+  },
+  "_tm::plugin::create::__readme_template": {
+    "file": "bin/tm-plugin-create",
+    "start_line": 165
+  },
+  "_tm::plugin::disable": {
+    "file": "bin/.tm.plugin.sh",
+    "start_line": 455
+  },
+  "_tm::plugin::enable": {
+    "file": "bin/.tm.plugin.sh",
+    "start_line": 326
+  },
+  "_tm::plugin::__find_scripts_in": {
+    "file": "bin/.tm.plugin.sh",
+    "start_line": 282
+  },
+  "_tm::plugin::__generate_wrapper_script": {
+    "file": "bin/.tm.plugin.sh",
+    "start_line": 533
+  },
+  "_tm::plugin::__print_alias_diff": {
+    "file": "bin/.tm.plugin.sh",
+    "start_line": 182
+  },
+  "_tm::plugin::load": {
+    "file": "bin/.tm.plugin.sh",
+    "start_line": 59
+  },
+  "_tm::plugin::regenerate_wrapper_script": {
+    "file": "bin/.tm.plugin.sh",
+    "start_line": 505
+  },
+  "_tm::plugin::reload": {
+    "file": "bin/.tm.plugin.sh",
+    "start_line": 31
+  },
+  "_tm::plugins::__clone_and_install": {
+    "file": "bin/.tm.plugins.sh",
+    "start_line": 515
+  },
+  "_tm::plugins::enabled::get_by_name": {
+    "file": "bin/.tm.plugins.sh",
+    "start_line": 706
+  },
+  "_tm::plugins::find_all_available_plugin_id": {
+    "file": "bin/.tm.plugins.sh",
+    "start_line": 182
+  },
+  "_tm::plugins::find_all_disabled_plugin_id": {
+    "file": "bin/.tm.plugins.sh",
+    "start_line": 117
+  },
+  "_tm::plugins::find_all_enabled_dir": {
+    "file": "bin/.tm.plugins.sh",
+    "start_line": 150
+  },
+  "_tm::plugins::find_all_enabled_plugin_id": {
+    "file": "bin/.tm.plugins.sh",
+    "start_line": 135
+  },
+  "_tm::plugins::find_all_installed_dir": {
+    "file": "bin/.tm.plugins.sh",
+    "start_line": 174
+  },
+  "_tm::plugins::find_all_installed_plugin_id": {
+    "file": "bin/.tm.plugins.sh",
+    "start_line": 155
+  },
+  "_tm::plugins::find_all_script": {
+    "file": "bin/.tm.plugins.sh",
+    "start_line": 94
+  },
+  "_tm::plugins::find_conf_file": {
+    "file": "bin/.tm.plugins.sh",
+    "start_line": 292
+  },
+  "_tm::plugins::foreach_available_callback": {
+    "file": "bin/.tm.plugins.sh",
+    "start_line": 584
+  },
+  "_tm::plugins::__get_all_available_dir": {
+    "file": "bin/.tm.plugins.sh",
+    "start_line": 234
+  },
+  "_tm::plugins::__get_by_name": {
+    "file": "bin/.tm.plugins.sh",
+    "start_line": 710
+  },
+  "_tm::plugins::install": {
+    "file": "bin/.tm.plugins.sh",
+    "start_line": 392
+  },
+  "_tm::plugins::installed::get_by_name": {
+    "file": "bin/.tm.plugins.sh",
+    "start_line": 702
+  },
+  "_tm::plugins::install_from_git": {
+    "file": "bin/.tm.plugins.sh",
+    "start_line": 402
+  },
+  "_tm::plugins::install_from_registry": {
+    "file": "bin/.tm.plugins.sh",
+    "start_line": 442
+  },
+  "_tm::plugins::load_all_enabled": {
+    "file": "bin/.tm.plugins.sh",
+    "start_line": 53
+  },
+  "_tm::plugins::__plugin_files_to_array": {
+    "file": "bin/.tm.plugins.sh",
+    "start_line": 279
+  },
+  "_tm::plugins::regenerate_all_wrapper_script": {
+    "file": "bin/.tm.plugins.sh",
+    "start_line": 26
+  },
+  "_tm::plugins::reload_all_enabled": {
+    "file": "bin/.tm.plugins.sh",
+    "start_line": 44
+  },
+  "_tm::plugins::remove_all_wrapper": {
+    "file": "bin/.tm.plugins.sh",
+    "start_line": 75
+  },
+  "_tm::plugins::uninstall": {
+    "file": "bin/.tm.plugins.sh",
+    "start_line": 319
+  },
+  "_tm::__source": {
+    "file": "lib-shared/tm/bash/lib.source.sh",
+    "start_line": 166
+  },
+  "_tm::source": {
+    "file": "lib-shared/tm/bash/lib.source.sh",
+    "start_line": 161
+  },
+  "_tm::source::__include": {
+    "file": "lib-shared/tm/bash/lib.source.sh",
+    "start_line": 84
+  },
+  "_tm::source::include": {
+    "file": "lib-shared/tm/bash/lib.source.sh",
+    "start_line": 64
+  },
+  "_tm::source::include_once": {
+    "file": "lib-shared/tm/bash/lib.source.sh",
+    "start_line": 69
+  },
+  "_tm::source::__init": {
+    "file": "lib-shared/tm/bash/lib.source.sh",
+    "start_line": 39
+  },
+  "_tm::source::once": {
+    "file": "lib-shared/tm/bash/lib.source.sh",
+    "start_line": 151
+  },
+  "_tm::trap::error": {
+    "file": "bin/.tm.boot.sh",
+    "start_line": 218
+  },
+  "_tm::trap::__stacktrace": {
+    "file": "bin/.tm.boot.sh",
+    "start_line": 222
+  },
+  "_tm::util::array::get_first": {
+    "file": "lib-shared/tm/bash/lib.util.sh",
+    "start_line": 364
+  },
+  "_tm::util::array::print": {
+    "file": "lib-shared/tm/bash/lib.util.sh",
+    "start_line": 343
+  },
+  "_tm::util::save_rm_file": {
+    "file": "bin/.tm.common.sh",
+    "start_line": 4
+  },
+  "_todo": {
+    "file": "lib-shared/tm/bash/lib.log.sh",
+    "start_line": 376
+  },
+  "_touch": {
+    "file": "lib-shared/tm/bash/lib.util.sh",
+    "start_line": 243
+  },
+  "_trace": {
+    "file": "lib-shared/tm/bash/lib.log.sh",
+    "start_line": 279
+  },
+  "_trap_error": {
+    "file": "bin/.tm.boot.sh",
+    "start_line": 241
+  },
+  "_trap_sig": {
+    "file": "lib-shared/tm/bash/lib.util.sh",
+    "start_line": 15
+  },
+  "_tree": {
+    "file": "lib-shared/tm/bash/lib.path.sh",
+    "start_line": 40
+  },
+  "_usage": {
+    "file": "bin-dev/tm-dev-llm-document",
+    "start_line": 166
+  },
+  "__validate_arg": {
+    "file": "lib-shared/tm/bash/lib.args.sh",
+    "start_line": 408
+  },
+  "_warn": {
+    "file": "bin-dev/tm-dev-llm-verify",
+    "start_line": 22
+  }
+}

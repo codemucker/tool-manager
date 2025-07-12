@@ -31,8 +31,8 @@ _include_once() {
 # by user scripts, in which case the entry point is the function, not the 'source path/to/this/script'
 # and hence we need to check the init was carried out.
 #
-# This is mor magic than most other functions, as it is assumed in other cases that the lib.log.sh and lib.source.sh
-# are loaded. However lib.source.sh can be invoked before everythign has been setup, so needs to be more aware of boot
+# This is more magic than most other functions, as it is assumed in other cases that the lib.log.sh and lib.source.sh
+# are loaded. However lib.source.sh can be invoked before everything has been setup, so needs to be more aware of boot
 # strapping sequencing and the like, and handle the case where not everything has been setup yet.
 #
 #

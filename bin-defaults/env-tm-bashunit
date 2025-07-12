@@ -63,7 +63,7 @@ if ! command -v bashunit &> /dev/null; then
     export PATH="$BASHUNIT_INSTALL_DIR:$PATH"
 fi
 
-TM_LOG_NAME="$(basename "$script_path")"
+export TM_LOG_NAME="$(basename "$script_path")"
 set -- "${script_cmd_args[@]}" # set the '$@' args for the plugin script
 
 exec bashunit "${runner_args[@]}" "$script_path" "${script_cmd_args[@]}"

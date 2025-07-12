@@ -62,7 +62,7 @@ fi
 #_trap_error
 
 # we source it so we get better stack trace errors, and so we have better control of the env it runs in
-TM_LOG_NAME="$(basename "$script_path")"
+export TM_LOG_NAME="$(basename "$script_path")"
 set -- "${script_cmd_args[@]}" # set the '$@' args for the plugin script
 # todo: maybe only if there are directives do we run in a separate env?
 

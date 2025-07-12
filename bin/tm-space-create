@@ -48,12 +48,13 @@ main(){
   mkdir -p "$TM_SPACE_DIR"
 
   # our definition of the space
-  echo "key=${space_key}" > "$space_file"
-  echo "guid=${space_uuid}" >> "$space_file"
-  echo "label=\"${space_label}\"" >> "$space_file"
-  echo "dir=\"$space_dir\"" >> "$space_file"
-  echo "active=false" >> "$space_file"
-
+  {
+    echo "key=${space_key}"
+    echo "guid=${space_uuid}"
+    echo "label=\"${space_label}\""
+    echo "dir=\"$space_dir\""
+    echo "active=false"
+  } > "$space_file"
   mkdir -p "$space_dir"
 
   # internal to the space (defaults)

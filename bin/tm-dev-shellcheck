@@ -1,0 +1,137 @@
+#!/usr/bin/env env-tm-bash
+#
+# Run shellcheck on all the scripts
+#
+# Usage: tm-dev-shellcheck [plugin_name|tool-manager]
+#
+
+_tm::source::include_once .tm.script.sh .tm.plugin.sh .tm.plugins.sh
+
+_trap_error
+
+declare -A args
+_parse_args \
+    --file "${BASH_SOURCE[0]}" \
+    --opt-plugin   "|remainder|short=p|desc=The plugin, 'tool-manager', or dir to check. If empty, test the tool-manager. Can pass a path to the check dir" \
+    --opt-enable   "|short=o|group=shellcheck |desc=passed to shellcheck as the '--enable' option" \
+    --opt-exclude  "|short=e|group=shellcheck|desc=passed to shellcheck as the '--exclude' option" \
+    --opt-format   "|short=f|group=shellcheck|desc=passed to shellcheck as the '--format' option|default=tty" \
+    --opt-severity "|short=S|group=shellcheck|desc=passed to shellcheck as the '--severity' option" \
+    --opt-shell "|short=s|group=shellcheck|desc=passed to shellcheck as the '--shell' option|default=bash" \
+    --opt-external-sources "|short=x|group=shellcheck|desc=passed to shellcheck as the '--external-sources' option" \
+    --result args \
+    -- "$@"
+
+main() {
+  __ensure_shellcheck_installed
+
+  local target="${args[plugin]}"
+  local target_name=""
+  local test_dir=""
+  local -a shellcheck_dirs=()
+  local sources=()
+
+  if [[ -z "$target" ]] || [[ "$target" == "tool-manager" ]]; then
+    test_dir="$TM_HOME/test"
+    target_name="tool-manager"
+    shellcheck_dirs+=("$TM_HOME/bin" "$TM_HOME/bin-defaults" "$TM_HOME/bin-internal" "$TM_HOME/lib-shared/tm/bash" "$TM_HOME/test" "$TM_HOME/tests")
+    sources+=("$TM_HOME" "$TM_HOME/bin" "$TM_HOME/bin-defaults" "$TM_HOME/lib-shared/tm/bash")
+  elif [[ "$target" == "."* ]] || [[ "$target" == "/"* ]] ; then
+    test_dir="$target"
+    target_name=""
+    shellcheck_dirs+=("$test_dir")
+    shift # remaining args are shellcheck args
+  elif [[ -f "$target" ]]; then
+    test_dir="$(dirname "$target")"
+    target_name="file '$target'"
+    shellcheck_dirs+=("$target")
+  else
+    local qname
+    qname="$(_tm::plugins::installed::get_by_name "$target")"
+    if [[ -z "$qname" ]]; then
+      _fail "Plugin '$target' not found."
+    fi
+    local -A plugin
+    _tm::parse::plugin plugin "$qname"
+    local plugin_home="${plugin[install_dir]}"
+    target_name="${qname}"
+    shellcheck_dirs+=("${plugin_home}/bin" "${plugin_home}/bin-internal" "${plugin_home}/lib-shared/bash" "${plugin_home}/test" "$TM_HOME/tests")
+    sources+=("$TM_HOME/bin" "$TM_HOME/lib-shared/tm/bash")
+    shift # remaining args are shellcheck args
+  fi
+
+  local -a shellcheck_opts=()
+  if [[ ${#sources[@]} -gt 0 ]]; then
+    shellcheck_opts+=(--source-path="$(IFS=:; echo "${sources[*]}")")
+  fi
+  local opt_value
+  for opt in "include" "exclude" "format" "severity" "shell"; do
+    opt_value="${args["${opt}"]:-}"
+    if [[ -n "${opt_value}" ]]; then
+      shellcheck_opts+=("--${opt}" "${opt_value}" )
+    fi
+  done
+  if [[ "${args["${external-sources}"]:-}" ]]; then
+    shellcheck_opts+=("--${external-sources}" )
+  fi
+  echo "checking scripts using shellcheck..."
+
+  local -a files_to_check=()
+  for shellcheck_dir in "${shellcheck_dirs[@]}"; do
+    if [[ -d "${shellcheck_dir}" ]]; then
+      local file
+      # main scripts
+      while IFS= read -r -d $'\0' file; do
+        # Only check the first line for a shebang. `grep -I` on the output of `head`
+        # helps to ignore binary files. This avoids false positives on eg markdown files.
+        if head -n 1 "$file" 2>/dev/null | grep -qIE '^#!.*(bash|env-tm-bash)'; then
+          files_to_check+=("$file")
+        fi
+      done < <(find "${shellcheck_dir}" -type f -not -name '.*.sh' -print0)
+      # hidden shell files
+      while IFS= read -r -d $'\0' file; do
+          files_to_check+=("$file")
+      done < <(find "${shellcheck_dir}" -type f -name ".*.sh" -print0)
+    elif [[ -f "${shellcheck_dir}" ]]; then
+      files_to_check+=("${shellcheck_dir}")
+    fi
+  done
+  if [[ ${#files_to_check[@]} -gt 0 ]]; then
+    if _is_debug; then
+      _debug "files_to_check='$(IFS=$'\n'; echo "${files_to_check[*]}")'"
+    fi
+    shellcheck "${shellcheck_opts[@]}" "${files_to_check[@]}"
+  fi
+  echo "shellcheck done for '${target_name}'"
+}
+
+__ensure_shellcheck_installed(){
+  if ! command -v shellcheck &> /dev/null; then
+    _info "shellcheck not found. Attempting to install..."
+    if command -v apt-get &> /dev/null; then
+      sudo apt-get update && sudo apt-get install -y shellcheck
+    elif command -v dnf &> /dev/null; then
+      sudo dnf install -y ShellCheck
+    elif command -v yum &> /dev/null; then
+      sudo yum install -y ShellCheck
+    elif command -v pacman &> /dev/null; then
+      sudo pacman -S --noconfirm shellcheck
+    elif command -v apk &> /dev/null; then
+      sudo apk add shellcheck
+    elif command -v brew &> /dev/null; then
+      brew install shellcheck
+    else
+      _warn "Could not find a supported package manager (apt-get, dnf, yum, pacman, apk, brew) to install shellcheck."
+      _warn "Please install shellcheck manually."
+      return 1
+    fi
+
+    if ! command -v shellcheck &> /dev/null; then
+      _fail "Failed to install shellcheck."
+    else
+      _info "shellcheck installed successfully."
+    fi
+  fi
+}
+
+main "$@"

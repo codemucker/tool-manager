@@ -45,7 +45,8 @@ main(){
 
   local -A plugin=()
   if [[ -n "${plugin_name}" ]]; then # plugin name provided
-      local qname="$(_tm::plugins::enabled::get_by_name "$prefix$vendor_prefix$plugin_name")"
+      local qname
+      qname="$(_tm::plugins::enabled::get_by_name "$prefix$vendor_prefix$plugin_name")"
       if [[ -z "$qname" ]]; then
           _fail "Couldn't find plugin"
       fi
@@ -66,10 +67,7 @@ main(){
       __edit "$editor_to_use" "$TM_PLUGINS_CFG_DIR"
   else
       # Edit a specific plugin's config file
-      plugin_name="${plugin[name]}"
-      plugin_cfg_dir="${plugin[cfg_dir]}"
-      plugin_cfg_file="${plugin[cfg_sh]}"
-      __edit "$editor_to_use" "$plugin_cfg_file"
+      __edit "$editor_to_use" "${plugin[cfg_sh]}"
   fi
 }
 
@@ -78,7 +76,8 @@ __edit(){
   local cfg_file="$2"
   _info "Opening editor '$editor' for configuration directory: $cfg_file"
 
-  local cfg_dir="$(basename "${cfg_file}")"
+  local cfg_dir
+  cfg_dir="$(basename "${cfg_file}")"
   # Ensure the directory exists
   if [[ ! -d "$cfg_dir" ]]; then
       _info "Configuration directory '$cfg_dir' does not exist. Creating it."

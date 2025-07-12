@@ -33,7 +33,7 @@ main(){
         [python]='the python version to use' \
         [config]='a required config key' \
         [pip]='pip requirement' \
-        [tpkg]='tool-manager package' \        
+        [tpkg]='tool-manager package' \
     )
     if [[ "${validate}" == "1" ]]; then
         local failed=0

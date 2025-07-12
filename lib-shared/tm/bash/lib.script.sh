@@ -1,5 +1,5 @@
 #
-# Scripts should generall source this script by default to include the common setup
+# Scripts should generally source this script by default to include the common setup
 #
 
 # make the scripts fail fast

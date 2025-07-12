@@ -49,6 +49,11 @@ _tm::path::tree(){
     local dir_to_scan="${1:-.}"
     local callback_func="${2:-}"
 
+    # use the os one if possible
+    if [[ -z "${callback_func}" ]] && command -v tree ; then
+        tree "${dir_to_scan}"
+        return
+    fi
     # Check for color support
     local -g _TM_TREE_HAS_COLORS=false
     local _TM_TREE_DIR_COLOR=""

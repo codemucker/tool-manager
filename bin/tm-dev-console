@@ -12,4 +12,7 @@ fi
 if [ -d "$TM_HOME/bin-dev" ]; then
   export PATH="$PATH:$TM_HOME/bin-dev"
 fi
+if [ -d "$TM_HOME/bin-experimental" ]; then
+  export PATH="$PATH:$TM_HOME/bin-experimental"
+fi
 bash --init-file "$TM_BIN/.tm.boot.sh" -i

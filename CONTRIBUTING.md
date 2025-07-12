@@ -24,11 +24,8 @@ The project uses [ShellCheck](https://www.shellcheck.net/) and [Bats](https://gi
 To run the checks locally:
 
 ```bash
-sudo apt-get update
-sudo apt-get install -y shellcheck bats
-
-shellcheck bin/*.sh bin-internal/*.sh
-tm-test
+tm-dev-shellcheck
+tm-dev-tests
 ```
 
 ## Coding Style

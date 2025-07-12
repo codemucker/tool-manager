@@ -60,7 +60,6 @@ _tm::plugin::load() {
   local -n plugin_load="$1"
 
   local plugin_dir="${plugin_load[install_dir]}"
-  local plugin_name="${plugin_load[name]}"
   local enabled_dir="${plugin_load[enabled_dir]}"
   local is_tool_manager=${plugin_load[is_tm]}
   local qname="${plugin_load[qname]}"
@@ -542,13 +541,11 @@ _tm::plugin::__generate_wrapper_scripts() {
   # prefixs allows us to have a single plugin install, but multiple representations of it with different config
   local prefix="${plugin_generate[prefix]}"
   local vendor="${plugin_generate[vendor]}"
-  local plugin_name="${plugin_generate[name]}"
   local qname="${plugin_generate[qname]}"
   local qpath="${plugin_generate[qpath]}"
   local plugin_dir="${plugin_generate[install_dir]}"
   local plugin_id="${plugin_generate[id]}"
 
-  local plugin_bin_dir="${plugin_dir}/bin"
   local plugin_cfg_dir="${TM_PLUGINS_CFG_DIR}/${qpath}"
   local plugin_state_dir="${TM_PLUGINS_STATE_DIR}/${qpath}"
 
@@ -559,7 +556,7 @@ _tm::plugin::__generate_wrapper_scripts() {
       return
     fi
 
-    _debug "Generating wrapper invoke scripts for plugin '$qname', prefix '"$prefix"' in $TM_PLUGINS_BIN_DIR to ${scripts_dir}"
+    _debug "Generating wrapper invoke scripts for plugin '$qname', prefix '$prefix' in $TM_PLUGINS_BIN_DIR to ${scripts_dir}"
 
     local script_prefix=""
     if [[ -n "$prefix" ]]; then

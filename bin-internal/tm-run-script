@@ -49,7 +49,7 @@ export TM_PLUGIN_STATE_DIR="$plugin_state_dir"
 # ensure plugin's can call their own scripts, without the prefix. The plugin env variables (TM_PLUGIN_..) should still work
 # to pass the config around.
 # The 'bin-internal' are utility scripts for the plugin itself, which are not exposed to the user. This allows
-# for a clutter free bash auto complete, while giving plugins accesss to more tools
+# for a clutter-free bash auto complete, while giving plugins access to more tools
 export PATH="$TM_PLUGIN_HOME/bin-internal:$TM_PLUGIN_HOME/bin:$PATH"
 
 # pass the log settings along
