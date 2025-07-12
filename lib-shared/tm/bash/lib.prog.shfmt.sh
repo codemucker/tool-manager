@@ -1,11 +1,13 @@
-if command -v shfmt &>/dev/null; then # already loaded
-  return
-fi
+_tm::prog::shfmt(){
+    if ! command -v shfmt &> /dev/null; then
+        _tm::prog::shfmt::install
+    fi
+    shfmt "$@"
+}
 
 _tm::prog::shfmt::install(){
-  if ! command -v shfmt &> /dev/null; then
-    OS_NAME=$(uname -s)
-
+    local OS_NAME=$(uname -s)
+    # we can also install shfmt using 'go install mvdan.cc/sh/v3/cmd/shfmt@latest' if go is available. ai!
     case "$OS_NAME" in
         Linux*)
             if command -v apt-get &> /dev/null; then
@@ -22,20 +24,13 @@ _tm::prog::shfmt::install(){
             fi
             ;;
         Darwin*)
-            if command -v brew &> /dev/null; then
-                brew install shfmt
-            else
-                echo "ERROR: Homebrew not found. Please install Homebrew (https://brew.sh/) to install shfmt on macOS." >&2
-                return 1 # Indicate failure
-            fi
+            _include_once @tm/lib.prog.brew.sh
+            _tm::prog::brew install shfmt
             ;;
         *)
             echo "ERROR: Unsupported operating system: $OS_NAME for shfmt installation." >&2
             return 1 # Indicate failure
             ;;
     esac
-  fi
 
 }
-
-_tm::prog::shfmt::install
