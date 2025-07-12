@@ -89,6 +89,7 @@ _tm::cfg::__process() {
         --opt-required  "|short=r|flag|group=behaviour |desc=Whether the value is required. If no value, and required, then will prompt for it, or if in silent mode, fail. Default is off" \
         --opt-allowed   "|       |    |group=validation|desc=Allowed values|multi" \
         --opt-default   "|short=d|    |value=DEFAULT-VALUE|desc=The default value if not set" \
+        --opt-empty    "|flag|desc=An empty default value if set" \
         --opt-keys      "|short=k|remainder|long=key|value=KEY|desc=The key of the value to get|multi" \
         --opt-all       "|       |flag|desc=Get all the keys and values|" \
         --opt-note      "|       |    |desc=A note about this key. Only used when setting values |" \
@@ -111,6 +112,7 @@ _tm::cfg::__process() {
     local missing_keys=()
     local value
     local default_value="${args[default]}"
+    local empty="${args[empty]}"
     local note="${args[note]}"
 
     IFS=' ' read -ra keys <<< "${args[keys]}"
@@ -118,11 +120,13 @@ _tm::cfg::__process() {
     for key in "${keys[@]}"; do
         _trace "checking key '$key'"
         value="${!key:-}"
-        if [[ "${value:-}" == "" ]]; then
+        if [[ -z "${value:-}" ]]; then
             # key missing, load cfg
             # find env files
-            missing_keys+=("$key")
-            _trace "missing key:$key"
+            if [[ "$empty" == "0" ]]; then
+              missing_keys+=("$key")
+              _trace "missing key:$key"
+            fi
         else
           if [[ $is_get == 1 ]]; then
             echo "$value"

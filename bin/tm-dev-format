@@ -59,16 +59,6 @@ main() {
     targets+=("${plugin_home}/bin" "${plugin_home}/bin-internal" "${plugin_home}/lib-shared/bash" "${plugin_home}/test" "$TM_HOME/tests")
   fi
 
-  # local opt_value
-  # for opt in "include" "exclude" "format" "severity" "shell"; do
-  #   opt_value="${args["${opt}"]:-}"
-  #   if [[ -n "${opt_value}" ]]; then
-  #     shfmt_opts+=("--${opt}" "${opt_value}" )
-  #   fi
-  # done
-  # if [[ "${args["${external-sources}"]:-}" ]]; then
-  #   shfmt_opts+=("--${external-sources}" )
-  # fi
   echo "formatting scripts using shfmt..."
 
   local -a bash_files=()
@@ -120,7 +110,7 @@ main() {
     fi
     shfmt "${shfmt_opts[@]}" --language-dialect bats "${bats_files[@]}"
   fi
-  echo "shfmt done for '${target_name}'"
+  echo "script formatting done for '${target_name}'"
 }
 
 main "$@"
