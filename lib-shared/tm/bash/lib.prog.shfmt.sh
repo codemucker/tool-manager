@@ -7,7 +7,18 @@ _tm::prog::shfmt(){
 
 _tm::prog::shfmt::install(){
     local OS_NAME=$(uname -s)
-    # we can also install shfmt using 'go install mvdan.cc/sh/v3/cmd/shfmt@latest' if go is available. ai!
+
+    if command -v go &> /dev/null; then
+        echo "Go is installed. Attempting to install shfmt using 'go install'."
+        go install mvdan.cc/sh/v3/cmd/shfmt@latest
+        if command -v shfmt &> /dev/null; then
+            echo "shfmt installed successfully via Go."
+            return 0
+        else
+            echo "Failed to install shfmt via Go. Falling back to OS-specific package managers." >&2
+        fi
+    fi
+
     case "$OS_NAME" in
         Linux*)
             if command -v apt-get &> /dev/null; then
