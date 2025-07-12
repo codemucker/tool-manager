@@ -434,7 +434,7 @@ _tm::cfg::__ensure_config_has_required_values(){
 
 #
 # Generate a hash unique for the given config files. If they change, so should the hash. It is not
-# cryptogrpahically secure, and it shold only be used for simple change detection
+# cryptographically secure, and it should only be used for simple change detection
 #
 _tm::cfg::__generate_hash_for(){
   local files=("$@") # All the passed in files

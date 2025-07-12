@@ -374,7 +374,7 @@ _tm::util::array::get_first(){
       return
     fi
   done
-   _fail "Coud not find any values with keys matching one of ($@)"
+   _fail "Could not find any values with keys matching one of ($@)"
 }
 
 # Safe remove function that checks if a directory is not root and not empty

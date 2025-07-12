@@ -18,7 +18,7 @@ _tm::source::include_once @tm/lib.validate.sh
 #   --ignore-spec-errors  : (optional) if set, ignore any parse args errors due to invalid option specs. It will still validate user input. Only affects options given after this option. Default 0
 #                       This can be useful if your scripts might encounter older versions of tool-manager
 #   --opt-<key> name/value pairs: '|name=value|name2=value2'.  The option specification. Used to tell the args parser what the user supplied options can be
-#                     First char is the value separator (non alpha-numeric, e.g '|' or ';' etc). Recommended to use '|'. This caters for 'special chars' in any of the values which
+#                     First char is the value separator (non alphanumeric, e.g '|' or ';' etc). Recommended to use '|'. This caters for 'special chars' in any of the values which
 #                     might clash with the separator if it were fixed. By forcing  it's use,it's clear
 #
 #                     e.g. ';short=x;desc=The value for 'x' can be a|b'
@@ -35,7 +35,7 @@ _tm::source::include_once @tm/lib.validate.sh
 #                    - desc          (optional) help text
 #                    - example       (optional) example text
 #                    - default       (optional) default value. The default is an empty string
-#                    - allowed       (optional) allowed values. First char is the value separator if non alpha-numeric. Default is ','. E.g. ,foo,bar or |foo|bar
+#                    - allowed       (optional) allowed values. First char is the value separator if non alphanumeric. Default is ','. E.g. ,foo,bar or |foo|bar
 #                    - validators|validator    (optional) comma separated validators
 #                                    (+alphanumeric,+numbers,+letters,+nowhitespace,+noslash,+re:<pattern>,plugin-vendor,plugin-name,plugin-prefix).
 #
@@ -52,7 +52,7 @@ _tm::source::include_once @tm/lib.validate.sh
 #   --help-tip               : (flag) if set, then always print a small help tip. Default is false
 #   --help-on-error          : (flag) if set, then print the help on validation error. Default is false
 #   --                       : Important! the separator to differentiate between the parser options and the caller args. User supplied args must come after this
-#   <user supplied args...>  : User supplied command-line arguments to parse (usign the above provided option specs as the rules)
+#   <user supplied args...>  : User supplied command-line arguments to parse (using the above provided option specs as the rules)
 #
 # Example:
 #   declare -A args
@@ -251,7 +251,7 @@ _tm::args::parse() {
     __print_help() {
         local bold=$(tput bold)
         local normal=$(tput sgr0)
-        # show the args passed if it's not just the help. THsi is helpful in case commands are called from within another program
+        # show the args passed if it's not just the help. This is helpful in case commands are called from within another program
         # and there is a failure
         if [[ ! "${user_args}" == '--help' ]] && [[ ! "${user_args}" == '-h' ]]; then
           __println "${bold}PROVIDED ARGS${normal}"
