@@ -12,8 +12,5 @@ _tm::source::include .tm.script.sh
 
 _info "Getting tool-manager update diff in '$TM_HOME'"
 cd "$TM_HOME" || exit
-git fetch origin  # fetch changes, but don't merge
+git fetch origin                 # fetch changes, but don't merge
 git diff --name-only origin/main # diff your current head to the fetched commit
-
-
-

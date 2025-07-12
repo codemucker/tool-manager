@@ -27,7 +27,7 @@ echo "      plugin-name   : ${__TM_NAME}"
 echo "      custom-config : $TM_PLUGINS_CFG_DIR/${__TM_NAME}/config.sh"
 echo "   logging:"
 # TM_LOG: Indicates if debug logging is enabled.
-echo "      debug-enabled : $(if _is_debug; then echo "true"; else echo "false"; fi )$spacer(TM_LOG)"
+echo "      debug-enabled : $(if _is_debug; then echo "true"; else echo "false"; fi)$spacer(TM_LOG)"
 # TM_LOG: Indicates if trace logging is enabled.
 echo "      trace-enabled : $(if _is_trace; then echo "true"; else echo "false"; fi)$spacer(TM_LOG)"
 echo "   plugins:"

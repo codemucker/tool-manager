@@ -44,7 +44,7 @@ _tm::util::array::print() {
   [ "${result[prefix]}" = "" ]
   [ "${result[qname]}" = "myplugin" ]
   [ "${result[qpath]}" = "no-vendor/myplugin" ]
-  [[ "${result[key]}" =~ "no-vendor__myplugin__vmain" ]]
+  [[ ${result[key]} =~ "no-vendor__myplugin__vmain" ]]
 }
 
 @test "_tm::parse::plugin_name - name with version" {
@@ -56,7 +56,7 @@ _tm::util::array::print() {
   [ "${result[prefix]}" = "" ]
   [ "${result[qname]}" = "myplugin@1.0.0" ]
   [ "${result[qpath]}" = "no-vendor/myplugin" ]
-  [[ "${result[key]}" =~ "no-vendor__myplugin__v1.0.0" ]]
+  [[ ${result[key]} =~ "no-vendor__myplugin__v1.0.0" ]]
 }
 
 @test "_tm::parse::plugin_name - vendor/name" {
@@ -68,7 +68,7 @@ _tm::util::array::print() {
   [ "${result[prefix]}" = "" ]
   [ "${result[qname]}" = "myvendor/myplugin" ]
   [ "${result[qpath]}" = "myvendor/myplugin" ]
-  [[ "${result[key]}" =~ "myvendor__myplugin__vmain" ]]
+  [[ ${result[key]} =~ "myvendor__myplugin__vmain" ]]
 }
 
 @test "_tm::parse::plugin_name - vendor/name@version" {
@@ -80,7 +80,7 @@ _tm::util::array::print() {
   [ "${result[prefix]}" = "" ]
   [ "${result[qname]}" = "myvendor/myplugin@2.0" ]
   [ "${result[qpath]}" = "myvendor/myplugin" ]
-  [[ "${result[key]}" =~ "myvendor__myplugin__v2.0" ]]
+  [[ ${result[key]} =~ "myvendor__myplugin__v2.0" ]]
 }
 
 @test "_tm::parse::plugin_name - prefix:name" {
@@ -92,7 +92,7 @@ _tm::util::array::print() {
   [ "${result[prefix]}" = "myprefix" ]
   [ "${result[qname]}" = "myprefix:myplugin" ]
   [ "${result[qpath]}" = "no-vendor/myplugin__myprefix" ]
-  [[ "${result[key]}" =~ "no-vendor__myplugin__vmain__myprefix" ]]
+  [[ ${result[key]} =~ "no-vendor__myplugin__vmain__myprefix" ]]
 }
 
 @test "_tm::parse::plugin_name - prefix:vendor/name@version" {
@@ -104,7 +104,7 @@ _tm::util::array::print() {
   [ "${result[prefix]}" = "myprefix" ]
   [ "${result[qname]}" = "myprefix:myvendor/myplugin@3.0" ]
   [ "${result[qpath]}" = "myvendor/myplugin__myprefix" ]
-  [[ "${result[key]}" =~ "myvendor__myplugin__v3.0__myprefix" ]]
+  [[ ${result[key]} =~ "myvendor__myplugin__v3.0__myprefix" ]]
 }
 
 @test "_tm::parse::plugin_name - prefix__name (dir separator)" {
@@ -116,31 +116,31 @@ _tm::util::array::print() {
   [ "${result[prefix]}" = "myprefix" ]
   [ "${result[qname]}" = "myprefix:myplugin" ]
   [ "${result[qpath]}" = "no-vendor/myplugin__myprefix" ]
-  [[ "${result[key]}" =~ "no-vendor__myplugin__vmain__myprefix" ]]
+  [[ ${result[key]} =~ "no-vendor__myplugin__vmain__myprefix" ]]
 }
 
 @test "_tm::parse::plugin_name - invalid name format (empty)" {
   run _tm::parse::plugin_name result ""
   [ "$status" -ne 0 ]
-  [[ "$output" =~ "MOCKED_FAIL: Invalid plugin name format. Missing name after prefix separator. From input name ''" ]]
+  [[ $output =~ "MOCKED_FAIL: Invalid plugin name format. Missing name after prefix separator. From input name ''" ]]
 }
 
 @test "_tm::parse::plugin_name - invalid name format (uppercase)" {
   run _tm::parse::plugin_name result "MyPlugin"
   [ "$status" -ne 0 ]
-  [[ "$output" =~ "MOCKED_FAIL: Invalid plugin name format. Use lowercase letters, numbers, hyphens. Start with letter/number. Instead got 'MyPlugin' from input 'MyPlugin'" ]]
+  [[ $output =~ "MOCKED_FAIL: Invalid plugin name format. Use lowercase letters, numbers, hyphens. Start with letter/number. Instead got 'MyPlugin' from input 'MyPlugin'" ]]
 }
 
 @test "_tm::parse::plugin_name - missing name after vendor slash should fail" {
   run _tm::parse::plugin_name result "myvendor/"
   [ "$status" -ne 0 ]
-  [[ "$output" =~ "MOCKED_FAIL: Invalid plugin name format. Missing name after vendor slash. From input name 'myvendor/'" ]]
+  [[ $output =~ "MOCKED_FAIL: Invalid plugin name format. Missing name after vendor slash. From input name 'myvendor/'" ]]
 }
 
 @test "_tm::parse::plugin_name - missing name after prefix colon should fail" {
   run _tm::parse::plugin_name result "myprefix:"
   [ "$status" -ne 0 ]
-  [[ "$output" =~ "MOCKED_FAIL: Invalid plugin name format. Missing name after prefix separator. From input name 'myprefix:'" ]]
+  [[ $output =~ "MOCKED_FAIL: Invalid plugin name format. Missing name after prefix separator. From input name 'myprefix:'" ]]
 }
 
 @test "_tm::parse::plugin_id - full ID" {
@@ -152,7 +152,7 @@ _tm::util::array::print() {
   [ "${result[prefix]}" = "myprefix" ]
   [ "${result[qname]}" = "myprefix:myvendor/myplugin@1.0.0" ]
   [ "${result[qpath]}" = "myvendor/myplugin__myprefix" ]
-  [[ "${result[key]}" =~ "myvendor__myplugin__v1.0.0__myprefix" ]]
+  [[ ${result[key]} =~ "myvendor__myplugin__v1.0.0__myprefix" ]]
   [ "${result[id]}" = "tm:plugin:myspace:myvendor:myplugin:1.0.0:myprefix" ]
 }
 
@@ -165,20 +165,20 @@ _tm::util::array::print() {
   [ "${result[prefix]}" = "" ]
   [ "${result[qname]}" = "myvendor/myplugin" ]
   [ "${result[qpath]}" = "myvendor/myplugin" ]
-  [[ "${result[key]}" =~ "myvendor__myplugin__vmain" ]]
+  [[ ${result[key]} =~ "myvendor__myplugin__vmain" ]]
   [ "${result[id]}" = "tm:plugin::myvendor:myplugin::" ]
 }
 
 @test "_tm::parse::plugin_id - invalid ID (missing name)" {
   run _tm::parse::plugin_id result "tm:plugin:myspace:myvendor::1.0.0:myprefix"
   [ "$status" -ne 0 ]
-  [[ "$output" =~ "MOCKED_FAIL: Invalid plugin name format.Is empty. From id 'tm:plugin:myspace:myvendor::1.0.0:myprefix'" ]]
+  [[ $output =~ "MOCKED_FAIL: Invalid plugin name format.Is empty. From id 'tm:plugin:myspace:myvendor::1.0.0:myprefix'" ]]
 }
 
 @test "_tm::parse::plugin_id - invalid ID (missing tm prefix)" {
   run _tm::parse::plugin_id result "plugin:myspace:myvendor:myplugin:1.0.0:myprefix"
   [ "$status" -ne 0 ]
-  [[ "$output" =~ "MOCKED_FAIL: Not a valid plugin id. expected 'tm:plugin:<space>:<vendor>:<name>:<version>:<prefix>', but got 'plugin:myspace:myvendor:myplugin:1.0.0:myprefix'" ]]
+  [[ $output =~ "MOCKED_FAIL: Not a valid plugin id. expected 'tm:plugin:<space>:<vendor>:<name>:<version>:<prefix>', but got 'plugin:myspace:myvendor:myplugin:1.0.0:myprefix'" ]]
 }
 
 @test "_tm::parse::plugin - dispatch to plugin_id" {

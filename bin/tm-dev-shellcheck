@@ -11,16 +11,16 @@ _trap_error
 
 declare -A args
 _parse_args \
-    --file "${BASH_SOURCE[0]}" \
-    --opt-plugin   "|remainder|short=p|desc=The plugin, 'tool-manager', or dir to check. If empty, test the tool-manager. Can pass a path to the check dir" \
-    --opt-enable   "|short=o|group=shellcheck |desc=passed to shellcheck as the '--enable' option" \
-    --opt-exclude  "|short=e|group=shellcheck|desc=passed to shellcheck as the '--exclude' option" \
-    --opt-format   "|short=f|group=shellcheck|desc=passed to shellcheck as the '--format' option|default=tty" \
-    --opt-severity "|short=S|group=shellcheck|desc=passed to shellcheck as the '--severity' option" \
-    --opt-shell "|short=s|group=shellcheck|desc=passed to shellcheck as the '--shell' option|default=bash" \
-    --opt-external-sources "|short=x|group=shellcheck|desc=passed to shellcheck as the '--external-sources' option" \
-    --result args \
-    -- "$@"
+  --file "${BASH_SOURCE[0]}" \
+  --opt-plugin "|remainder|short=p|desc=The plugin, 'tool-manager', or dir to check. If empty, test the tool-manager. Can pass a path to the check dir" \
+  --opt-enable "|short=o|group=shellcheck |desc=passed to shellcheck as the '--enable' option" \
+  --opt-exclude "|short=e|group=shellcheck|desc=passed to shellcheck as the '--exclude' option" \
+  --opt-format "|short=f|group=shellcheck|desc=passed to shellcheck as the '--format' option|default=tty" \
+  --opt-severity "|short=S|group=shellcheck|desc=passed to shellcheck as the '--severity' option" \
+  --opt-shell "|short=s|group=shellcheck|desc=passed to shellcheck as the '--shell' option|default=bash" \
+  --opt-external-sources "|short=x|group=shellcheck|desc=passed to shellcheck as the '--external-sources' option" \
+  --result args \
+  -- "$@"
 
 main() {
   _tm::prog::shellcheck:install
@@ -31,23 +31,23 @@ main() {
   local -a shellcheck_dirs=()
   local sources=() # used by shellcheck to find sourced files
 
-  if [[ -z "$target" ]] || [[ "$target" == "tool-manager" ]]; then
+  if [[ -z $target ]] || [[ $target == "tool-manager" ]]; then
     test_dir="$TM_HOME/test"
     target_name="tool-manager"
     shellcheck_dirs+=("$TM_HOME/bin" "$TM_HOME/bin-defaults" "$TM_HOME/bin-internal" "$TM_HOME/lib-shared/tm/bash" "$TM_HOME/test" "$TM_HOME/tests")
     sources+=("$TM_HOME" "$TM_HOME/bin" "$TM_HOME/bin-defaults" "$TM_HOME/lib-shared/tm/bash")
-  elif [[ "$target" == "."* ]] || [[ "$target" == "/"* ]] ; then
+  elif [[ $target == "."* ]] || [[ $target == "/"* ]]; then
     test_dir="$target"
     target_name=""
     shellcheck_dirs+=("$test_dir")
-  elif [[ -f "$target" ]]; then
+  elif [[ -f $target ]]; then
     test_dir="$(dirname "$target")"
     target_name="file '$target'"
     shellcheck_dirs+=("$target")
   else
     local qname
     qname="$(_tm::plugins::installed::get_by_name "$target")"
-    if [[ -z "$qname" ]]; then
+    if [[ -z $qname ]]; then
       _fail "Plugin '$target' not found."
     fi
     local -A plugin
@@ -60,23 +60,26 @@ main() {
 
   local -a shellcheck_opts=()
   if [[ ${#sources[@]} -gt 0 ]]; then
-    shellcheck_opts+=(--source-path="$(IFS=:; echo "${sources[*]}")")
+    shellcheck_opts+=(--source-path="$(
+      IFS=:
+      echo "${sources[*]}"
+    )")
   fi
   local opt_value
   for opt in "include" "exclude" "format" "severity" "shell"; do
     opt_value="${args["${opt}"]:-}"
-    if [[ -n "${opt_value}" ]]; then
-      shellcheck_opts+=("--${opt}" "${opt_value}" )
+    if [[ -n ${opt_value} ]]; then
+      shellcheck_opts+=("--${opt}" "${opt_value}")
     fi
   done
   if [[ "${args["${external-sources}"]:-}" ]]; then
-    shellcheck_opts+=("--${external-sources}" )
+    shellcheck_opts+=("--${external-sources}")
   fi
   echo "checking scripts using shellcheck..."
 
   local -a files_to_check=()
   for shellcheck_dir in "${shellcheck_dirs[@]}"; do
-    if [[ -d "${shellcheck_dir}" ]]; then
+    if [[ -d ${shellcheck_dir} ]]; then
       local file
       # main scripts
       while IFS= read -r -d $'\0' file; do
@@ -88,20 +91,22 @@ main() {
       done < <(find "${shellcheck_dir}" -type f -not -name '.*.sh' -print0)
       # hidden shell files
       while IFS= read -r -d $'\0' file; do
-          files_to_check+=("$file")
+        files_to_check+=("$file")
       done < <(find "${shellcheck_dir}" -type f -name ".*.sh" -print0)
-    elif [[ -f "${shellcheck_dir}" ]]; then
+    elif [[ -f ${shellcheck_dir} ]]; then
       files_to_check+=("${shellcheck_dir}")
     fi
   done
   if [[ ${#files_to_check[@]} -gt 0 ]]; then
     if _is_debug; then
-      _debug "files_to_check='$(IFS=$'\n'; echo "${files_to_check[*]}")'"
+      _debug "files_to_check='$(
+        IFS=$'\n'
+        echo "${files_to_check[*]}"
+      )'"
     fi
     shellcheck "${shellcheck_opts[@]}" "${files_to_check[@]}"
   fi
   echo "shellcheck done for '${target_name}'"
 }
-
 
 main "$@"

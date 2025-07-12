@@ -42,7 +42,7 @@ __tm_help() {
   #   tm-help-commands [command-prefix-filter]
   _info "generating help..."
   _trace "args:$*"
-  if [[ "${1:-}" == "--gui" ]]; then
+  if [[ ${1:-} == "--gui" ]]; then
     __tm_help_serve "${2:-8000}" "${3:-}"
   else
     __tm_help_console "${1:-}"
@@ -61,7 +61,7 @@ __tm_help_console() {
   files="$(_tm::plugins::find_all_scripts "$cmd_filter")"
 
   echo "$files" | while IFS= read -r file; do
-    if [[ -n "$file" ]]; then # Ensure file is not empty if $files was empty
+    if [[ -n $file ]]; then # Ensure file is not empty if $files was empty
       _tm::args::print_help_from_file_comment "$file"
     fi
   done
@@ -79,30 +79,30 @@ __tm_help_serve() {
   local temp_dir temp_file
   temp_dir="$(mktemp -d)"
   temp_file="${temp_dir}/index.html"
-  
+
   # Generate HTML to temp file
-  __tm_help_generate_help_page > "$temp_file"
+  __tm_help_generate_help_page >"$temp_file"
   _info "created help page at '$temp_file'"
-  
+
   # Find an available port
   local port_output
   port_output=$(_python3 -c 'import socket; s=socket.socket(); s.bind(("", 0)); print(s.getsockname()[1]); s.close()' 2>/dev/null)
-  if [[ -z "$port_output" ]]; then
-      _fail "Could not determine a free port. Python 3 might be missing or the port-finding script failed."
+  if [[ -z $port_output ]]; then
+    _fail "Could not determine a free port. Python 3 might be missing or the port-finding script failed."
   fi
   local port="$port_output"
-  
+
   echo "Serving help at http://localhost:$port"
   echo "Press Ctrl+C to stop"
-  
+
   # Start Python HTTP server in background.
   # WARNING: This simple HTTP server is for local hosting only.
-  python3 -m http.server "$port" --directory "$temp_dir" --bind 127.0.0.1 &> /dev/null &
+  python3 -m http.server "$port" --directory "$temp_dir" --bind 127.0.0.1 &>/dev/null &
   local server_pid=$!
-  
+
   # Open browser
   xdg-open "http://localhost:$port" >/dev/null 2>&1
-  
+
   # Wait for server to exit
   wait $server_pid
 }
@@ -122,7 +122,7 @@ __tm_help_generate_help_page() {
   # Using a simple heredoc for HTML generation. For more complex templates,
   # a dedicated templating engine (like mustache or handlebars) would be
   # beneficial, but for this scope, direct HTML embedding is sufficient.
-  cat << EOF
+  cat <<EOF
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -190,10 +190,9 @@ EOF
     section_has_matches["$section"]=1
   done < <(_tm::plugins::find_all_scripts)
 
-
   # Output sections in alphabetical order
   for section in $(printf '%s\n' "${!sections[@]}" | sort); do
-    if [[ -n "${section_has_matches[$section]:-}" ]]; then
+    if [[ -n ${section_has_matches[$section]:-} ]]; then
       echo "<h2>$section</h2>"
       echo "${sections[$section]}"
     fi
@@ -203,5 +202,3 @@ EOF
 }
 
 __tm_help "$@"
-
-

@@ -26,147 +26,147 @@ _tm::source::include .tm.script.sh
 
 declare -A args
 _parse_args \
-    --file "${BASH_SOURCE[0]}" \
-    --help-tip \
-    --opt-name "|remainder|multi|short=n|value=NAME|desc=The name of the new plugin|example=my-plugin, my-vendor/my-plugin|validators=plugin-name" \
-    --opt-vendor "|short=v|desc=The name of the vendor|example=my-vendor, acme|validators=plugin-vendor" \
-    --opt-prefix "|short=p|desc=The prefix to append to all the plugin's script|validators=plugin-prefix" \
-    --opt-repo "|short=r|desc=The Git repository URL for the plugin|example=git@github.com:user/repo.git" \
-    --opt-space "|short=s|desc=The space to create this from|validators=space-key" \
-    --opt-desc "|short=d|desc=A brief description of what the plugin provides" \
-    --result args \
-    -- "$@"
+  --file "${BASH_SOURCE[0]}" \
+  --help-tip \
+  --opt-name "|remainder|multi|short=n|value=NAME|desc=The name of the new plugin|example=my-plugin, my-vendor/my-plugin|validators=plugin-name" \
+  --opt-vendor "|short=v|desc=The name of the vendor|example=my-vendor, acme|validators=plugin-vendor" \
+  --opt-prefix "|short=p|desc=The prefix to append to all the plugin's script|validators=plugin-prefix" \
+  --opt-repo "|short=r|desc=The Git repository URL for the plugin|example=git@github.com:user/repo.git" \
+  --opt-space "|short=s|desc=The space to create this from|validators=space-key" \
+  --opt-desc "|short=d|desc=A brief description of what the plugin provides" \
+  --result args \
+  -- "$@"
 
-main(){
-    local plugin_name="${args[name]:-}"
-    local vendor="${args[vendor]:-}"
-    local plugin_repo="${args[repo]:-}"
-    local script_name_prefix="${args[prefix]:-}"
-    local plugin_desc="${args[desc]:-}"
+main() {
+  local plugin_name="${args[name]:-}"
+  local vendor="${args[vendor]:-}"
+  local plugin_repo="${args[repo]:-}"
+  local script_name_prefix="${args[prefix]:-}"
+  local plugin_desc="${args[desc]:-}"
 
-    local -A plugin
-    while [[ -z "$plugin_name" ]]; do
-        _read_not_empty "Name of new plugin (e.g., my-plugin, must match lowercase, numbers, and -)" plugin_name
+  local -A plugin
+  while [[ -z $plugin_name ]]; do
+    _read_not_empty "Name of new plugin (e.g., my-plugin, must match lowercase, numbers, and -)" plugin_name
 
-        if [[ -n "$plugin_name" && ! "$plugin_name" =~ ^[a-z0-9][a-z0-9-]*$ ]]; then
-            _error "Invalid plugin name format. Use lowercase letters, numbers, hyphens. Start with letter/number."
-            plugin_name="" # Clear to re-prompt
-        else 
-            if ! _tm::parse::plugin_name plugin "${plugin_name}"; then
-                plugin_name="" # Clear to re-prompt
-            fi
-            local install_dir="${plugin[install_dir]}"
-            if [[ -d "${install_dir}" ]]; then
-                _error "Plugin directory '${install_dir}' already exists. Choose a different name or vendor."
-                plugin_name="" # Clear to re-prompt
-            fi
-        fi
-    done
-    if [[ -n "${vendor}" ]]; then
-        plugin_name="${vendor}/${plugin_name}"
+    if [[ -n $plugin_name && ! $plugin_name =~ ^[a-z0-9][a-z0-9-]*$ ]]; then
+      _error "Invalid plugin name format. Use lowercase letters, numbers, hyphens. Start with letter/number."
+      plugin_name="" # Clear to re-prompt
+    else
+      if ! _tm::parse::plugin_name plugin "${plugin_name}"; then
+        plugin_name="" # Clear to re-prompt
+      fi
+      local install_dir="${plugin[install_dir]}"
+      if [[ -d ${install_dir} ]]; then
+        _error "Plugin directory '${install_dir}' already exists. Choose a different name or vendor."
+        plugin_name="" # Clear to re-prompt
+      fi
     fi
-    while [[ -z "$plugin_repo" ]]; do
-        _tm::parse::plugin_name plugin "${plugin_name}"
-
-        local name="${plugin[name]}"
-        local vendor="${plugin[vendor]}"
-        local git_repo_placeholder="git@github.com:${vendor}/${name}.git"
-        _read_not_empty "Git repo URL (e.g., git@github.com:user/repo.git)" plugin_repo "$git_repo_placeholder"
-
-        # Basic validation for common git URL patterns (optional, can be expanded)
-        if [[ -n "$plugin_repo" && ! ( "$plugin_repo" =~ ^git@.+\..+:.*\/.*\.git$ || "$plugin_repo" =~ ^https?:\/\/.+\..+\/.*\/.* ) ]]; then
-            _warn "Warning: Git repo URL might not be in a common format. Proceeding anyway."
-        elif [[ -z "$plugin_repo" ]]; then
-            _info "Ignoring remote git repo for now"
-        fi
-    done
-    _read_not_empty "Brief description of what this plugin provides" plugin_desc
-
+  done
+  if [[ -n ${vendor} ]]; then
+    plugin_name="${vendor}/${plugin_name}"
+  fi
+  while [[ -z $plugin_repo ]]; do
     _tm::parse::plugin_name plugin "${plugin_name}"
 
-    plugin_dir="${plugin[install_dir]}"
-    _info "creating new plugin '$plugin_name' in '$plugin_dir'"
+    local name="${plugin[name]}"
+    local vendor="${plugin[vendor]}"
+    local git_repo_placeholder="git@github.com:${vendor}/${name}.git"
+    _read_not_empty "Git repo URL (e.g., git@github.com:user/repo.git)" plugin_repo "$git_repo_placeholder"
 
-    if [[ -d "$plugin_dir" ]]; then
-        _fail "'dir '$plugin_dir' already exists. Aborting"
+    # Basic validation for common git URL patterns (optional, can be expanded)
+    if [[ -n $plugin_repo && ! ($plugin_repo =~ ^git@.+\..+:.*\/.*\.git$ || $plugin_repo =~ ^https?:\/\/.+\..+\/.*\/.*) ]]; then
+      _warn "Warning: Git repo URL might not be in a common format. Proceeding anyway."
+    elif [[ -z $plugin_repo ]]; then
+      _info "Ignoring remote git repo for now"
     fi
+  done
+  _read_not_empty "Brief description of what this plugin provides" plugin_desc
 
-    local name qname home_var home_bin_var
-    name="${plugin[name]}"
-    qname="${plugin[qname]}"
-    home_var="$(echo "${name^^}_HOME" | sed 's/-/_/g')"
-    home_bin_var="$(echo "${name^^}_BIN" | sed 's/-/_/g')"
+  _tm::parse::plugin_name plugin "${plugin_name}"
 
-    local example_script_name="${name}-helloworld"
-    if [[ -n "$script_name_prefix" ]]; then
-        example_script_name="${script_name_prefix}-helloworld"
+  plugin_dir="${plugin[install_dir]}"
+  _info "creating new plugin '$plugin_name' in '$plugin_dir'"
+
+  if [[ -d $plugin_dir ]]; then
+    _fail "'dir '$plugin_dir' already exists. Aborting"
+  fi
+
+  local name qname home_var home_bin_var
+  name="${plugin[name]}"
+  qname="${plugin[qname]}"
+  home_var="$(echo "${name^^}_HOME" | sed 's/-/_/g')"
+  home_bin_var="$(echo "${name^^}_BIN" | sed 's/-/_/g')"
+
+  local example_script_name="${name}-helloworld"
+  if [[ -n $script_name_prefix ]]; then
+    example_script_name="${script_name_prefix}-helloworld"
+  fi
+
+  mkdir -p "$plugin_dir/bin"
+
+  # Use a template for README.md
+  _tm::plugin::create::__readme_template "$plugin_dir/README.md" "${qname}" "$plugin_desc"
+
+  # Use a template for .bashrc
+  _tm::plugin::create::__bashrc_template "$plugin_dir/.bashrc" "$home_var" "$home_bin_var"
+
+  # Use a template for plugin-enable
+  _tm::plugin::create::__plugin_enable_template "$plugin_dir/plugin-enable"
+  chmod a+x "$plugin_dir/plugin-enable"
+
+  # Use a template for plugin-disable
+  _tm::plugin::create::__plugin_disable_template "$plugin_dir/plugin-disable"
+  chmod a+x "$plugin_dir/plugin-disable"
+
+  # Use a template for bin/.common.sh
+  _tm::plugin::create::__common_sh_template "$plugin_dir/bin/.common.sh" "${qname}"
+
+  # Use a template for bin/<script>.sh
+  _tm::plugin::create::__example_script_template "$plugin_dir/bin/$example_script_name" "${qname}"
+
+  chmod a+x "$plugin_dir/bin/$example_script_name"
+  _pushd "$plugin_dir"
+  pwd
+  # Initialize Git repository with a default branch name
+  git init --initial-branch main
+
+  # Add remote origin if a repository URL is provided
+  if [[ -n $plugin_repo ]]; then
+    git remote add origin "$plugin_repo"
+  fi
+
+  # Add all created files to the Git repository
+  git add .
+
+  # Commit the initial skeleton
+  git commit -m "Plugin '${qname}' skeleton created"
+
+  # Display the directory tree (excluding .git) and Git log
+  tree -aI '.git' || true
+  git log
+
+  _popd
+
+  local yn=''
+  echo
+  while [[ -z ${yn} ]]; do
+    if _confirm "Enable this plugin?"; then
+      tm-plugin-enable "${qname}"
+    else
+      _info "to enable this plugin run 'tm-plugin-enable ${qname}'"
     fi
+  done
 
-    mkdir -p "$plugin_dir/bin"
-
-    # Use a template for README.md
-    _tm::plugin::create::__readme_template "$plugin_dir/README.md" "${qname}" "$plugin_desc"
-
-    # Use a template for .bashrc
-    _tm::plugin::create::__bashrc_template "$plugin_dir/.bashrc" "$home_var" "$home_bin_var"
-
-    # Use a template for plugin-enable
-    _tm::plugin::create::__plugin_enable_template "$plugin_dir/plugin-enable"
-    chmod a+x "$plugin_dir/plugin-enable"
-
-    # Use a template for plugin-disable
-    _tm::plugin::create::__plugin_disable_template "$plugin_dir/plugin-disable"
-    chmod a+x "$plugin_dir/plugin-disable"
-
-    # Use a template for bin/.common.sh
-    _tm::plugin::create::__common_sh_template "$plugin_dir/bin/.common.sh" "${qname}"
-
-    # Use a template for bin/<script>.sh
-    _tm::plugin::create::__example_script_template "$plugin_dir/bin/$example_script_name" "${qname}"
-
-    chmod a+x "$plugin_dir/bin/$example_script_name"
-    _pushd "$plugin_dir"
-        pwd
-        # Initialize Git repository with a default branch name
-        git init --initial-branch main
-
-        # Add remote origin if a repository URL is provided
-        if [[ -n "$plugin_repo" ]]; then
-            git remote add origin "$plugin_repo"
-        fi
-
-        # Add all created files to the Git repository
-        git add .
-
-        # Commit the initial skeleton
-        git commit -m "Plugin '${qname}' skeleton created"
-
-        # Display the directory tree (excluding .git) and Git log
-        tree -aI '.git' || true
-        git log
-
-    _popd
-
-    local yn=''
-    echo 
-    while [[ -z "${yn}" ]]; do
-        if _confirm "Enable this plugin?"; then
-           tm-plugin-enable "${qname}"
-        else
-           _info "to enable this plugin run 'tm-plugin-enable ${qname}'"
-        fi
-    done
-
-    _info "to edit this plugin run 'tm-edit ${qname}' or 'tm-edit-ide ${qname}'"
-    _info "to edit this plugin's config, run 'tm-edit-cfg ${qname}'"
-    _info "You will need to run 'tm-reload' to pick up changes (or when adding new script files)"
+  _info "to edit this plugin run 'tm-edit ${qname}' or 'tm-edit-ide ${qname}'"
+  _info "to edit this plugin's config, run 'tm-edit-cfg ${qname}'"
+  _info "You will need to run 'tm-reload' to pick up changes (or when adding new script files)"
 }
 
 _tm::plugin::create::__readme_template() {
-    local file_path="$1"
-    local plugin_name="$2"
-    local plugin_desc="$3"
-    cat << EOF > "$file_path"
+  local file_path="$1"
+  local plugin_name="$2"
+  local plugin_desc="$3"
+  cat <<EOF >"$file_path"
 # $plugin_name
 
 A plugin for the 'tool-manager' (tm)
@@ -222,10 +222,10 @@ EOF
 }
 
 _tm::plugin::create::__bashrc_template() {
-    local file_path="$1"
-    local home_var="$2"
-    local home_bin_var="$3"
-    cat << EOF > "$file_path"
+  local file_path="$1"
+  local home_var="$2"
+  local home_bin_var="$3"
+  cat <<EOF >"$file_path"
 # only if you need to. Otherwise you can use _include in your files. THis should only be
 # needed if other programs eed access to these variables
 export $home_var="\$(cd "\$(dirname "\${BASH_SOURCE[0]}" )" && pwd)"
@@ -233,23 +233,23 @@ EOF
 }
 
 _tm::plugin::create::__plugin_enable_template() {
-    local file_path="$1"
-    cat << EOF > "$file_path"
+  local file_path="$1"
+  cat <<EOF >"$file_path"
 # implement this if your plugin needs to run a script on enable. Otherwise delete it
 EOF
 }
 
 _tm::plugin::create::__plugin_disable_template() {
-    local file_path="$1"
-    cat << EOF > "$file_path"
+  local file_path="$1"
+  cat <<EOF >"$file_path"
 # implement this if your plugin needs to run a script on disable. Otherwise delete it
 EOF
 }
 
 _tm::plugin::create::__common_sh_template() {
-    local file_path="$1"
-    local plugin_name="$2"
-    cat << EOF > "$file_path"
+  local file_path="$1"
+  local plugin_name="$2"
+  cat <<EOF >"$file_path"
 #
 # Common $plugin_name functions and variables history
 #
@@ -260,9 +260,9 @@ EOF
 }
 
 _tm::plugin::create::__example_script_template() {
-    local file_path="$1"
-    local plugin_name="$2"
-    cat << EOF > "$file_path"
+  local file_path="$1"
+  local plugin_name="$2"
+  cat <<EOF >"$file_path"
 #!/usr/bin/env env-tm-bash
 
 # If you use 'env-tm-bash' you have the '_include and _source and _info etc functions available

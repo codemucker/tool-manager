@@ -16,67 +16,67 @@ _trap_error
 
 declare -A args
 _parse_args \
-    --file "${BASH_SOURCE[0]}" \
-    --opt-plugins "|remainder|required|multi|short=p|long=plugin|value=PLUGIN|desc=The plugin(s) to uninstall.|validators=plugin-name" \
-    --opt-vendor "|short=v|desc=The plugin vendor|validators=plugin-vendor" \
-    --opt-space "|short=s|desc=The space to delete this from|validators=space-key" \
-    --result args \
-    -- "$@"
+  --file "${BASH_SOURCE[0]}" \
+  --opt-plugins "|remainder|required|multi|short=p|long=plugin|value=PLUGIN|desc=The plugin(s) to uninstall.|validators=plugin-name" \
+  --opt-vendor "|short=v|desc=The plugin vendor|validators=plugin-vendor" \
+  --opt-space "|short=s|desc=The space to delete this from|validators=space-key" \
+  --result args \
+  -- "$@"
 
-main(){
+main() {
   local vendor_prefix=''
-  if [[ -n "${args[vendor]}" ]]; then
-      vendor_prefix+="${args[vendor]}/"
+  if [[ -n ${args[vendor]} ]]; then
+    vendor_prefix+="${args[vendor]}/"
   fi
 
   local plugins="${args[plugins]:-}"
 
   local _reload=0
-  if [[ -n "${plugins}" ]]; then
-      IFS=' ' read -r -a plugin_names <<< "${args[plugins]}"
-      declare -A plugin
-      for name in "${plugin_names[@]}"; do
-        local qname
-        qname="$(_tm::plugins::installed::get_by_name "${vendor_prefix}${name}")"
-        if [[ -z "$qname" ]]; then
-          _fail "Couldn't find plugin"
-        fi
-        _tm::parse::plugin plugin "$qname"
-        if _tm::plugins::uninstall "${plugin[qname]}"; then
-            _reload=1
-        fi
-      done
+  if [[ -n ${plugins} ]]; then
+    IFS=' ' read -r -a plugin_names <<<"${args[plugins]}"
+    declare -A plugin
+    for name in "${plugin_names[@]}"; do
+      local qname
+      qname="$(_tm::plugins::installed::get_by_name "${vendor_prefix}${name}")"
+      if [[ -z $qname ]]; then
+        _fail "Couldn't find plugin"
+      fi
+      _tm::parse::plugin plugin "$qname"
+      if _tm::plugins::uninstall "${plugin[qname]}"; then
+        _reload=1
+      fi
+    done
   else
-      plugins_to_remove=""
-      _info "Interactive plugin uninstallation mode."
-      _info "Enter one or more space-separated plugin names to uninstall."
-      _info "Press Enter without input to list currently installed plugins."
-      while true; do
-          _read "Which plugin(s) to remove? : ${vendor_prefix}" plugins_to_remove
-          if [[ -z "$plugins_to_remove" ]]; then
-              _info "No input. Listing installed plugins:"
-              tm-plugin-ls --installed --name
-              _info "Please enter plugin(s) to remove, or Ctrl+C to exit."
-              # Loop continues, re-prompting
-          else
-              # User provided input, break from prompt loop
-              break
-          fi
-      done
+    plugins_to_remove=""
+    _info "Interactive plugin uninstallation mode."
+    _info "Enter one or more space-separated plugin names to uninstall."
+    _info "Press Enter without input to list currently installed plugins."
+    while true; do
+      _read "Which plugin(s) to remove? : ${vendor_prefix}" plugins_to_remove
+      if [[ -z $plugins_to_remove ]]; then
+        _info "No input. Listing installed plugins:"
+        tm-plugin-ls --installed --name
+        _info "Please enter plugin(s) to remove, or Ctrl+C to exit."
+        # Loop continues, re-prompting
+      else
+        # User provided input, break from prompt loop
+        break
+      fi
+    done
 
-      # Process the space-separated string of plugin names
-      declare plugin_name
-      for plugin_name in $plugins_to_remove; do # Relies on word splitting
-          if [[ -n "$plugin_name" ]]; then # Check if the part is not empty
-               if _tm::plugins::uninstall "${vendor_prefix}$plugin_name"; then
-                  _reload=1
-               fi
-          fi
-      done
+    # Process the space-separated string of plugin names
+    declare plugin_name
+    for plugin_name in $plugins_to_remove; do # Relies on word splitting
+      if [[ -n $plugin_name ]]; then          # Check if the part is not empty
+        if _tm::plugins::uninstall "${vendor_prefix}$plugin_name"; then
+          _reload=1
+        fi
+      fi
+    done
   fi
 
   if [[ $_reload == 1 ]]; then
-      tm-reload
+    tm-reload
   fi
 }
 main "$@"

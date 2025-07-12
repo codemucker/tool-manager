@@ -8,25 +8,25 @@ _tm::source::include .tm.script.sh .tm.space.sh
 declare -A args
 # TODO
 _parse_args \
-    --file "${BASH_SOURCE[0]}" \
-    --opt-active "|flag|short=a|desc=Select the active space" \
-    --opt-all "|flag|desc=Select all the spaces" \
-    --opt-match "|desc=Match against space keys or guid" \
-    --result args \
-    -- "$@"
+  --file "${BASH_SOURCE[0]}" \
+  --opt-active "|flag|short=a|desc=Select the active space" \
+  --opt-all "|flag|desc=Select all the spaces" \
+  --opt-match "|desc=Match against space keys or guid" \
+  --result args \
+  -- "$@"
 
 _todo "add filerting support"
 
-main(){
-    local -A space
-    local -a space_files
-    readarray -t space_files < <(_tm::space::file::find_all)
+main() {
+  local -A space
+  local -a space_files
+  readarray -t space_files < <(_tm::space::file::find_all)
 
-    for space_file in "${space_files[@]}"; do
-        echo "${space_file} -->"
-        _tm::space::file::read_array space "${space_file}"
-        _tm::space::print_info space
-    done
+  for space_file in "${space_files[@]}"; do
+    echo "${space_file} -->"
+    _tm::space::file::read_array space "${space_file}"
+    _tm::space::print_info space
+  done
 }
 
 main "$@"

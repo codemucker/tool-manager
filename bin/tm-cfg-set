@@ -23,32 +23,32 @@ _tm::source::include .tm.script.sh .tm.cfg.sh
 declare -A args
 # Using --opts-* to capture the command and its arguments after '--'
 _parse_args \
-    --file "${BASH_SOURCE[0]}" \
-    --opt-this "|flag|group=plugin|desc=When set, auto detect plugin name" \
-    --opt-tm "|flag|short=t|long=tm|group=plugin|desc=When set, use tool manager cfg" \
-    --opt-plugin "|group=plugin|long=plugin|short=p|desc=The plugin to set the config for" \
-    --opt-key "|short=k|required|long=key|desc=The key to set" \
-    --opt-value "|remainder|long=value|short=v|desc=The value to set|required|" \
-    --result args \
-    -- "$@"
+  --file "${BASH_SOURCE[0]}" \
+  --opt-this "|flag|group=plugin|desc=When set, auto detect plugin name" \
+  --opt-tm "|flag|short=t|long=tm|group=plugin|desc=When set, use tool manager cfg" \
+  --opt-plugin "|group=plugin|long=plugin|short=p|desc=The plugin to set the config for" \
+  --opt-key "|short=k|required|long=key|desc=The key to set" \
+  --opt-value "|remainder|long=value|short=v|desc=The value to set|required|" \
+  --result args \
+  -- "$@"
 
 plugin_name="${args[plugin]}"
 declare -A plugin=()
-if [[ -n "$plugin_name" ]]; then
+if [[ -n $plugin_name ]]; then
   _tm::parse::plugin_name plugin "$plugin_name"
 elif [[ "${args[tm]}" ]]; then
-    _tm::parse::plugin_id plugin "$__TM_PLUGIN_ID"
+  _tm::parse::plugin_id plugin "$__TM_PLUGIN_ID"
 elif [[ "${args[this]}" ]]; then
-    if [[ -z "${TM_PLUGIN_ID:-}" ]]; then
-        _fail "Set flag '--this', but no env variable 'TM_PLUGIN_ID' has been set. Ensure you are calling this via the wrapper scripts"
-    fi
-    _tm::parse::plugin_id plugin "$TM_PLUGIN_ID"
+  if [[ -z ${TM_PLUGIN_ID:-} ]]; then
+    _fail "Set flag '--this', but no env variable 'TM_PLUGIN_ID' has been set. Ensure you are calling this via the wrapper scripts"
+  fi
+  _tm::parse::plugin_id plugin "$TM_PLUGIN_ID"
 else
-    _tm::parse::plugin_id plugin "$__TM_PLUGIN_ID"
+  _tm::parse::plugin_id plugin "$__TM_PLUGIN_ID"
 fi
 value="${args[value]}"
 
 _tm::cfg::set_value "${plugin[qname]}" "${args[key]}" "${args[value]}"
-if [[ "$?" -ne "0" ]]; then
+if [[ $? -ne "0" ]]; then
   _fail "Failed to set configuration value for key '${args[key]}' in plugin '${plugin[qname]}'."
 fi

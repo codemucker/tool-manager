@@ -8,7 +8,6 @@ _tm::source::include_once @tm/lib.log.sh @tm/lib.validate.sh @tm/lib.args.sh
 # We use 'source' in setup to ensure functions are available in the test environment
 # and to avoid issues with 'load' and internal dependencies.
 
-
 setup() {
 
   # Mock _error, _fail, and _die functions to prevent script exit during tests
@@ -204,7 +203,7 @@ setup() {
     --help-tip \
     --result args -- --name "test"
   [ "$status" -eq 0 ]
-  [[ "$output" =~ "tip: run with --help for options" ]]
+  [[ $output =~ "tip: run with --help for options" ]]
 }
 
 @test "_parse_args: Handles custom help function" {
@@ -217,7 +216,7 @@ setup() {
     --help my_custom_help_func \
     --result args -- -h
   [ "$status" -eq 1 ]
-  [[ "$output" =~ "This is my custom help message." ]]
+  [[ $output =~ "This is my custom help message." ]]
 }
 
 @test "_parse_args: Handles custom help string" {
@@ -226,7 +225,7 @@ setup() {
     --help "My custom help string." \
     --result args -- -h
   [ "$status" -eq 1 ]
-  [[ "$output" =~ "My custom help string." ]]
+  [[ $output =~ "My custom help string." ]]
 }
 
 #@test "_parse_args: Handles duplicate short option should fail" {
@@ -256,14 +255,14 @@ setup() {
     --opt-rem2 ',remainder' \
     --result args -- "arg1"
   [ "$status" -ne 0 ]
-  [[ "$output" =~ "Duplicate remainder (option spec flag 'remainder') keys 'rem1' and 'rem2'" ]]
+  [[ $output =~ "Duplicate remainder (option spec flag 'remainder') keys 'rem1' and 'rem2'" ]]
 }
 
 #@test "_parse_args: Handles unknown option spec key with ignore-spec-errors (unique)" {
 #  declare -A args
 #  _parse_args \
 #    --ignore-spec-errors \
-#    --opt-test_unknown_ignore ',unknown=value|long=test_unknown_ignore' \    
+#    --opt-test_unknown_ignore ',unknown=value|long=test_unknown_ignore' \
 #    --result args -- --test_unknown_ignore "value"
 #  [ "$status" -eq 0 ]
 #  [ "${args[test_unknown_ignore]}" = "value" ]
@@ -276,7 +275,7 @@ setup() {
     --opt-test_unknown_fail ',unknown=value|long=test_unknown_fail' \
     --result args -- --test_unknown_fail "value"
   [ "$status" -ne 0 ]
-  [[ "$output" =~ "Unknown command args spec option 'unknown'" ]]
+  [[ $output =~ "Unknown command args spec option 'unknown'" ]]
 }
 
 @test "_parse_args: Handles no value for non-flag option (unique)" {
@@ -506,7 +505,7 @@ setup() {
     --opt-test_example_unique_3 ',long=test_example_unique_3,example=--test "value"|desc=Test option' \
     --result args -- -h
   [ "$status" -eq 1 ]
-  [[ "$output" =~ "E.g. --test \"value\"" ]]
+  [[ $output =~ 'E.g. --test "value"' ]]
 }
 
 #@test "_parse_args: Handles option spec with value name (unique 2)" {
@@ -565,7 +564,7 @@ setup() {
     --help-tip \
     --result args -- --myoption_help_tip_unique_4 "value"
   [ "$status" -eq 0 ]
-  [[ "$output" =~ "tip: run with --help for options" ]]
+  [[ $output =~ "tip: run with --help for options" ]]
 }
 
 @test "_parse_args: Handles option spec with no short or long name (defaults to key) and custom help function (unique 5)" {
@@ -579,7 +578,7 @@ setup() {
     --help my_custom_help_func_unique_5 \
     --result args -- -h
   [ "$status" -eq 1 ]
-  [[ "$output" =~ "This is another custom help message unique 5." ]]
+  [[ $output =~ "This is another custom help message unique 5." ]]
 }
 
 @test "_parse_args: Handles option spec with no short or long name (defaults to key) and custom help string (unique 5)" {
@@ -589,5 +588,5 @@ setup() {
     --help "My custom help string unique 5." \
     --result args -- -h
   [ "$status" -eq 1 ]
-  [[ "$output" =~ "My custom help string unique 5." ]]
+  [[ $output =~ "My custom help string unique 5." ]]
 }

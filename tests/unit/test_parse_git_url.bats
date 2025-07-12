@@ -162,7 +162,7 @@ _is_finest() {
 
 @test "_tm::parse::git_url - URL without owner/namespace/workspace should fail" {
   run _tm::parse::git_url result "https://github.com/repo_only"
-  [[ "$output" =~ "MOCKED_FAIL: Git URL must contain an owner/namespace/workspace: https://github.com/repo_only" ]]
+  [[ $output =~ "MOCKED_FAIL: Git URL must contain an owner/namespace/workspace: https://github.com/repo_only" ]]
 }
 
 @test "_tm::parse::git_url - URL with multiple slashes in owner (GitLab group)" {
@@ -178,22 +178,22 @@ _is_finest() {
 
 @test "_tm::parse::git_url - Invalid host should call _fail" {
   run _tm::parse::git_url result "https://example.com/owner/repo"
-  [[ "$output" =~ "MOCKED_FAIL: Unsupported git host in URL: https://example.com/owner/repo" ]]
+  [[ $output =~ "MOCKED_FAIL: Unsupported git host in URL: https://example.com/owner/repo" ]]
 }
 
 @test "_tm::parse::git_url - Empty URL should fail" {
   run _tm::parse::git_url result ""
-  [[ "$output" =~ "MOCKED_FAIL: Unsupported git host in URL: " ]]
+  [[ $output =~ "MOCKED_FAIL: Unsupported git host in URL: " ]]
 }
 
 @test "_tm::parse::git_url - URL with only host should fail" {
   run _tm::parse::git_url result "https://github.com/"
-  [[ "$output" =~ "MOCKED_FAIL: Git URL must contain an owner/namespace/workspace: https://github.com/" ]]
+  [[ $output =~ "MOCKED_FAIL: Git URL must contain an owner/namespace/workspace: https://github.com/" ]]
 }
 
 @test "_tm::parse::git_url - URL with only host and owner should fail" {
   run _tm::parse::git_url result "https://github.com/owner/"
-  [[ "$output" =~ "MOCKED_FAIL: Git URL must contain a repository name: https://github.com/owner/" ]]
+  [[ $output =~ "MOCKED_FAIL: Git URL must contain a repository name: https://github.com/owner/" ]]
 }
 
 @test "_tm::parse::git_url - URL with leading/trailing whitespace" {

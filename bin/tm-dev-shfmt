@@ -10,46 +10,46 @@ _trap_error
 
 declare -A args
 _parse_args \
-    --file "${BASH_SOURCE[0]}" \
-    --opt-plugin   "|remainder|short=p|desc=The plugin, 'tool-manager', or dir to check. If empty, test the tool-manager. Can pass a path to the check dir" \
-    --opt-diff   "|flag|short=d|desc=If set, show the diffs" \
-    --opt-apply   "|flag|short=a|desc=If set, apply the changes to the files" \
-    --result args \
-    -- "$@"
+  --file "${BASH_SOURCE[0]}" \
+  --opt-plugin "|remainder|short=p|desc=The plugin, 'tool-manager', or dir to check. If empty, test the tool-manager. Can pass a path to the check dir" \
+  --opt-diff "|flag|short=d|desc=If set, show the diffs" \
+  --opt-apply "|flag|short=a|desc=If set, apply the changes to the files" \
+  --result args \
+  -- "$@"
 
 main() {
   _tm::prog::shfmt::install
   local -a shfmt_opts=()
 
   local what="${args[plugin]}"
-  
-  if [[ "${args['diff']}" == "1" ]]; then
+
+  if [[ ${args['diff']} == "1" ]]; then
     shfmt_opts+=(--diff)
   fi
-  if [[ "${args['apply']}" == "1" ]]; then
+  if [[ ${args['apply']} == "1" ]]; then
     shfmt_opts+=(--write) # write to file
   fi
-  
+
   local target_name=""
   local test_dir=""
   local -a targets=()
 
-  if [[ -z "$what" ]] || [[ "$what" == "tool-manager" ]]; then
+  if [[ -z $what ]] || [[ $what == "tool-manager" ]]; then
     test_dir="$TM_HOME/test"
     target_name="tool-manager"
     targets+=("$TM_HOME/bin" "$TM_HOME/bin-defaults" "$TM_HOME/bin-internal" "$TM_HOME/lib-shared/tm/bash" "$TM_HOME/test" "$TM_HOME/tests")
-  elif [[ "$what" == "."* ]] || [[ "$what" == "/"* ]] ; then
+  elif [[ $what == "."* ]] || [[ $what == "/"* ]]; then
     test_dir="$what"
     target_name=""
     targets+=("$test_dir")
-  elif [[ -f "$what" ]]; then
+  elif [[ -f $what ]]; then
     test_dir="$(dirname "$what")"
     target_name="file '$what'"
     targets+=("$what")
   else
     local qname
     qname="$(_tm::plugins::installed::get_by_name "$what")"
-    if [[ -z "$qname" ]]; then
+    if [[ -z $qname ]]; then
       _fail "Plugin '$what' not found."
     fi
     local -A plugin
@@ -58,7 +58,6 @@ main() {
     target_name="${qname}"
     targets+=("${plugin_home}/bin" "${plugin_home}/bin-internal" "${plugin_home}/lib-shared/bash" "${plugin_home}/test" "$TM_HOME/tests")
   fi
-
 
   # local opt_value
   # for opt in "include" "exclude" "format" "severity" "shell"; do
@@ -75,7 +74,7 @@ main() {
   local -a bash_files=()
   local -a bats_files=()
   for target in "${targets[@]}"; do
-    if [[ -d "${target}" ]]; then
+    if [[ -d ${target} ]]; then
       local file
       # main scripts
       while IFS= read -r -d $'\0' file; do
@@ -87,14 +86,14 @@ main() {
       done < <(find "${target}" -type f -not -name '.*.sh' -print0)
       # hidden shell files
       while IFS= read -r -d $'\0' file; do
-          bash_files+=("$file")
+        bash_files+=("$file")
       done < <(find "${target}" -type f -name ".*.sh" -print0)
       # bats files
       while IFS= read -r -d $'\0' file; do
-          bats_files+=("$file")
+        bats_files+=("$file")
       done < <(find "${target}" -type f -name "*.bats" -print0)
-    elif [[ -f "${target}" ]]; then
-      if [[ "$target" == *".bats" ]]; then
+    elif [[ -f ${target} ]]; then
+      if [[ $target == *".bats" ]]; then
         bats_files+=("${target}")
       else
         bash_files+=("${target}")
@@ -105,13 +104,19 @@ main() {
 
   if [[ ${#bash_files[@]} -gt 0 ]]; then
     if _is_debug; then
-      _debug "bash_files='$(IFS=$'\n'; echo "${bash_files[*]}")'"
+      _debug "bash_files='$(
+        IFS=$'\n'
+        echo "${bash_files[*]}"
+      )'"
     fi
-    #shfmt "${shfmt_opts[@]}" --language-dialect bash "${bash_files[@]}"
+    shfmt "${shfmt_opts[@]}" --language-dialect bash "${bash_files[@]}"
   fi
   if [[ ${#bats_files[@]} -gt 0 ]]; then
     if _is_debug; then
-      _debug "bats_files='$(IFS=$'\n'; echo "${bats_files[*]}")'"
+      _debug "bats_files='$(
+        IFS=$'\n'
+        echo "${bats_files[*]}"
+      )'"
     fi
     shfmt "${shfmt_opts[@]}" --language-dialect bats "${bats_files[@]}"
   fi

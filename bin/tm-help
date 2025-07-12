@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
-
-cat << EOF
+cat <<EOF
 tm-help-commands                      # all available commands.
 tm-help-commands  something           # all available commands starting with 'something'
 tm-help-commands  something  --gui    # all available commands starting with 'something', show in browser

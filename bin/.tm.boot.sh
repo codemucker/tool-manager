@@ -7,17 +7,19 @@
 # - Defines the main _tm::boot::load function called by the entry .bashrc.
 #
 
-[[ -n "${__TM_BOOTSTRAP_SH_INITED:-}" ]] && return || __TM_BOOTSTRAP_SH_INITED=1;
+[[ -n ${__TM_BOOTSTRAP_SH_INITED:-} ]] && return || __TM_BOOTSTRAP_SH_INITED=1
 
-if [[ ! "$(echo "${BASH_VERSION:-0}" | grep -e '^[5-9]\..*' )" ]]; then
-  echo "ERROR: Incompatible bash version, expect bash version 5 or later, installed is '${BASH_VERSION:-0}'"  
+if [[ ! "$(echo "${BASH_VERSION:-0}" | grep -e '^[5-9]\..*')" ]]; then
+  echo "ERROR: Incompatible bash version, expect bash version 5 or later, installed is '${BASH_VERSION:-0}'"
   return 1 # If this script is meant to be sourced, 'return 1' is appropriate.
 fi
 
 TM_LOG_TIMINGS="${TM_LOG_TIMINGS:-}"
-if [[ "$TM_LOG_TIMINGS" == "1" ]]; then
+if [[ $TM_LOG_TIMINGS == "1" ]]; then
   export __PS4_ORG="${PS4:-}"
-  START_TIME=`date +%s%N`; export PS4='+[$(((`date +%s%N`-$START_TIME)/1000000))ms][p${BASHPID}][${BASH_SOURCE}:${LINENO}]: ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'; set -x;
+  START_TIME=$(date +%s%N)
+  export PS4='+[$(((`date +%s%N`-$START_TIME)/1000000))ms][p${BASHPID}][${BASH_SOURCE}:${LINENO}]: ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
+  set -x
 fi
 
 readonly __TM_CONF_EXT="conf"
@@ -27,14 +29,14 @@ readonly __TM_NO_VENDOR="default"
 readonly __TM_SEP_PREFIX_NAME=":" # prefix separator for plugin names
 readonly __TM_SEP_PREFIX_DIR="__" # for dirs (as we can't use the above)
 
-export TM_HOME="$(cd "$(dirname "${BASH_SOURCE[0]}" )/.." && pwd)"
+export TM_HOME="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 export TM_BIN="$TM_HOME/bin"
 export TM_LIB_BASH="$TM_HOME/lib-shared/tm/bash"
 readonly TM_BIN_DEFAULTS="$TM_HOME/bin-defaults" # scripts which are provided by default, but can be overridden by plugins
 
-source "$TM_LIB_BASH/lib.log.sh" # ensure the logging is loaded first
+source "$TM_LIB_BASH/lib.log.sh"    # ensure the logging is loaded first
 source "$TM_LIB_BASH/lib.source.sh" # then the '_tm::source' functions are available
-_source_once "$TM_LIB_BASH/lib.util.sh" 
+_source_once "$TM_LIB_BASH/lib.util.sh"
 _source_once "$TM_LIB_BASH/lib.path.sh"
 _source_once "$TM_LIB_BASH/lib.event.sh"
 _source_once "$TM_BIN/.tm.progs.sh"
@@ -85,8 +87,8 @@ _tm::boot::reload() {
 #   - Calls `_tm::plugins::load_all_enabled` to source the .bashrc and other
 #     environment scripts for each enabled plugin.
 #   - Warns if plugin loading fails but does not terminate the shell.
-_tm::boot::load(){
-  if [[ "${TM_PLUGINS_LOADED:-0}" == "1" ]] && [[ "${TM_RELOAD:-}" != "1" ]]; then
+_tm::boot::load() {
+  if [[ ${TM_PLUGINS_LOADED:-0} == "1" ]] && [[ ${TM_RELOAD:-} != "1" ]]; then
     _debug "plugins already loaded"
     return
   fi
@@ -103,7 +105,7 @@ _tm::boot::load(){
 # during a reload or specific operations.
 _tm::boot::__clear_cache() {
   local key
-  for key in $(compgen -v | grep -E "^__TM_CACHE_" || true ); do
+  for key in $(compgen -v | grep -E "^__TM_CACHE_" || true); do
     unset "$key" || true
   done
   unset TM_PLUGINS_LOADED
@@ -120,7 +122,7 @@ _tm::boot::init() {
 
   _tm::log::push_name "$__TM_NAME"
 
-  local user_config_dir="${XDG_CONFIG_HOME:-"$HOME/.config"}" # git backup up
+  local user_config_dir="${XDG_CONFIG_HOME:-"$HOME/.config"}"    # git backup up
   local user_state_dir="${XDG_STATE_HOME:-"$HOME/.local/share"}" # git backup up?
   local user_cache_dir="${XDG_CACHE_HOME:-"$HOME/.cache"}"
 
@@ -142,18 +144,18 @@ _tm::boot::init() {
 
   TM_EVENT_LOG_DIR="${TM_BASE_CACHE_DIR}/${__TM_NAME}/events" # where to put installed packages
 
-  TM_PLUGINS_PID_DIR="$TM_CACHE_DIR/plugins/pid"  # Directory for storing Process ID (PID) files of background plugin services.
-  TM_PLUGINS_SERVICES_DIR="$TM_CACHE_DIR/plugins/services"  # Directory for storing links to enabled services.
+  TM_PLUGINS_PID_DIR="$TM_CACHE_DIR/plugins/pid"           # Directory for storing Process ID (PID) files of background plugin services.
+  TM_PLUGINS_SERVICES_DIR="$TM_CACHE_DIR/plugins/services" # Directory for storing links to enabled services.
   # --- Plugin Structure Paths ---
   TM_PLUGINS_BIN_DIR="$TM_CACHE_DIR/plugins/bin" # Directory where wrapper scripts for plugin commands are generated. This dir is added to PATH.
-  TM_PLUGINS_VENV_DIR="$TM_CACHE_DIR/tm-venv" # where plugin virtual environments are placed (pip/uv/conda etc)
-  TM_PLUGINS_INSTALL_DIR="$TM_HOME/plugins" # Base directory where plugin repositories are cloned.
+  TM_PLUGINS_VENV_DIR="$TM_CACHE_DIR/tm-venv"    # where plugin virtual environments are placed (pip/uv/conda etc)
+  TM_PLUGINS_INSTALL_DIR="$TM_HOME/plugins"      # Base directory where plugin repositories are cloned.
   # Directory containing symbolic links to currently enabled plugins.
   TM_PLUGINS_ENABLED_DIR="$TM_STATE_DIR/plugins/enabled"
   TM_PLUGINS_INSTALLED_CONF_DIR="$TM_STATE_DIR/plugins/installed"
   # Directory where plugin provided libs are stored. They are stored under a plugins vendor name
   TM_PLUGINS_LIB_DIR="$TM_STATE_DIR/plugins/lib"
-  TM_PLUGINS_STATE_DIR="$TM_BASE_STATE_DIR" # root dir where plugins store their state
+  TM_PLUGINS_STATE_DIR="$TM_BASE_STATE_DIR"  # root dir where plugins store their state
   TM_PLUGINS_PACKAGES_DIR="$TM_PACKAGES_DIR" # root dir where plugins store their installed packages/progs (prefixed by plugin name)
   # root directory for user-specific plugin configurations (e.g., $BASE/<plugin_name>/config.sh files).
   TM_PLUGINS_CFG_DIR="$TM_BASE_CFG_DIR"
@@ -168,23 +170,23 @@ _tm::boot::init() {
   # These dirs contains *.conf files defining the available plugins
   # Allows users to add their own custom plugin definition files.
   TM_PLUGINS_REGISTRY_DIR="${TM_PLUGINS_REGISTRY_DIR:-"${TM_CFG_DIR}/registry"}" # custom user one
-  TM_PLUGINS_DEFAULT_REGISTRY_DIR="$TM_HOME/plugin-registry" # default built in one
+  TM_PLUGINS_DEFAULT_REGISTRY_DIR="$TM_HOME/plugin-registry"                     # default built in one
 
   # --- Directory Creation ---
   # Ensure all necessary operational directories exist.
   mkdir -p "$TM_STATE_DIR" \
-            "$TM_CACHE_DIR" \
-            "$TM_EVENT_LOG_DIR" \
-            "$TM_PLUGINS_INSTALL_DIR" \
-            "$TM_PLUGINS_ENABLED_DIR" \
-            "$TM_PLUGINS_BIN_DIR" \
-            "$TM_PLUGINS_PACKAGES_DIR" \
-            "$TM_PLUGINS_CFG_DIR" \
-            "$TM_PLUGINS_PID_DIR"
+    "$TM_CACHE_DIR" \
+    "$TM_EVENT_LOG_DIR" \
+    "$TM_PLUGINS_INSTALL_DIR" \
+    "$TM_PLUGINS_ENABLED_DIR" \
+    "$TM_PLUGINS_BIN_DIR" \
+    "$TM_PLUGINS_PACKAGES_DIR" \
+    "$TM_PLUGINS_CFG_DIR" \
+    "$TM_PLUGINS_PID_DIR"
 
   # the tool-manager bins dirs.
   _tm::path::add_to_path "$TM_BIN" "$TM_PLUGINS_BIN_DIR" "$TM_BIN_DEFAULTS"
-  
+
   if _is_trace; then
     _tm::event::on '**' _tm::boot:__event_callback
   fi
@@ -203,7 +205,7 @@ _tm::boot::init() {
 # $3 - the event timestamp (epoche, ms precision)
 # $4.. - the event args
 #
-_tm::boot:__event_callback(){
+_tm::boot:__event_callback() {
   local event_name="$1"
   local event_id="$2"
   local event_ts="$3"
@@ -211,16 +213,16 @@ _tm::boot:__event_callback(){
 
   local msg="${event_name}\t${event_id}\t${event_ts}\t${@}"
   # log to file. TODO, make configurable
-  #echo -e "${msg}" >> "${TM_EVENT_LOG_DIR}/events.log" 
+  #echo -e "${msg}" >> "${TM_EVENT_LOG_DIR}/events.log"
 
   _is_trace && _trace "event: '${msg}'" || true
 }
 
-_tm::trap::error(){
+_tm::trap::error() {
   trap '_tm::trap::__stacktrace' ERR
 }
 
-_tm::trap::__stacktrace(){
+_tm::trap::__stacktrace() {
   local exit_code=$?
   >&2 echo "ERROR: Script '${BASH_SOURCE[0]}' failed at line ${LINENO} with exit code $exit_code "
   #>&2 echo "Uncaught error!:"
@@ -230,19 +232,18 @@ _tm::trap::__stacktrace(){
     local i=0
     local line file func
     while read -r line func file < <(caller $i); do
-        if [[ "$file" != *".tm.boot.sh" ]] && [[ "$func" != "_tm::trap::"* ]]; then # ignore the trap functions
-          echo "${file}:${line} ${func}()"
-        fi
+      if [[ $file != *".tm.boot.sh" ]] && [[ $func != "_tm::trap::"* ]]; then # ignore the trap functions
+        echo "${file}:${line} ${func}()"
+      fi
       ((i++))
     done
   fi
   exit $exit_code # Exit with the same error code
 }
 
-_trap_error(){
+_trap_error() {
   _tm::trap::error
 }
-
 
 # TODO:
 #

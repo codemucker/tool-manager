@@ -19,59 +19,59 @@ _tm::source::include .tm.script.sh .tm.plugin.sh .tm.plugins.sh .tm.cfg.sh
 
 declare -A args
 _parse_args \
-    --file "${BASH_SOURCE[0]}" \
-    --opt-this "|flag|group=plugin|desc=When set, auto detect plugin from 'TM_PLUGIN_ID' env variable. This is set via the plugin wrapper scripts" \
-    --opt-tm "|short=t|long=tm|flag|group=plugin|desc=When set, use tool manager" \
-    --opt-plugin "|remainder|greedy|group=plugin|long=plugin|short=p|value=QUAILIFIED-PLUGIN-NAME|desc=The plugin to edit the config for|example='my-ns:some-plugin','tm-install'" \
-    --opt-prefix "|desc=The plugin prefix|validators=plugin-prefix" \
-    --opt-vendor "|short=v|desc=The plugin vendor|validators=plugin-vendor" \
-    --opt-editor "|short=e|long=editor|desc=The editor to use" \
-    --result args \
-    -- "$@"
+  --file "${BASH_SOURCE[0]}" \
+  --opt-this "|flag|group=plugin|desc=When set, auto detect plugin from 'TM_PLUGIN_ID' env variable. This is set via the plugin wrapper scripts" \
+  --opt-tm "|short=t|long=tm|flag|group=plugin|desc=When set, use tool manager" \
+  --opt-plugin "|remainder|greedy|group=plugin|long=plugin|short=p|value=QUAILIFIED-PLUGIN-NAME|desc=The plugin to edit the config for|example='my-ns:some-plugin','tm-install'" \
+  --opt-prefix "|desc=The plugin prefix|validators=plugin-prefix" \
+  --opt-vendor "|short=v|desc=The plugin vendor|validators=plugin-vendor" \
+  --opt-editor "|short=e|long=editor|desc=The editor to use" \
+  --result args \
+  -- "$@"
 
-main(){
+main() {
   editor_to_use="$(_tm::cfg::get_cfg_editor "${args[editor]}")"
   plugin_name="${args[plugin]}"
 
   vendor_prefix=''
-  if [[ -n "${args[vendor]}" ]]; then
-     vendor_prefix="${args[vendor]}/"
+  if [[ -n ${args[vendor]} ]]; then
+    vendor_prefix="${args[vendor]}/"
   fi
 
   prefix=''
-  if [[ -n "${args[prefix]}" ]]; then
-      prefix+="${args[prefix]}:"
+  if [[ -n ${args[prefix]} ]]; then
+    prefix+="${args[prefix]}:"
   fi
 
   local -A plugin=()
-  if [[ -n "${plugin_name}" ]]; then # plugin name provided
-      local qname
-      qname="$(_tm::plugins::enabled::get_by_name "$prefix$vendor_prefix$plugin_name")"
-      if [[ -z "$qname" ]]; then
-          _fail "Couldn't find plugin"
-      fi
-      _tm::parse::plugin plugin "$qname"
-  elif [[ -n "${args[this]}" ]]; then # plugin name provided
-      if [[ -z "${TM_PLUGIN_ID:-}" ]]; then
-          _fail "Set flag '--this', but no env variable 'TM_PLUGIN_ID' has been set. Ensure you are calling this via the wrapper scripts"
-      fi
-      _tm::parse::plugin_id plugin "${TM_PLUGIN_ID}"
+  if [[ -n ${plugin_name} ]]; then # plugin name provided
+    local qname
+    qname="$(_tm::plugins::enabled::get_by_name "$prefix$vendor_prefix$plugin_name")"
+    if [[ -z $qname ]]; then
+      _fail "Couldn't find plugin"
+    fi
+    _tm::parse::plugin plugin "$qname"
+  elif [[ -n ${args[this]} ]]; then # plugin name provided
+    if [[ -z ${TM_PLUGIN_ID:-} ]]; then
+      _fail "Set flag '--this', but no env variable 'TM_PLUGIN_ID' has been set. Ensure you are calling this via the wrapper scripts"
+    fi
+    _tm::parse::plugin_id plugin "${TM_PLUGIN_ID}"
   else # fallback to the tool-manager itself
     _tm::parse::plugin_id plugin "$__TM_PLUGIN_ID"
   fi
 
-  if [[ "${plugin[name]}" == "$__TM_NAME" ]]; then
-      # Edit the root plugin configuration directory
-      # For a directory, it's common to just open it, or a specific file if the editor supports it well.
-      # Most terminal editors will list files or open a file browser. GUI editors handle dirs well.
-      __edit "$editor_to_use" "$TM_PLUGINS_CFG_DIR"
+  if [[ ${plugin[name]} == "$__TM_NAME" ]]; then
+    # Edit the root plugin configuration directory
+    # For a directory, it's common to just open it, or a specific file if the editor supports it well.
+    # Most terminal editors will list files or open a file browser. GUI editors handle dirs well.
+    __edit "$editor_to_use" "$TM_PLUGINS_CFG_DIR"
   else
-      # Edit a specific plugin's config file
-      __edit "$editor_to_use" "${plugin[cfg_sh]}"
+    # Edit a specific plugin's config file
+    __edit "$editor_to_use" "${plugin[cfg_sh]}"
   fi
 }
 
-__edit(){
+__edit() {
   local editor="$1"
   local cfg_file="$2"
   _info "Opening editor '$editor' for configuration directory: $cfg_file"
@@ -79,16 +79,15 @@ __edit(){
   local cfg_dir
   cfg_dir="$(basename "${cfg_file}")"
   # Ensure the directory exists
-  if [[ ! -d "$cfg_dir" ]]; then
-      _info "Configuration directory '$cfg_dir' does not exist. Creating it."
-      if ! mkdir -p "$cfg_dir"; then
-        _error "Could not create directory '$cfg_dir'."
-      fi
+  if [[ ! -d $cfg_dir ]]; then
+    _info "Configuration directory '$cfg_dir' does not exist. Creating it."
+    if ! mkdir -p "$cfg_dir"; then
+      _error "Could not create directory '$cfg_dir'."
+    fi
   fi
 
   # Touch the file to ensure it exists before opening, helpful for some editors
   touch "$cfg_file" || _warn "Could not touch file '$cfg_file', editor might create it."
-
 
   # For a directory, it's common to just open it, or a specific file if the editor supports it well.
   # Most terminal editors will list files or open a file browser. GUI editors handle dirs well.

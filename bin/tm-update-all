@@ -3,6 +3,5 @@
 # Update the tool-manager and installed plugins
 #
 
-tm-update-self  || echo "Error updating tool-manager. Aborting" && exit 1
+tm-update-self || echo "Error updating tool-manager. Aborting" && exit 1
 tm-plugin-each --installed git pull --ff-only
-

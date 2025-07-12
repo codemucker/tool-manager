@@ -12,47 +12,47 @@ _trap_error
 
 declare -A args
 _parse_args \
-    --file "${BASH_SOURCE[0]}" \
-    --opt-plugins "|remainder|required|multi|short=p|long=plugin|value=PLUGIN|desc=The plugin(s) to enable.|validators=plugin-name" \
-    --opt-vendor "|short=v|desc=The plugin vendor|validators=plugin-vendor" \
-    --opt-prefix "|desc=The prefix to append to all the plugin's script|validators=plugin-prefix" \
-    --opt-space "|short=s|desc=The space to enable this in|validators=space-key" \
-    --opt-force "|flag|short=f|desc=Whether to reload the plugin if it is already enabled." \
-    --result args \
-    -- "$@"
+  --file "${BASH_SOURCE[0]}" \
+  --opt-plugins "|remainder|required|multi|short=p|long=plugin|value=PLUGIN|desc=The plugin(s) to enable.|validators=plugin-name" \
+  --opt-vendor "|short=v|desc=The plugin vendor|validators=plugin-vendor" \
+  --opt-prefix "|desc=The prefix to append to all the plugin's script|validators=plugin-prefix" \
+  --opt-space "|short=s|desc=The space to enable this in|validators=space-key" \
+  --opt-force "|flag|short=f|desc=Whether to reload the plugin if it is already enabled." \
+  --result args \
+  -- "$@"
 
-main(){
+main() {
   vendor_prefix=''
-  if [[ -n "${args[vendor]}" ]]; then
-      vendor_prefix+="${args[vendor]}/"
+  if [[ -n ${args[vendor]} ]]; then
+    vendor_prefix+="${args[vendor]}/"
   fi
 
   all_prefix=''
-  if [[ -n "${args[prefix]}" ]]; then
-      all_prefix+="${args[prefix]}:"
+  if [[ -n ${args[prefix]} ]]; then
+    all_prefix+="${args[prefix]}:"
   fi
 
   reload="${args[force]}"
 
-  IFS=' ' read -r -a plugin_names <<< "${args[plugins]}"
+  IFS=' ' read -r -a plugin_names <<<"${args[plugins]}"
   declare -A plugin
   for name in "${plugin_names[@]}"; do
     local qname
     qname="$(_tm::plugins::installed::get_by_name "$all_prefix$vendor_prefix$name")"
-    if [[ -z "${qname}" ]]; then
-       _fail "Couldn't find plugin"
+    if [[ -z ${qname} ]]; then
+      _fail "Couldn't find plugin"
     fi
     local -A plugin
     _tm::parse::plugin plugin "${qname}"
-    if [[ -z "${plugin[prefix]}" ]]; then
-        declare prefix
-        _read "Prefix to add to all the plugin's scripts (optional, leave blank if none) (e.g. 'my', 'acme') : " prefix
-        if [[ -n "${prefix}" ]]; then
-            _tm::parse::plugin plugin "$prefix:$qname"
-        fi
+    if [[ -z ${plugin[prefix]} ]]; then
+      declare prefix
+      _read "Prefix to add to all the plugin's scripts (optional, leave blank if none) (e.g. 'my', 'acme') : " prefix
+      if [[ -n ${prefix} ]]; then
+        _tm::parse::plugin plugin "$prefix:$qname"
+      fi
     fi
-    if [[ "$reload" == '1' ]]; then
-    _tm::plugin::disable plugin || true
+    if [[ $reload == '1' ]]; then
+      _tm::plugin::disable plugin || true
     fi
     _tm::plugin::enable plugin
   done
