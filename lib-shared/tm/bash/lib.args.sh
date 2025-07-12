@@ -646,14 +646,14 @@ _tm::args::parse() {
                 # If the current argument is a flag (starts with -), add it directly.
                 # Otherwise, it's a value for the previous unknown argument.
                 if [[ "$arg" == -* ]]; then # It's an unknown option/flag
-                  if [[ -n "${parse_results["$unknown_key"]}" ]]; then
+                  if [[ -n "${parse_results["$unknown_key"]:-}" ]]; then
                     parse_results["$unknown_key"]+="\t$arg"
                   else
                     parse_results["$unknown_key"]="$arg"
                   fi
                 else # It's a value for the previous unknown option
                   # Append to the last added unknown argument
-                  if [[ -n "${parse_results["$unknown_key"]}" ]]; then
+                  if [[ -n "${parse_results["$unknown_key"]:-}" ]]; then
                     parse_results["$unknown_key"]+="\t$arg"
                   else
                     parse_results["$unknown_key"]="$arg"

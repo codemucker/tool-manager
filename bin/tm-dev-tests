@@ -5,7 +5,7 @@
 # Usage: tm-dev-tests [plugin_name|tool-manager]
 #
 
-_tm::source::include_once .tm.script.sh .tm.plugin.sh .tm.plugins.sh @tm/lib.prog.bats.sh
+_tm::source::include_once .tm.script.sh .tm.plugin.sh .tm.plugins.sh @tm/lib.prog.bats.sh @tm/lib.prog.bashcov.sh
 
 _trap_error
 
@@ -25,18 +25,22 @@ main() {
   local auto_fix="$(_tm::parse::boolean "${args[fix]}")"
   local target_name=""
   local -a tests=()
+  local coverage_root_dir
 
   _tm::prog::bats::install
 
   if [[ -z $target ]] || [[ $target == "tool-manager" ]]; then
     target_name="tool-manager"
     __add_test_dirs_in tests "$TM_HOME"
+    coverage_root_dir="$TM_HOME"
   elif [[ $target == "."* ]] || [[ $target == "/"* ]]; then
     tests+=("$target")
     target_name=""
+    coverage_root_dir="$target"
   elif [[ -f $target ]]; then
     tests+=("$target")
     target_name="file '${target}'"
+    coverage_root_dir=""
   else
     local qname
     qname="$(_tm::plugins::installed::get_by_name "$target")"
@@ -48,6 +52,8 @@ main() {
 
     target_name="${qname}"
     __add_test_dirs_in tests "${plugin[install_dir]}"
+
+    coverage_root_dir="${plugin[install_dir]}/bin"
   fi
 
   if [[ -n $target_name ]]; then
@@ -81,7 +87,7 @@ main() {
           _info "fixing executable flag on '${test_file}'"
           chmod +x "$test_file" # auto set executable bit
         fi
-        ("$test_file" || failures=1) &
+        (__with_coverage "$coverage_root_dir" "$test_file" || failures=1) &
         _info "--- Finished tests in: $test_file ---"
       ) &
     else
@@ -90,7 +96,7 @@ main() {
         _info "fixing executable flag on '${test_file}'"
         chmod +x "$test_file" # auto set executable bit
       fi
-      "$test_file" || failures=1
+      __with_coverage "$coverage_root_dir" "$test_file" || failures=1
       _info "--- Finished tests in: $test_file ---"
     fi
   done
@@ -98,11 +104,11 @@ main() {
   # -- bats tests --
   if [[ ${parallel} == "1" ]]; then
     _info "--- Running bats tests ---"
-    bats "${tests[@]}" || failures=1
+    __with_coverage "$coverage_root_dir" bats "${tests[@]}" || failures=1
     _info "--- Finished bats tests ---"
   else
     _info "--- Running bats tests ---"
-    bats "${tests[@]}" || failures=1
+    __with_coverage "$coverage_root_dir" bats "${tests[@]}" || failures=1
     _info "--- Finished bats tests ---"
   fi
 
@@ -136,6 +142,15 @@ __add_test_dirs_in() {
       test_dirs_ref+=("$dir")
     done
   fi
+}
+
+__with_coverage() {
+  local root_dir="$1"
+  shift
+  # add bashcov coverage
+  #_tm::prog::bashcov --root "$root_dir" -- "$@"
+  #_tm::prog::bashcov -- "$@"
+  "$@"
 }
 
 main "$@"

@@ -159,8 +159,6 @@ _tm::parse::plugin(){
 #  _tm::parse::plugin_name parts "prefix:bar"
 #  _tm::parse::plugin_name parts "prefix:vendor/bar@123"
 #  _tm::parse::plugin_name parts "prefix__bar"
-
-#
 _tm::parse::plugin_name(){
   local -n result_ref="$1" # expect it to be an associative array
   result_ref=()
@@ -216,7 +214,7 @@ _tm::parse::plugin_name(){
   fi
 
   if [[ -z "$name" ]]; then
-    _fail "Invalid plugin name format.Is empty. From input name'${parse_name}'"
+    _fail "Invalid plugin name format. Is empty. From input name'${parse_name}'"
   fi
 
   # Validate name, vendor, and version formats
@@ -282,7 +280,7 @@ _tm::parse::plugin_id(){
   result_ref[space]="$space" # Fix: Set space in result_ref
 
   if [[ -z "$name" ]]; then
-    _fail "Invalid plugin name format.Is empty. From id '${parse_id}'"
+    _fail "Invalid plugin name format. Is empty. From id '${parse_id}'"
   fi
 
   # Validate name, vendor, and version formats

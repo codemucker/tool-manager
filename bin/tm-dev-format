@@ -19,7 +19,7 @@ _parse_args \
 
 main() {
   _tm::prog::shfmt::install
-  local -a shfmt_opts=()
+  local -a shfmt_opts=(--simplify --indent 2 --case-indent --binary-next-line)
 
   local what="${args[plugin]}"
 
@@ -90,7 +90,6 @@ main() {
       fi
     fi
   done
-  shfmt_opts+=(--simplify --indent 2 --case-indent --binary-next-line)
 
   if [[ ${#bash_files[@]} -gt 0 ]]; then
     if _is_debug; then

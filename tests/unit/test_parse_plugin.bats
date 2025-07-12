@@ -1,6 +1,7 @@
 #!/usr/bin/env env-tm-bats
 
-load '../../lib-shared/tm/bash/lib.parse.sh'
+source "${TM_LIB_BASH}/lib.source.sh"
+_tm::source::include_once @tm/lib.log.sh @tm/lib.parse.sh
 
 # Mock _fail to prevent script exit on expected failures
 _fail() {
@@ -23,6 +24,14 @@ __TM_SEP_PREFIX_NAME=":"
 __TM_SEP_PREFIX_DIR="__"
 __TM_NO_VENDOR="no-vendor"
 __TM_NAME="tool-manager" # Used in _tm::parse::__set_plugin_derived_vars
+TM_STATE_DIR=/dev/null/tm/state
+TM_PLUGINS_ENABLED_DIR=/dev/null/plugins/enabled
+TM_PLUGINS_INSTALL_DIR=/dev/null/plugins/installed
+TM_PLUGINS_INSTALLED_CONF_DIR=/dev/null/plugins/installed-conf
+TM_PLUGINS_CFG_DIR=/dev/null/plugins/config
+TM_PLUGINS_STATE_DIR=/dev/null/plugins/state
+TM_PLUGINS_CACHE_DIR=/dev/null/plugins/cache
+TM_PLUGINS_PACKAGES_DIR=/dev/null/plugins/packages
 
 # Mock _tm::util::array::print as it's used in _tm::parse::plugin_name and _tm::parse::plugin_id
 _tm::util::array::print() {
@@ -169,10 +178,11 @@ _tm::util::array::print() {
   [ "${result[id]}" = "tm:plugin::myvendor:myplugin::" ]
 }
 
+# fails under bashcov
 @test "_tm::parse::plugin_id - invalid ID (missing name)" {
   run _tm::parse::plugin_id result "tm:plugin:myspace:myvendor::1.0.0:myprefix"
   [ "$status" -ne 0 ]
-  [[ $output =~ "MOCKED_FAIL: Invalid plugin name format.Is empty. From id 'tm:plugin:myspace:myvendor::1.0.0:myprefix'" ]]
+  [[ $output =~ "MOCKED_FAIL: Invalid plugin name format. Is empty. From id 'tm:plugin:myspace:myvendor::1.0.0:myprefix'" ]]
 }
 
 @test "_tm::parse::plugin_id - invalid ID (missing tm prefix)" {
