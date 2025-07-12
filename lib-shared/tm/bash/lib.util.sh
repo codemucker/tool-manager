@@ -73,6 +73,26 @@ _confirm(){
     local prompt="${1}"
     local default_val="${2:-}"
     local yn=''
+
+    if ! [[ -t 0 ]]; then
+        read -r yn
+        case "${yn}" in
+            [yYtT]*|1)
+                return $_true
+                ;;
+            [nNFf]*|0)
+                return $_false
+                ;;
+            *)
+                # Fallback to default if piped input is invalid/empty
+                case "${default_val}" in
+                    [yYtT]*|1) return $_true ;;
+                    *) return $_false ;;
+                esac
+                ;;
+        esac
+    fi
+
     case "${default_val}" in
       [yYtT]*|1)
         prompt+=" [Yn]"
@@ -87,7 +107,6 @@ _confirm(){
         default_val=''
       ;;
     esac
-    # how to ensure we can pass 'y' to this when we call '_confirm <<<"y"' ai!
     _read_yn "$prompt" yn "${default_val}"
     if [[ "${yn}" == 'y' ]]; then
       return $_true
