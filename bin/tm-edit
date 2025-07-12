@@ -5,7 +5,7 @@
 # Usage: tm-edit [plugin_basename] [editor_command]
 #
 # Arguments:
-#  $1 - plugin_basename: You can provide a partial plugin name and ths script will find the plugin
+#  $1 - plugin_basename: You can provide a partial plugin name and this script will find the plugin
 #  $2 -  editor_command: Optional. The editor command to use (e.g., "vi", "nano", "code").
 #                   Defaults to $EDITOR, then 'vi', then 'nano'.
 #

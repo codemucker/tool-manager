@@ -78,7 +78,7 @@ main() {
       (
         _info "--- Running tests in: $test_file ---"
         if [[ ! -x "$test_file" ]] && [[ "${auto_fix}" == "1" ]]; then
-            _info "fixing exectuable flag on '${test_file}'"
+            _info "fixing executable flag on '${test_file}'"
             chmod +x "$test_file" # auto set executable bit
         fi
         ( "$test_file" || failures=1 ) &
@@ -87,7 +87,7 @@ main() {
     else
       _info "--- Running tests in: $test_file ---"
       if [[ ! -x "$test_file" ]] && [[ "${auto_fix}" == "1" ]]; then
-          _info "fixing exectuable flag on '${test_file}'"
+          _info "fixing executable flag on '${test_file}'"
           chmod +x "$test_file" # auto set executable bit
       fi
       "$test_file" || failures=1

@@ -1,5 +1,5 @@
 #
-# Library to provide logging (and stacktrace) related funtionality
+# Library to provide logging (and stacktrace) related functionality
 #
 
 if command -v _tm::log::set_opts &>/dev/null; then
