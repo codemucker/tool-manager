@@ -13,6 +13,29 @@ _err() {
   echo "[ERROR] [install.sh] $*" >&2
 }
 
+# Check if bash version is 5 or higher, or if we're running in zsh
+# Returns 0 (success) if the shell is compatible, 1 (failure) otherwise
+_is_compatible_shell() {
+  # Check if we're running in zsh by checking ZSH_VERSION or SHELL
+  if [[ -n "${ZSH_VERSION:-}" ]] || [[ "$SHELL" == *"zsh"* ]]; then
+    # zsh is compatible with our scripts, no version check needed
+    return 0
+  # Check if we're running in bash
+  elif [[ -n "${BASH_VERSION:-}" ]]; then
+    # Check for minimum bash version 5
+    if [[ "$(echo "${BASH_VERSION}" | grep -e '^[5-9]\..*')" ]]; then
+      return 0
+    else
+      return 1
+    fi
+  else
+    # Neither bash nor zsh detected
+    echo "${log_prefix}WARNING: Unable to determine shell type. Neither BASH_VERSION nor ZSH_VERSION is set, and SHELL=$SHELL doesn't contain 'zsh'."
+    echo "${log_prefix}This script is designed to work with bash 5+ or zsh. Continuing with caution..."
+    return 1
+  fi
+}
+
 # Configure shell config file to source tm_bashrc
 _configure_shell_file() {
   local file_path="$1"
@@ -96,11 +119,15 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-# --- Bash Version Check ---
-if [[ ! "$(echo "${BASH_VERSION:-0}" | grep -e '^[5-9]\..*' )" ]]; then
+# --- Shell Compatibility Check ---
+if ! _is_compatible_shell; then
   # Check if we're on macOS
   if [[ "$OSTYPE" == "darwin"* ]]; then
-    echo "${log_prefix}Detected macOS with Bash version ${BASH_VERSION:-0}"
+    if [[ -n "${ZSH_VERSION:-}" ]]; then
+      echo "${log_prefix}Detected macOS with ZSH version ${ZSH_VERSION}"
+    else
+      echo "${log_prefix}Detected macOS with Bash version ${BASH_VERSION:-0}"
+    fi
     echo "${log_prefix}Attempting to install Bash 5+ via Homebrew..."
 
     # Check if Homebrew is installed
@@ -153,8 +180,12 @@ if [[ ! "$(echo "${BASH_VERSION:-0}" | grep -e '^[5-9]\..*' )" ]]; then
       exit 1
     fi
   else
-    _err "Incompatible bash version, expect bash version 5 or later, installed is '${BASH_VERSION:-0}'"
-    _err "On mac you can install bash(5) or later via homebrew"
+    if [[ -n "${ZSH_VERSION:-}" ]]; then
+      _err "Incompatible shell configuration. This script requires zsh with proper configuration."
+    else
+      _err "Incompatible bash version, expect bash version 5 or later, installed is '${BASH_VERSION:-0}'"
+      _err "On mac you can install bash(5) or later via homebrew"
+    fi
     exit 1
   fi
 fi

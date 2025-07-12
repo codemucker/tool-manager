@@ -10,7 +10,7 @@
 [[ -n "${__TM_BOOTSTRAP_SH_INITED:-}" ]] && return || __TM_BOOTSTRAP_SH_INITED=1;
 
 # Determine which shell we're running in and check version requirements
-if [[ -n "${ZSH_VERSION:-}" ]]; then
+if [[ -n "${ZSH_VERSION:-}" ]] || [[ "$SHELL" == *"zsh"* ]]; then
   # We're in zsh, which is compatible with our scripts
   # No version check needed for zsh
   :
@@ -22,7 +22,7 @@ elif [[ -n "${BASH_VERSION:-}" ]]; then
   fi
 else
   # Neither bash nor zsh detected
-  echo "WARNING: Unable to determine shell type. Neither BASH_VERSION nor ZSH_VERSION is set."
+  echo "WARNING: Unable to determine shell type. Neither BASH_VERSION nor ZSH_VERSION is set, and SHELL=$SHELL doesn't contain 'zsh'."
   echo "This script is designed to work with bash 5+ or zsh. Continuing with caution..."
 fi
 
