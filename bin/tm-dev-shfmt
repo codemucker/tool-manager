@@ -12,13 +12,24 @@ declare -A args
 _parse_args \
     --file "${BASH_SOURCE[0]}" \
     --opt-plugin   "|remainder|short=p|desc=The plugin, 'tool-manager', or dir to check. If empty, test the tool-manager. Can pass a path to the check dir" \
+    --opt-diff   "|flag|short=d|desc=If set, show the diffs" \
+    --opt-apply   "|flag|short=a|desc=If set, apply the changes to the files" \
     --result args \
     -- "$@"
 
 main() {
   _tm::prog::shfmt::install
-  
+  local -a shfmt_opts=()
+
   local what="${args[plugin]}"
+  
+  if [[ "${args['diff']}" == "1" ]]; then
+    shfmt_opts+=(--diff)
+  fi
+  if [[ "${args['apply']}" == "1" ]]; then
+    shfmt_opts+=(--write) # write to file
+  fi
+  
   local target_name=""
   local test_dir=""
   local -a targets=()
@@ -48,7 +59,7 @@ main() {
     targets+=("${plugin_home}/bin" "${plugin_home}/bin-internal" "${plugin_home}/lib-shared/bash" "${plugin_home}/test" "$TM_HOME/tests")
   fi
 
-  local -a shfmt_opts=()
+
   # local opt_value
   # for opt in "include" "exclude" "format" "severity" "shell"; do
   #   opt_value="${args["${opt}"]:-}"
@@ -90,7 +101,8 @@ main() {
       fi
     fi
   done
-  shfmt_opts+=(--diff --simplify --indent 2 --case-indent --binary-next-line)
+  shfmt_opts+=(--simplify --indent 2 --case-indent --binary-next-line)
+
   if [[ ${#bash_files[@]} -gt 0 ]]; then
     if _is_debug; then
       _debug "bash_files='$(IFS=$'\n'; echo "${bash_files[*]}")'"
