@@ -30,6 +30,7 @@ _tm::install::auto(){
     done
   fi
   # Default fallback managers
+  # add suport for teh nix home manager. ai!
   local default_pms=()
   case "$os" in
     Linux)
@@ -168,26 +169,28 @@ _tm::install::auto(){
         ;;
       sdkman)
         local sdkman_init="${HOME}/.sdkman/bin/sdkman-init.sh"
-        if [[ -f "${sdkman_init}" ]]; then
-          # shellcheck source=/dev/null
-          source "${sdkman_init}"
-        fi
-        if command -v sdk &>/dev/null; then
-          _info "Checking for '$program' with SDKMAN!..."
-          if sdk list | grep -q -w "$program"; then
-            if _confirm "Package (candidate) '$program' found with SDKMAN!. Install with 'sdk install $program'?"; then
-              sdk install "$program"
-              if command -v "$program" &>/dev/null; then
-                _info "Successfully installed '$program' with SDKMAN!."
-                return 0
+        (
+          if [[ -f "${sdkman_init}" ]]; then
+            # shellcheck source=/dev/null
+            source "${sdkman_init}"
+          fi
+          if command -v sdk &>/dev/null; then
+            _info "Checking for '$program' with SDKMAN!..."
+            if sdk list | grep -q -w "$program"; then
+              if _confirm "Package (candidate) '$program' found with SDKMAN!. Install with 'sdk install $program'?"; then
+                sdk install "$program"
+                if command -v "$program" &>/dev/null; then
+                  _info "Successfully installed '$program' with SDKMAN!."
+                  return 0
+                else
+                  _warn "Installation of '$program' with SDKMAN! failed. You may need to resource your shell."
+                fi
               else
-                _warn "Installation of '$program' with SDKMAN! failed. You may need to resource your shell."
+                _warn "User declined installation of '$program' with SDKMAN!."
               fi
-            else
-              _warn "User declined installation of '$program' with SDKMAN!."
             fi
           fi
-        fi
+        ) || _warn "could not install using sdkman"
         ;;
       go)
         if command -v go &>/dev/null; then
@@ -233,11 +236,12 @@ _tm::install::auto(){
     esac
   done
 
-  if ! command -v "$program" &>/dev/null; then
+  if ! command -v "$program" &>/dev/null && [[ "$program" != "brew" ]]; then
     if ! command -v brew &>/dev/null && { [[ "$os" == "Linux" ]] || [[ "$os" == "Darwin" ]]; }; then
       local brew_installer_path="$TM_LIB_BASH/install/lib.install.brew.sh"
       if [[ -f "$brew_installer_path" ]]; then
         if _confirm "Homebrew is not installed, but might be able to install '$program'. Install Homebrew now?"; then
+           #TODO: just use teh auto installer for brew too?
           source "$brew_installer_path"
           if _tm::install::brew; then
             _info "Homebrew installed. Now trying to install '$program' with it."
