@@ -1,6 +1,6 @@
 #
 # Provides a function to automatically install a program using available system
-# package managers. It intelligently detects the operating system and cycles
+# package managers. It detects the operating system and cycles
 # through a list of supported package managers to find and install the requested
 # program.
 #
@@ -87,6 +87,7 @@ _tm::install::auto(){
     done
   fi
   # Default fallback managers
+  # add support for ruby gems, and upate the docs. ai!
   local default_pms=()
   case "$os" in
     Linux)
