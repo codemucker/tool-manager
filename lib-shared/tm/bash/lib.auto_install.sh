@@ -30,7 +30,6 @@ _tm::install::auto(){
     done
   fi
   # Default fallback managers
-  #if could not find installer, brew isn't installed, but is compatible with the current os, prompt to install brew via the installers first, then try the bre packages again. ai!
   local default_pms=()
   case "$os" in
     Linux)
@@ -234,8 +233,39 @@ _tm::install::auto(){
     esac
   done
 
-  if [[ "$os" == "Darwin" ]] && ! command -v brew &>/dev/null; then
-      _warn "Homebrew not found. Cannot auto-install '$program' on macOS."
+  if ! command -v "$program" &>/dev/null; then
+    if ! command -v brew &>/dev/null && { [[ "$os" == "Linux" ]] || [[ "$os" == "Darwin" ]]; }; then
+      local brew_installer_path="$TM_LIB_BASH/install/lib.install.brew.sh"
+      if [[ -f "$brew_installer_path" ]]; then
+        if _confirm "Homebrew is not installed, but might be able to install '$program'. Install Homebrew now?"; then
+          source "$brew_installer_path"
+          if _tm::install::brew; then
+            _info "Homebrew installed. Now trying to install '$program' with it."
+            if brew info "$program" &>/dev/null; then
+              if _confirm "Package '$program' found with Homebrew. Install with 'brew install'?"; then
+                brew install "$program"
+                if command -v "$program" &>/dev/null; then
+                  _info "Successfully installed '$program' with Homebrew."
+                  return 0
+                else
+                   _warn "Installation of '$program' with Homebrew failed."
+                fi
+              else
+                _warn "User declined installation of '$program' with Homebrew."
+              fi
+            else
+              _warn "Package '$program' not found with Homebrew."
+            fi
+          else
+            _warn "Homebrew installation failed."
+          fi
+        fi
+      fi
+    fi
+  fi
+
+  if { [[ "$os" == "Darwin" ]] || [[ "$os" == "Linux" ]]; } && ! command -v brew &>/dev/null; then
+      _warn "Homebrew not found, which may be required to auto-install '$program'."
       _info "To install it, see https://brew.sh/"
   fi
 
