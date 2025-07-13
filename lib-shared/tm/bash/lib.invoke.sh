@@ -150,5 +150,109 @@ _tm::invoke::__try_package_install(){
 
 _tm::invoke::__trye_auto_install(){
   local program="$1"
-  # based on the currently running os, try to install the given program. FInd the most suitable package manager and see if it contains the requested package. Fallback to others as required.COnfirm with user before proceeding with actual install. ai!
+  local os
+  os="$(uname -s)"
+
+  case "$os" in
+    Linux)
+      # Try with apt
+      if command -v apt-get &>/dev/null; then
+        _info "Checking for '$program' with apt..."
+        if apt-cache show "$program" &>/dev/null; then
+          if _confirm "Package '$program' found in apt repositories. Install with 'sudo apt-get install'?"; then
+            sudo apt-get update && sudo apt-get install -y "$program"
+            if command -v "$program" &>/dev/null; then
+              _info "Successfully installed '$program' with apt."
+              return 0
+            else
+              _warn "Installation of '$program' with apt failed."
+            fi
+          else
+            _warn "User declined installation of '$program' with apt."
+          fi
+        fi
+      fi
+
+      # Try with dnf
+      if command -v dnf &>/dev/null; then
+        _info "Checking for '$program' with dnf..."
+        if dnf -q list available "$program" | grep -q "^${program}\."; then
+          if _confirm "Package '$program' found in dnf repositories. Install with 'sudo dnf install'?"; then
+            sudo dnf install -y "$program"
+            if command -v "$program" &>/dev/null; then
+              _info "Successfully installed '$program' with dnf."
+              return 0
+            else
+              _warn "Installation of '$program' with dnf failed."
+            fi
+          else
+            _warn "User declined installation of '$program' with dnf."
+          fi
+        fi
+      fi
+
+      # Try with yum
+      if command -v yum &>/dev/null; then
+        _info "Checking for '$program' with yum..."
+        if yum -q list available "$program" &>/dev/null; then
+          if _confirm "Package '$program' found in yum repositories. Install with 'sudo yum install'?"; then
+            sudo yum install -y "$program"
+            if command -v "$program" &>/dev/null; then
+              _info "Successfully installed '$program' with yum."
+              return 0
+            else
+              _warn "Installation of '$program' with yum failed."
+            fi
+          else
+            _warn "User declined installation of '$program' with yum."
+          fi
+        fi
+      fi
+
+      # Try with pacman
+      if command -v pacman &>/dev/null; then
+        _info "Checking for '$program' with pacman..."
+        if [[ -n "$(pacman -Ssq "^${program}$")" ]]; then
+          if _confirm "Package '$program' found in pacman repositories. Install with 'sudo pacman -S'?"; then
+            sudo pacman -S --noconfirm "$program"
+            if command -v "$program" &>/dev/null; then
+              _info "Successfully installed '$program' with pacman."
+              return 0
+            else
+              _warn "Installation of '$program' with pacman failed."
+            fi
+          else
+            _warn "User declined installation of '$program' with pacman."
+          fi
+        fi
+      fi
+      ;;
+
+    Darwin)
+      if command -v brew &>/dev/null; then
+        _info "Checking for '$program' with Homebrew..."
+        if brew info "$program" &>/dev/null; then
+          if _confirm "Package '$program' found with Homebrew. Install with 'brew install'?"; then
+            brew install "$program"
+            if command -v "$program" &>/dev/null; then
+              _info "Successfully installed '$program' with Homebrew."
+              return 0
+            else
+              _warn "Installation of '$program' with Homebrew failed."
+            fi
+          else
+            _warn "User declined installation of '$program' with Homebrew."
+          fi
+        fi
+      else
+        _warn "Homebrew not found. Cannot auto-install '$program' on macOS."
+        _info "To install it, see https://brew.sh/"
+      fi
+      ;;
+    *)
+      _warn "Unsupported OS for auto-installation: $os"
+      ;;
+  esac
+
+  return "$__tm_exit_not_found"
 }
