@@ -1,12 +1,58 @@
 #
-# Try to install the given program using an available system package manager
+# Provides a function to automatically install a program using available system
+# package managers. It intelligently detects the operating system and cycles
+# through a list of supported package managers to find and install the requested
+# program.
 #
-# Return a non zero exit code if it could not install the given program
+# Usage:
+#   _tm::install::auto <program_name>
 #
-# Args
-# $1 - the program to ensure is installed
+# Behavior:
+# - The function first checks for user-defined package manager preferences.
+# - It then falls back to a default, OS-specific list of managers.
+# - Before any installation, it will always prompt the user for confirmation.
+# - If a program is not found and Homebrew is not installed on a compatible
+#   OS (Linux or macOS), it will offer to install Homebrew first.
 #
-#document this file  in terms of how it works, and how the user can set options. update the file header. ai!
+# Configuration:
+#
+# The primary way to configure this script is through the
+# `TM_USER_PACKAGES_MANAGERS` environment variable.
+#
+# This variable takes a comma-separated list of package manager names.
+#
+# Example:
+#   export TM_USER_PACKAGES_MANAGERS="brew,npm,apt"
+#
+# The order in the variable defines the priority. In the example above, it will
+# try to use 'brew' first, then 'npm', then 'apt', before trying any other
+# default managers.
+#
+# To *exclude* a package manager from being used, prefix its name with a
+# hyphen ('-').
+#
+# Example (to prioritize npm and exclude apt):
+#   export TM_USER_PACKAGES_MANAGERS="npm,-apt"
+#
+# Supported Package Managers:
+# - apt: Debian, Ubuntu, etc.
+# - dnf: Fedora, RHEL, etc.
+# - yum: CentOS, etc.
+# - pacman: Arch Linux, etc.
+# - brew: Homebrew (macOS and Linux)
+# - nix: Nix package manager
+# - choco: Chocolatey (Windows)
+# - sdkman: SDKMAN!
+# - go: Go install
+# - npm: Node Package Manager
+#
+# Args:
+#   $1 - The name of the program to install.
+#
+# Returns:
+#   0 on successful installation.
+#   A non-zero exit code (127) if the program could not be installed.
+#
 __tm_exit_not_found=127
 
 _tm::install::auto(){
