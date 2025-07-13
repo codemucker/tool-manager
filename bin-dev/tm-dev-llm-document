@@ -18,7 +18,7 @@ PROJECT_ROOT="${TM_HOME}"
 cd "${PROJECT_ROOT}"
 
 _get_all_shell_files() {
-  find bin bin-dev lib-shared -type f \( -name "*.sh" -o -name "tm-*" \) -not -path "lib-shared/tm/bash/lib.prog.bats.sh" -not -path 'bin-experimental/*'
+  find bin bin-dev lib-shared -type f \( -name "*.sh" -o -name "tm-*" \) -not -path 'bin-experimental/*'
 }
 
 _get_all_functions() {
@@ -184,7 +184,7 @@ main() {
       _fix_mode
       ;;
     --prompt)
-      local function_name="$1"
+      local function_name="${1:-'__echo_to_stdout'}"
       if [[ -z "$function_name" ]]; then
         echo "Error: Missing function name for --prompt" >&2
         _usage

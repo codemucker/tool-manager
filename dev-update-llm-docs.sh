@@ -2,10 +2,8 @@
 cd "$(dirname "${BASH_SOURCE[0]}")"
 
 source .bashrc
-if [ -d "$TM_HOME/bin-dev" ]; then
-  export PATH="$PATH:$TM_HOME/bin-dev"
-fi
+export PATH="$PATH:$TM_HOME/bin-dev"
 
 tm-dev-llm-diagram
-tm-dev-llm-document
+tm-dev-llm-document --lint
 tm-dev-llm-index-functions

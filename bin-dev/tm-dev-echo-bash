@@ -3,4 +3,4 @@
 # For testing performance. Run with 'time'
 
 
-echo "tm-echo-bash: $@"
+echo "tm-echo-bash: $*"
