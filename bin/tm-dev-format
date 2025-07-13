@@ -5,92 +5,36 @@
 # Usage: tm-dev-shfmt [plugin_name|tool-manager]
 #
 
-_tm::source::include_once .tm.script.sh .tm.plugin.sh .tm.plugins.sh @tm/lib.prog.shfmt.sh
+_tm::source::include_once .tm.script.sh .tm.plugin.sh .tm.plugins.sh .tm.tests.sh
 _trap_error
 
 declare -A args
 _parse_args \
   --file "${BASH_SOURCE[0]}" \
-  --opt-plugin "|remainder|short=p|desc=The plugin, 'tool-manager', or dir to check. If empty, test the tool-manager. Can pass a path to the check dir" \
-  --opt-diff "|flag|short=d|desc=If set, show the diffs" \
+  --opt-what "|remainder|short=w|desc=The plugin, 'tool-manager', dir or file to check. If empty, test the tool-manager. Can pass a path to the check dir" \
   --opt-apply "|flag|short=a|desc=If set, apply the changes to the files" \
   --result args \
   -- "$@"
 
 main() {
-  _tm::prog::shfmt::install
-  local -a shfmt_opts=(--simplify --indent 2 --case-indent --binary-next-line)
+  _info "formatting scripts using shfmt..."
 
-  local what="${args[plugin]}"
+  local what="${args[what]}"
+  _tm::invoke::ensure_installed shfmt
 
-  if [[ ${args['diff']} == "1" ]]; then
-    shfmt_opts+=(--diff)
-  fi
+  local -a shfmt_opts=(--simplify --indent 2 --case-indent --binary-next-line --diff)
   if [[ ${args['apply']} == "1" ]]; then
     shfmt_opts+=(--write) # write to file
   fi
 
-  local target_name=""
-  local test_dir=""
-  local -a targets=()
-
-  if [[ -z $what ]] || [[ $what == "tool-manager" ]]; then
-    test_dir="$TM_HOME/test"
-    target_name="tool-manager"
-    targets+=("$TM_HOME/bin" "$TM_HOME/bin-defaults" "$TM_HOME/bin-internal" "$TM_HOME/lib-shared/tm/bash" "$TM_HOME/test" "$TM_HOME/tests")
-  elif [[ $what == "."* ]] || [[ $what == "/"* ]]; then
-    test_dir="$what"
-    target_name=""
-    targets+=("$test_dir")
-  elif [[ -f $what ]]; then
-    test_dir="$(dirname "$what")"
-    target_name="file '$what'"
-    targets+=("$what")
-  else
-    local qname
-    qname="$(_tm::plugins::installed::get_by_name "$what")"
-    if [[ -z $qname ]]; then
-      _fail "Plugin '$what' not found."
-    fi
-    local -A plugin
-    _tm::parse::plugin plugin "$qname"
-    local plugin_home="${plugin[install_dir]}"
-    target_name="${qname}"
-    targets+=("${plugin_home}/bin" "${plugin_home}/bin-internal" "${plugin_home}/lib-shared/bash" "${plugin_home}/test" "$TM_HOME/tests")
-  fi
-
-  _info "formatting scripts using shfmt..."
-
+  local -A files
+  _tm::tests::find files --what "${what}"
+  what="${files[what]}"
   local -a bash_files=()
   local -a bats_files=()
-  for target in "${targets[@]}"; do
-    if [[ -d ${target} ]]; then
-      local file
-      # main scripts
-      while IFS= read -r -d $'\0' file; do
-        # Only check the first line for a shebang. `grep -I` on the output of `head`
-        # helps to ignore binary files. This avoids false positives on eg markdown files.
-        if head -n 1 "$file" 2>/dev/null | grep -qIE '^#!.*(bash|env-tm-bash)'; then
-          bash_files+=("$file")
-        fi
-      done < <(find "${target}" -type f -not -name '.*.sh' -print0)
-      # hidden shell files
-      while IFS= read -r -d $'\0' file; do
-        bash_files+=("$file")
-      done < <(find "${target}" -type f -name ".*.sh" -print0)
-      # bats files
-      while IFS= read -r -d $'\0' file; do
-        bats_files+=("$file")
-      done < <(find "${target}" -type f -name "*.bats" -print0)
-    elif [[ -f ${target} ]]; then
-      if [[ $target == *".bats" ]]; then
-        bats_files+=("${target}")
-      else
-        bash_files+=("${target}")
-      fi
-    fi
-  done
-
+  mapfile -t bash_files <<<"${files[all_bash_files]}"
+  mapfile -t bats_files <<<"${files[all_bats_files]}"
+  local passed=1
   if [[ ${#bash_files[@]} -gt 0 ]]; then
     if _is_debug; then
       _debug "bash_files='$(
@@ -108,8 +52,9 @@ main() {
       )'"
     fi
     shfmt "${shfmt_opts[@]}" --language-dialect bats "${bats_files[@]}"
+    # set the 'passed' variable to 0, if it the exit code of shmt was not zero. ai!
   fi
-  _info "script formatting done for '${target_name}'"
+  _info "script formatting done for '${what}'"
   if [[ ${args[apply]} != "1" ]]; then
     _info "Pass in '--apply' to have these changes applied"
   fi
