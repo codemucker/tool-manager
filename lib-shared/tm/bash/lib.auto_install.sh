@@ -30,21 +30,20 @@ _tm::install::auto(){
     done
   fi
   # Default fallback managers
-  # add support for installing via go. ai!
   local default_pms=()
   case "$os" in
     Linux)
-      default_pms=(apt dnf yum pacman brew sdkman npm)
+      default_pms=(apt dnf yum pacman brew sdkman go npm)
       ;;
     Darwin)
-      default_pms=(brew sdkman npm)
+      default_pms=(brew sdkman go npm)
       ;;
     *CYGWIN* | *MINGW* | *MSYS*)
-      default_pms=(choco sdkman npm)
+      default_pms=(choco sdkman go npm)
       ;;
     *)
       # For other OSes like Windows (WSL), etc.
-      default_pms=(sdkman npm)
+      default_pms=(sdkman go npm)
       ;;
   esac
 
@@ -187,6 +186,26 @@ _tm::install::auto(){
             else
               _warn "User declined installation of '$program' with SDKMAN!."
             fi
+          fi
+        fi
+        ;;
+      go)
+        if command -v go &>/dev/null; then
+          _info "Attempting to install '$program' with 'go install'..."
+          if _confirm "Attempt to install '$program' via 'go install ${program}@latest'?\nThis assumes the program name is a valid Go package path."; then
+            if go install "${program}@latest"; then
+              if command -v "$program" &>/dev/null; then
+                _info "Successfully installed '$program' with 'go install'."
+                return 0
+              else
+                _warn "'go install' seemed to succeed, but '$program' could not be found in your PATH."
+                _warn "Please ensure your Go bin directory (e.g., \$HOME/go/bin) is in your PATH."
+              fi
+            else
+              _warn "'go install ${program}@latest' failed."
+            fi
+          else
+            _warn "User declined installation of '$program' with 'go install'."
           fi
         fi
         ;;
