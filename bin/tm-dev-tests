@@ -5,7 +5,7 @@
 # Usage: tm-dev-tests [plugin_name|tool-manager]
 #
 
-_tm::source::include_once .tm.script.sh .tm.plugin.sh .tm.plugins.sh @tm/lib.prog.bats.sh @tm/lib.prog.bashcov.sh
+_tm::source::include_once .tm.script.sh .tm.plugin.sh .tm.plugins.sh .tm.tests.sh
 
 _trap_error
 
@@ -21,58 +21,20 @@ _parse_args \
 
 main() {
   local parallel="${args[parallel]}"
-  local target="${args[plugin]}"
+  local what="${args[plugin]}"
+  local test_filter="${args[test]}"
   local auto_fix="$(_tm::parse::boolean "${args[fix]}")"
-  local target_name=""
-  local -a tests=()
-  local coverage_root_dir
 
-  _tm::prog::bats::install
+  _tm::invoke::ensure_installed bats
 
-  if [[ -z $target ]] || [[ $target == "tool-manager" ]]; then
-    target_name="tool-manager"
-    __add_test_dirs_in tests "$TM_HOME"
-    coverage_root_dir="$TM_HOME"
-  elif [[ $target == "."* ]] || [[ $target == "/"* ]]; then
-    tests+=("$target")
-    target_name=""
-    coverage_root_dir="$target"
-  elif [[ -f $target ]]; then
-    tests+=("$target")
-    target_name="file '${target}'"
-    coverage_root_dir=""
-  else
-    local qname
-    qname="$(_tm::plugins::installed::get_by_name "$target")"
-    if [[ -z $qname ]]; then
-      _fail "Plugin '$target' not found."
-    fi
-    local -A plugin
-    _tm::parse::plugin plugin "$qname"
+  local -A tests
+  _tm::tests::find tests --what "${what}" --test "${test_filter}"
 
-    target_name="${qname}"
-    __add_test_dirs_in tests "${plugin[install_dir]}"
 
-    coverage_root_dir="${plugin[install_dir]}/bin"
-  fi
+  #extract from the 'tests' array as 'bash_files' and 'bats_targets'. The values are newline seperated. ai!
+  local -a test_files_sh
+  local -a bats_targets
 
-  if [[ -n $target_name ]]; then
-    _info "Running tests for '$target_name' in '${tests[*]}'"
-  else
-    _info "Running tests in '${tests[*]}'"
-  fi
-
-  local -a test_files_sh=()
-  for test in "${tests[@]}"; do
-    if [[ -d ${test} ]]; then
-      # Append found shell script files to test_files_sh
-      mapfile -t -O "${#test_files_sh[@]}" test_files_sh < <(find "$test" -type f -name "*.sh")
-    elif [[ -f $test ]] && [[ $test == *'.sh' ]]; then
-      test_files_sh+=("$test")
-    fi
-  done
-  # Ensure the test_files_sh is a unique list of values
-  mapfile -t test_files_sh < <(printf "%s\n" "${test_files_sh[@]}" | sort -u)
 
   local failures=0
   # -- shell tests --
@@ -102,14 +64,16 @@ main() {
   done
 
   # -- bats tests --
-  if [[ ${parallel} == "1" ]]; then
-    _info "--- Running bats tests ---"
-    __with_coverage "$coverage_root_dir" bats "${tests[@]}" || failures=1
-    _info "--- Finished bats tests ---"
-  else
-    _info "--- Running bats tests ---"
-    __with_coverage "$coverage_root_dir" bats "${tests[@]}" || failures=1
-    _info "--- Finished bats tests ---"
+  if [[ "${#bats_targets[@]}" -gt 0 ]]; then
+    if [[ ${parallel} == "1" ]]; then
+      _info "--- Running bats tests ---"
+      __with_coverage "$coverage_root_dir" _tm::invoke bats "${bats_targets[@]}" || failures=1
+      _info "--- Finished bats tests ---"
+    else
+      _info "--- Running bats tests ---"
+      __with_coverage "$coverage_root_dir" _tm::invoke bats "${bats_targets[@]}" || failures=1
+      _info "--- Finished bats tests ---"
+    fi
   fi
 
   # wait for completion
@@ -130,26 +94,23 @@ __add_test_dirs_in() {
   local -a found_dirs=()
 
   # Find directories named "test" or "tests" within root_dir, including subdirectories
-  if [[ -d "$root_dir/test" ]]; then
-    mapfile -t found_dirs < <(find "$root_dir/test" -type d 2>/dev/null)
-    for dir in "${found_dirs[@]}"; do
-      test_dirs_ref+=("$dir")
-    done
-  fi
-  if [[ -d "$root_dir/tests" ]]; then
-    mapfile -t found_dirs < <(find "$root_dir/tests" -type d 2>/dev/null)
-    for dir in "${found_dirs[@]}"; do
-      test_dirs_ref+=("$dir")
-    done
-  fi
+  for sub_dir in "test" "tests"; do
+    if [[ -d "$root_dir/$sub_dir" ]]; then
+      mapfile -t found_dirs < <(find "$root_dir/$sub_dir" -type d 2>/dev/null)
+      for dir in "${found_dirs[@]}"; do
+        test_dirs_ref+=("$dir")
+      done
+    fi
+  done
+
 }
 
 __with_coverage() {
   local root_dir="$1"
   shift
   # add bashcov coverage
-  #_tm::prog::bashcov --root "$root_dir" -- "$@"
-  #_tm::prog::bashcov -- "$@"
+  #_tm::invoke bashcov --root "$root_dir" -- "$@"
+  #_tm::invoke bashcov -- "$@"
   "$@"
 }
 
