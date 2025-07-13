@@ -79,9 +79,11 @@ _tm::tests::find_test_targets() {
   # Ensure the test_files_sh is a unique list of values
   mapfile -t test_files_sh < <(printf "%s\n" "${test_files_sh[@]}" | sort -u)
 
-  # add the files to the assocaitive array, using newlines as the file separator.ai!
-  results_ref['bash_files']="${test_files_sh[@]}"
-  results_ref['bats_targets']="${bats_targets[@]}"
+  local old_ifs="$IFS"
+  IFS=$'\n'
+  results_ref['bash_files']="${test_files_sh[*]}"
+  results_ref['bats_targets']="${bats_targets[*]}"
+  IFS="$old_ifs"
 }
 
 __add_test_dirs_in() {
