@@ -29,6 +29,7 @@ _tm::install::auto(){
       fi
     done
   fi
+  # add support for sdman, checking it's installed (check for the "$HOME/.sdkman/bin/sdkman-init.sh and source it). ai!
   # Default fallback managers
   local default_pms=()
   case "$os" in
