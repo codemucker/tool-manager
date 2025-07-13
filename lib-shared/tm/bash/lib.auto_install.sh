@@ -45,6 +45,7 @@
 # - sdkman: SDKMAN!
 # - go: Go install
 # - npm: Node Package Manager
+# - gem: RubyGems
 #
 # Args:
 #   $1 - The name of the program to install.
@@ -87,21 +88,20 @@ _tm::install::auto(){
     done
   fi
   # Default fallback managers
-  # add support for ruby gems, and upate the docs. ai!
   local default_pms=()
   case "$os" in
     Linux)
-      default_pms=(apt dnf yum pacman brew nix sdkman go npm)
+      default_pms=(apt dnf yum pacman brew nix sdkman go npm gem)
       ;;
     Darwin)
-      default_pms=(brew nix sdkman go npm)
+      default_pms=(brew nix sdkman go npm gem)
       ;;
     *CYGWIN* | *MINGW* | *MSYS*)
-      default_pms=(choco sdkman go npm)
+      default_pms=(choco sdkman go npm gem)
       ;;
     *)
       # For other OSes like Windows (WSL), etc.
-      default_pms=(sdkman go npm)
+      default_pms=(sdkman go npm gem)
       ;;
   esac
 
@@ -300,6 +300,29 @@ _tm::install::auto(){
               fi
             else
               _warn "User declined installation of '$program' with npm."
+            fi
+          fi
+        fi
+        ;;
+      gem)
+        if command -v gem &>/dev/null; then
+          _info "Checking for '$program' with RubyGems..."
+          # The -r flag is to search remote gems, and we use regex for an exact match
+          if gem search -r "^${program}$" | grep -q "^${program} "; then
+            if _confirm "Package (gem) '$program' found in RubyGems. Install with 'gem install'?"; then
+              if gem install "$program"; then
+                if command -v "$program" &>/dev/null; then
+                  _info "Successfully installed '$program' with RubyGems."
+                  return 0
+                else
+                  _warn "'gem install' seemed to succeed, but '$program' could not be found in your PATH."
+                  _warn "You may need to add Ruby's bin directory to your PATH."
+                fi
+              else
+                _warn "Installation of '$program' with RubyGems failed."
+              fi
+            else
+              _warn "User declined installation of '$program' with RubyGems."
             fi
           fi
         fi
