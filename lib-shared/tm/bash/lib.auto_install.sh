@@ -29,7 +29,6 @@ _tm::install::auto(){
       fi
     done
   fi
-  # add support for chocolatey. ai!
   # Default fallback managers
   local default_pms=()
   case "$os" in
@@ -38,6 +37,9 @@ _tm::install::auto(){
       ;;
     Darwin)
       default_pms=(brew npm)
+      ;;
+    *CYGWIN* | *MINGW* | *MSYS*)
+      default_pms=(choco npm)
       ;;
     *)
       # For other OSes like Windows (WSL), etc.
@@ -142,6 +144,24 @@ _tm::install::auto(){
               fi
             else
               _warn "User declined installation of '$program' with Homebrew."
+            fi
+          fi
+        fi
+        ;;
+      choco)
+        if command -v choco &>/dev/null; then
+          _info "Checking for '$program' with Chocolatey..."
+          if choco search --exact --limit-output "$program" &>/dev/null; then
+            if _confirm "Package '$program' found with Chocolatey. Install with 'choco install'?"; then
+              choco install -y "$program"
+              if command -v "$program" &>/dev/null; then
+                _info "Successfully installed '$program' with Chocolatey."
+                return 0
+              else
+                _warn "Installation of '$program' with Chocolatey failed."
+              fi
+            else
+              _warn "User declined installation of '$program' with Chocolatey."
             fi
           fi
         fi
