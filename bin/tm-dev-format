@@ -51,8 +51,9 @@ main() {
         echo "${bats_files[*]}"
       )'"
     fi
-    shfmt "${shfmt_opts[@]}" --language-dialect bats "${bats_files[@]}"
-    # set the 'passed' variable to 0, if it the exit code of shmt was not zero. ai!
+    if ! shfmt "${shfmt_opts[@]}" --language-dialect bats "${bats_files[@]}"; then
+      passed=0
+    fi
   fi
   _info "script formatting done for '${what}'"
   if [[ ${args[apply]} != "1" ]]; then
