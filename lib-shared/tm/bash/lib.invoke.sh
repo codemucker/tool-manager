@@ -91,7 +91,7 @@ _tm::invoke::__install_or_fail(){
           _fail "failed to install '$prog' using installer '$installer'"
         fi
       elif ! _tm::invoke::__try_package_install "$prog"; then
-           _fail "Program '$prog' is not installed and found not find installer script '$installer'"
+           _fail "Program '$prog' is not installed and could not find installer script '$installer'"
       fi
     fi
 }
@@ -129,21 +129,26 @@ _tm::invoke::__install_or_false(){
 
 _tm::invoke::__try_package_install(){
     local program="$1"
-    if ! command -v tm-install-pkg &> /dev/null; then
+    if ! command -v tm-install-tpkg &> /dev/null; then
       # todo: save the choice so as to not prompt again
-      if _confirm "the tool-manager install plugin (@tm/tm-install) is not installed. Install?"; then
+      if _confirm "the tool-manager '@tm/tm-install' plugin is not installed. Install?"; then
         _tm::plugin::install @tm/tm-install
       fi
-      if ! command -v tm-install-pkg &> /dev/null; then
+      if ! command -v tm-install-tpkg &> /dev/null; then
         _warn "the tool-manager install plugin is not installed, so can't install program '${program}' via this"
         return $__tm_exit_not_found
       fi
     fi
-    tm-install-pkg "$pkg:$program" || _error "Error running 'tm-install-pkg $pkg:$program'"
+    tm-install-tpkg "$program" || _error "Error running 'tm-install-tpkg $program'"
    if ! command -v "$program" &> /dev/null; then
      _warn "Could not install program '${program}' via the '@tm/tm-install' plugin"
      return $__tm_exit_not_found
    else
       _info "Installed program '${program}' via the '@tm/tm-install' plugin"
    fi
+}
+
+_tm::invoke::__trye_auto_install(){
+  local program="$1"
+  # based on the currently running os, try to install the given program. FInd the most suitable package manager and see if it contains the requested package. Fallback to others as required.COnfirm with user before proceeding with actual install. ai!
 }
