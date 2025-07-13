@@ -30,14 +30,13 @@ _tm::install::auto(){
     done
   fi
   # Default fallback managers
-  # add suport for teh nix home manager. ai!
   local default_pms=()
   case "$os" in
     Linux)
-      default_pms=(apt dnf yum pacman brew sdkman go npm)
+      default_pms=(apt dnf yum pacman brew nix sdkman go npm)
       ;;
     Darwin)
-      default_pms=(brew sdkman go npm)
+      default_pms=(brew nix sdkman go npm)
       ;;
     *CYGWIN* | *MINGW* | *MSYS*)
       default_pms=(choco sdkman go npm)
@@ -145,6 +144,23 @@ _tm::install::auto(){
               fi
             else
               _warn "User declined installation of '$program' with Homebrew."
+            fi
+          fi
+        fi
+        ;;
+      nix)
+        if command -v nix-env &>/dev/null && command -v nix-instantiate &>/dev/null; then
+          _info "Checking for '$program' with Nix..."
+          if nix-instantiate --eval -A "nixpkgs.${program}" &> /dev/null; then
+            if _confirm "Package '$program' found in nixpkgs. Install with 'nix-env -iA nixpkgs.$program'?"; then
+              if nix-env -iA "nixpkgs.${program}"; then
+                _info "Successfully installed '$program' with Nix. You may need to start a new shell for it to be available."
+                return 0
+              else
+                _warn "Installation of '$program' with Nix failed."
+              fi
+            else
+              _warn "User declined installation of '$program' with Nix."
             fi
           fi
         fi
