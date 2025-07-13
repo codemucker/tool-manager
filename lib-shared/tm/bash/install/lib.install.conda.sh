@@ -9,19 +9,40 @@ _tm::install::conda() {
   fi
 
   local os_type
-  local arch
-  local installer_url
-  local installer_file
-
   os_type="$(uname -s)"
+  local arch
   arch="$(uname -m)"
+  local installer_file
+  local installer_url
 
   case "$os_type" in
     Linux)
-      os_type="Linux"
+      case "$arch" in
+        x86_64 | aarch64)
+          installer_file="Miniconda3-latest-Linux-${arch}.sh"
+          ;;
+        *)
+          _err "Unsupported architecture for Linux: $arch. Please install conda manually."
+          return 1
+          ;;
+      esac
       ;;
     Darwin)
-      os_type="MacOSX"
+      local mac_os="MacOSX"
+      local mac_arch
+      case "$arch" in
+        x86_64)
+          mac_arch="x86_64"
+          ;;
+        arm64)
+          mac_arch="arm64"
+          ;;
+        *)
+          _err "Unsupported architecture for macOS: $arch. Please install conda manually."
+          return 1
+          ;;
+      esac
+      installer_file="Miniconda3-latest-${mac_os}-${mac_arch}.sh"
       ;;
     *)
       _err "Unsupported OS for conda installation: $os_type. Please install conda manually."
@@ -29,24 +50,6 @@ _tm::install::conda() {
       ;;
   esac
 
-  case "$arch" in
-    x86_64)
-      arch="x86_64"
-      ;;
-    arm64 | aarch64)
-      if [[ "$os_type" == "MacOSX" ]]; then
-        arch="arm64"
-      else
-        arch="aarch64"
-      fi
-      ;;
-    *)
-      _err "Unsupported architecture for conda installation: $arch. Please install conda manually."
-      return 1
-      ;;
-  esac
-
-  installer_file="Miniconda3-latest-${os_type}-${arch}.sh"
   installer_url="https://repo.anaconda.com/miniconda/${installer_file}"
   local install_dir="${TM_HOME}/.tm-conda"
   local tmp_installer_path="/tmp/${installer_file}"
@@ -69,15 +72,15 @@ _tm::install::conda() {
 
   rm "${tmp_installer_path}"
 
-  if [[ ! -d "${install_dir}/bin" ]]; then
-    _fail "Miniconda installation failed. Directory ${install_dir}/bin not found."
+  if [[ ! -x "${install_dir}/bin/conda" ]]; then
+    _fail "Miniconda installation failed. conda executable not found in ${install_dir}/bin."
   fi
 
   _info "Adding Miniconda to PATH for this session..."
   export PATH="${install_dir}/bin:$PATH"
 
-  _info "Initializing conda for your shell..."
-  if ! "${install_dir}/bin/conda" init bash &>/dev/null; then
+  _info "Initializing conda for your shell (bash, zsh)..."
+  if ! "${install_dir}/bin/conda" init bash zsh &>/dev/null; then
     _warn "conda init failed. You may need to manually configure your shell."
   fi
 
