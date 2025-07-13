@@ -19,6 +19,7 @@ _tm::install::auto(){
   local mgr
 
   # User-preferred managers from TM_USER_PACKAGES_MANAGERS
+  # if the user has prefixes a manager witha '-' as in '-apt', then exclude this manager. ai!
   if [[ -n "${TM_USER_PACKAGES_MANAGERS:-}" ]]; then
     local user_pms
     IFS=',' read -r -a user_pms <<< "${TM_USER_PACKAGES_MANAGERS}"
