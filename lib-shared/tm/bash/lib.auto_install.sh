@@ -29,22 +29,21 @@ _tm::install::auto(){
       fi
     done
   fi
-  # add support for sdman, checking it's installed (check for the "$HOME/.sdkman/bin/sdkman-init.sh and source it). ai!
   # Default fallback managers
   local default_pms=()
   case "$os" in
     Linux)
-      default_pms=(apt dnf yum pacman brew npm)
+      default_pms=(apt dnf yum pacman brew sdkman npm)
       ;;
     Darwin)
-      default_pms=(brew npm)
+      default_pms=(brew sdkman npm)
       ;;
     *CYGWIN* | *MINGW* | *MSYS*)
-      default_pms=(choco npm)
+      default_pms=(choco sdkman npm)
       ;;
     *)
       # For other OSes like Windows (WSL), etc.
-      default_pms=(npm)
+      default_pms=(sdkman npm)
       ;;
   esac
 
@@ -163,6 +162,29 @@ _tm::install::auto(){
               fi
             else
               _warn "User declined installation of '$program' with Chocolatey."
+            fi
+          fi
+        fi
+        ;;
+      sdkman)
+        local sdkman_init="${HOME}/.sdkman/bin/sdkman-init.sh"
+        if [[ -f "${sdkman_init}" ]]; then
+          # shellcheck source=/dev/null
+          source "${sdkman_init}"
+        fi
+        if command -v sdk &>/dev/null; then
+          _info "Checking for '$program' with SDKMAN!..."
+          if sdk list | grep -q -w "$program"; then
+            if _confirm "Package (candidate) '$program' found with SDKMAN!. Install with 'sdk install $program'?"; then
+              sdk install "$program"
+              if command -v "$program" &>/dev/null; then
+                _info "Successfully installed '$program' with SDKMAN!."
+                return 0
+              else
+                _warn "Installation of '$program' with SDKMAN! failed. You may need to resource your shell."
+              fi
+            else
+              _warn "User declined installation of '$program' with SDKMAN!."
             fi
           fi
         fi
