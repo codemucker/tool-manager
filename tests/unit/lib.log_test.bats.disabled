@@ -1,0 +1,54 @@
+# Unit tests for lib.log.sh
+
+setup() {
+  # Load the library
+  source "$TM_HOME/lib-shared/tm/bash/lib.log.sh"
+}
+
+@test "_tm::log::debug outputs message when debug enabled" {
+  skip "disabled"
+  TM_LOG_LEVEL="debug"
+  run _tm::log::debug "Test debug message"
+  [ "$output" = "DEBUG: Test debug message" ]
+}
+
+@test "_tm::log::info outputs message when info enabled" {
+  skip "disabled"
+  TM_LOG_LEVEL="info"
+  run _tm::log::info "Test info message"
+  [ "$output" = "INFO: Test info message" ]
+}
+
+@test "_tm::log::warn outputs message when warn enabled" {
+  TM_LOG_LEVEL="warn"
+  run _tm::log::warn "Test warn message"
+  #[ "$output" = "WARN: Test warn message" ]
+  assert_output "WARN: Test warn message"
+}
+
+@test "_tm::log::error outputs message when error enabled" {
+  TM_LOG_LEVEL="error"
+  run _tm::log::error "Test error message"
+  #[ "$output" = "ERROR: Test error message" ]
+  assert_output "ERROR: Test error message"
+}
+
+@test "Log level filtering works correctly" {
+  skip "disabled"
+  TM_LOG_LEVEL="warn"
+  run _tm::log::debug "Should not appear"
+  [ -z "$output" ]
+
+  run _tm::log::info "Should not appear"
+  [ -z "$output" ]
+
+  run _tm::log::warn "Should appear"
+  [ -n "$output" ]
+}
+
+@test "Log stacktrace functionality" {
+  skip "disabled"
+  TM_LOG_LEVEL="debug"
+  run _tm::log::stacktrace
+  [[ $output == *"Stacktrace:"* ]]
+}

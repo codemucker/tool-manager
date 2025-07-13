@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+cd "$(dirname "${BASH_SOURCE[0]}")"
+
 source .bashrc
 if [ -d "$TM_HOME/bin-dev" ]; then
   export PATH="$PATH:$TM_HOME/bin-dev"

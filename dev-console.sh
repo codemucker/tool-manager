@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+cd "$(dirname "${BASH_SOURCE[0]}")"
+
 source .bashrc
 
 # Purpose: Starts an interactive bash shell with the TM environment configured for development.

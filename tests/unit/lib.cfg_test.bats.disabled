@@ -1,0 +1,90 @@
+# Include required sources
+source "$HOME/.tool-manager/.bashrc"
+
+# Source all required library files
+. "$TM_HOME/lib-shared/tm/bash/lib.util.sh"
+. "$TM_HOME/lib-shared/tm/bash/lib.file.env.sh"
+. "$TM_HOME/lib-shared/tm/bash/lib.args.sh"
+. "$TM_HOME/lib-shared/tm/bash/lib.parse.sh"
+. "$TM_HOME/lib-shared/tm/bash/lib.log.sh"
+
+# Source the file under test
+. "$TM_HOME/lib-shared/tm/bash/lib.cfg.sh"
+
+setup() {
+  # Setup a temporary directory for test files
+  TEST_TMP_DIR="$(mktemp -d)"
+  export TM_PLUGINS_CFG_DIR="$TEST_TMP_DIR"
+  export TM_CACHE_DIR="$TEST_TMP_DIR/cache"
+
+  # Create a mock plugin directory structure
+  mkdir -p "$TM_PLUGINS_CFG_DIR/test-plugin"
+  echo 'EXISTING_KEY="existing_value"' >"$TM_PLUGINS_CFG_DIR/test-plugin/config.sh"
+
+  # Mock plugin installation directory
+  export TM_PLUGINS_DIR="$TEST_TMP_DIR/plugins"
+  mkdir -p "$TM_PLUGINS_DIR/default/test-plugin"
+
+  # Override the expected plugin path in the function
+  export __TM_PLUGINS_DIR="$TM_PLUGINS_DIR"
+}
+
+teardown() {
+  # Clean up temporary directory
+  rm -rf "$TEST_TMP_DIR"
+}
+
+@test "get existing config value" {
+  # Use --no-prompt to avoid interactive prompts in tests
+  run _tm::cfg::get --plugin test-plugin --key EXISTING_KEY --no-prompt
+  assert_output "existing_value"
+  assert_success
+}
+
+@test "get non-existing config value with default" {
+  run _tm::cfg::get --plugin test-plugin --key MISSING_KEY --default "default_value" --no-prompt
+  assert_output "default_value"
+  assert_success
+}
+
+@test "get non-existing required value should fail" {
+  run _tm::cfg::get --plugin test-plugin --key REQUIRED_KEY --required --no-prompt
+  assert_failure
+  assert_output --partial "No cfg with key 'REQUIRED_KEY'"
+}
+
+@test "set and get new config value" {
+  # Mock plugin as installed
+  mkdir -p "$TM_PLUGINS_DIR/default/test-plugin"
+
+  run _tm::cfg::set_value test-plugin NEW_KEY "new_value"
+  assert_success
+
+  run _tm::cfg::get --plugin test-plugin --key NEW_KEY --no-prompt
+  assert_output "new_value"
+  assert_success
+}
+
+@test "update existing config value" {
+  # Mock plugin as installed
+  mkdir -p "$TM_PLUGINS_DIR/default/test-plugin"
+
+  run _tm::cfg::set_value test-plugin EXISTING_KEY "updated_value"
+  assert_success
+
+  run _tm::cfg::get --plugin test-plugin --key EXISTING_KEY --no-prompt
+  assert_output "updated_value"
+  assert_success
+}
+
+@test "load config values into environment" {
+  # Use --no-prompt to avoid interactive prompts
+  _tm::cfg::load --plugin test-plugin --no-prompt
+  assert_equal "$EXISTING_KEY" "existing_value"
+}
+
+@test "get all config values" {
+  run _tm::cfg::get --plugin test-plugin --all --no-prompt
+  assert_output --partial 'EXISTING_KEY="existing_value"'
+  assert_success
+}

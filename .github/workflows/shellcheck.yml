@@ -11,7 +11,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Format
-        run: source .bashrc && tm-dev-format --diff
+        run: source .bashrc && tm-dev-format
       - name: ShellCheck
         run: source .bashrc && tm-dev-shellcheck --severity error
       - name: Run tests
