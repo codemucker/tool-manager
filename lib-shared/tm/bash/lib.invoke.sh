@@ -30,7 +30,10 @@ _tm::invoke_or(){
 }
 
 _tm::invoke::require(){
-    # loop over all the provied args and for each one, invoke '_tm::invoke::ensure_installed <args>'. ai!
+    local prog
+    for prog in "$@"; do
+        _tm::invoke::ensure_installed "$prog"
+    done
 }
 
 
