@@ -6,7 +6,7 @@
 # Args
 # $1 - the program to ensure is installed
 #
-
+#document this file  in terms of how it works, and how the user can set options. update the file header. ai!
 __tm_exit_not_found=127
 
 _tm::install::auto(){
