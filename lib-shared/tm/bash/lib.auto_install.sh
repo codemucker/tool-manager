@@ -30,6 +30,7 @@ _tm::install::auto(){
     done
   fi
   # Default fallback managers
+  # add support for installing via go. ai!
   local default_pms=()
   case "$os" in
     Linux)
