@@ -31,9 +31,10 @@ main() {
   _tm::tests::find tests --what "${what}" --test "${test_filter}"
 
 
-  #extract from the 'tests' array as 'bash_files' and 'bats_targets'. The values are newline seperated. ai!
-  local -a test_files_sh
-  local -a bats_targets
+  local -a test_files_sh=()
+  mapfile -t test_files_sh <<< "${tests[bash_files]}"
+  local -a bats_targets=()
+  mapfile -t bats_targets <<< "${tests[bats_targets]}"
 
 
   local failures=0
