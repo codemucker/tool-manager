@@ -85,6 +85,7 @@ _tm::install::conda() {
   fi
 
   _info "Miniconda installation complete. Please restart your shell or 'source ~/.bashrc' for changes to take effect permanently."
+  #source "$HOME/.bashrc"
   _info "Conda is now available in the current shell session."
 
   if ! command -v conda &>/dev/null; then

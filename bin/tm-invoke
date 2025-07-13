@@ -1,0 +1,8 @@
+#!/usr/bin/env env-tm-bash
+#
+# Run a program via the tool-manager, auto installing it if required
+#
+
+_tm::source::include .tm.script.sh
+
+_tm::invoke "$@"

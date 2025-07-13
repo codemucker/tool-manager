@@ -46,7 +46,7 @@ _tm::tests::find() {
   if [[ -z $what ]] || [[ $what == "tool-manager" ]]; then
     target_name="tool-manager"
     _tm::tests::__add_test_dirs_in test_targets "$TM_HOME"
-    all_targets+=("$TM_HOME/bin" "$TM_HOME/bin-defaults" "$TM_HOME/bin-internal" "$TM_HOME/lib-shared/tm/bash" "$TM_HOME/test" "$TM_HOME/tests")
+    all_targets+=("$TM_HOME/bin" "$TM_HOME/bin-defaults" "$TM_HOME/bin-internal" "$TM_HOME/lib-shared/tm/bash" "$TM_HOME/lib-shared/tm/bash/install" "$TM_HOME/test" "$TM_HOME/tests")
   elif [[ $what == "."* ]] || [[ $what == "/"* ]]; then
     test_targets+=("$what")
   elif [[ -f $what ]]; then
@@ -102,7 +102,7 @@ _tm::tests::find() {
         if head -n 1 "$file" 2>/dev/null | grep -qIE '^#!.*(bash|env-tm-bash)'; then
           all_files_sh+=("$file")
         fi
-      done < <(find "${target}" -type f -name '*' -print0)
+      done < <(find "${target}" -type f -not -name '*.sh' -print0)
       # hidden shell files
       while IFS= read -r -d $'\0' file; do
         all_files_sh+=("$file")

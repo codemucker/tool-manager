@@ -9,3 +9,4 @@ tm-kmp*/
 tasks/
 docs/
 context.md
+.tm-conda/
