@@ -16,17 +16,27 @@ _tm::install::auto(){
 
   local managers_to_try=()
   declare -A seen_managers=()
+  declare -A excluded_managers=()
   local mgr
 
   # User-preferred managers from TM_USER_PACKAGES_MANAGERS
-  # if the user has prefixes a manager witha '-' as in '-apt', then exclude this manager. ai!
   if [[ -n "${TM_USER_PACKAGES_MANAGERS:-}" ]]; then
     local user_pms
     IFS=',' read -r -a user_pms <<< "${TM_USER_PACKAGES_MANAGERS}"
+    # First pass: find all exclusions
     for mgr in "${user_pms[@]}"; do
-      if [[ -z "${seen_managers[$mgr]:-}" ]]; then
-        managers_to_try+=("$mgr")
-        seen_managers[$mgr]=1
+      if [[ "$mgr" == -* ]]; then
+        local real_mgr=${mgr:1}
+        excluded_managers["$real_mgr"]=1
+      fi
+    done
+    # Second pass: find all inclusions
+    for mgr in "${user_pms[@]}"; do
+      if [[ "$mgr" != -* ]]; then
+        if [[ -z "${seen_managers[$mgr]:-}" && -z "${excluded_managers[$mgr]:-}" ]]; then
+          managers_to_try+=("$mgr")
+          seen_managers[$mgr]=1
+        fi
       fi
     done
   fi
@@ -49,7 +59,7 @@ _tm::install::auto(){
   esac
 
   for mgr in "${default_pms[@]}"; do
-    if [[ -z "${seen_managers[$mgr]:-}" ]]; then
+    if [[ -z "${seen_managers[$mgr]:-}" && -z "${excluded_managers[$mgr]:-}" ]]; then
       managers_to_try+=("$mgr")
       seen_managers[$mgr]=1
     fi
