@@ -152,6 +152,7 @@ _tm::invoke::__trye_auto_install(){
   local program="$1"
   local os
   os="$(uname -s)"
+  # based on the env variable TM_USER_PACKAGES_MANAGERS, which is a comma separated list of packagae managers in order, run through the list as preferred, before falling back. Also include npm. ai!
 
   case "$os" in
     Linux)
