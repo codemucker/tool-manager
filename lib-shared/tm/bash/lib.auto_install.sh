@@ -30,6 +30,7 @@ _tm::install::auto(){
     done
   fi
   # Default fallback managers
+  #if could not find installer, brew isn't installed, but is compatible with the current os, prompt to install brew via the installers first, then try the bre packages again. ai!
   local default_pms=()
   case "$os" in
     Linux)
