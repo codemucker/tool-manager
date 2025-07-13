@@ -36,11 +36,10 @@ readonly TM_BIN_DEFAULTS="$TM_HOME/bin-defaults" # scripts which are provided by
 
 source "$TM_LIB_BASH/lib.log.sh"    # ensure the logging is loaded first
 source "$TM_LIB_BASH/lib.source.sh" # then the '_tm::source' functions are available
+_source_once "$TM_LIB_BASH/lib.invoke.sh"
 _source_once "$TM_LIB_BASH/lib.util.sh"
 _source_once "$TM_LIB_BASH/lib.path.sh"
 _source_once "$TM_LIB_BASH/lib.event.sh"
-_source_once "$TM_BIN/.tm.progs.sh"
-
 #
 # _tm::boot::reload
 #
@@ -49,7 +48,7 @@ _source_once "$TM_BIN/.tm.progs.sh"
 # regenerates plugin wrapper scripts, and reloads all enabled plugins.
 #
 # Args:
-#   $1 (optional) - plugin_name: The name of a specific plugin to reload.
+#   $1 (optional)(todo) - plugin_name: The name of a specific plugin to reload.
 #                                If not provided, the entire Tool Manager is reloaded.
 #
 # Usage:
@@ -57,7 +56,7 @@ _source_once "$TM_BIN/.tm.progs.sh"
 #   _tm::boot::reload "myplugin"
 #
 _tm::boot::reload() {
-  local plugin_name="${1:-}"
+  local plugin_name="${1:-}" #todo
   _tm::log::push_name "$__TM_NAME"
   _tm::source::include_once @tm/lib.common.sh .tm.plugin.sh .tm.plugins.sh .tm.common.sh .tm.venv.directives.sh
 
@@ -211,7 +210,7 @@ _tm::boot:__event_callback() {
   local event_ts="$3"
   shift 3
 
-  local msg="${event_name}\t${event_id}\t${event_ts}\t${@}"
+  local msg="${event_name}\t${event_id}\t${event_ts}\t${*}"
   # log to file. TODO, make configurable
   #echo -e "${msg}" >> "${TM_EVENT_LOG_DIR}/events.log"
 

@@ -69,7 +69,7 @@ _tm::cfg::__process() {
                       if [[ $is_get == 1 ]]; then
                         echo "$value"
                       fi
-                      return $_true
+                      return 0
                     fi
                 fi
                 break
@@ -99,7 +99,7 @@ _tm::cfg::__process() {
     if [[ -n "${args[all]:-}" ]]; then
       _todo "print all the variables for this plugin"
       echo "$(_tm::cfg::__load_cfg "$plugin_id";printenv)"
-      return $_true
+      return 0
     fi
 
     local prompt=1
@@ -132,7 +132,7 @@ _tm::cfg::__process() {
     done
 
     if [[ ${#missing_keys[@]} == 0 ]]; then # no missing keys
-        return $_true
+        return 0
     fi
 
     declare -A plugin=()

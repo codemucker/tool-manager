@@ -342,13 +342,13 @@ _tm::plugin::enable() {
 
   if [[ $is_tool_manager == true ]]; then
     _info "Skipping 'enabling' the tool-manager plugin as it's always enabled"
-    return $_true
+    return 0
   fi
 
   if [[ ! -d $plugin_dir ]]; then
     _error "No plugin dir '$plugin_dir' exists for plugin '${qname}'"
     _error "Could not enable plugin. Run 'tm-plugin-ls' for available plugins"
-    return $_false
+    return 1
   else
     if [[ -L $enabled_dir ]]; then
       _info "plugin '${qname}' already enabled"
@@ -360,7 +360,7 @@ _tm::plugin::enable() {
       ln -s "$plugin_dir/" "$enabled_dir" || {
         _error "Failed to create symlink for plugin '${qname}' from '$plugin_dir/' to '$enabled_dir'."
         _tm::plugins::reload_all_enabled
-        return $_false
+        return 1
       }
       mkdir -p "$(dirname "${plugin_enabled_conf_file}")"
       echo "enabled_date='$(date +'%Y-%m-%d.%H:%M:%S.%3N')'" >"${plugin_enabled_conf_file}"
@@ -485,7 +485,7 @@ _tm::plugin::disable() {
     else
       _error "Failed to remove symlink '$plugin_enabled_link'."
       _tm::event::fire "tm.plugin.disable:error" "${plugin_id}"
-      return $_false
+      return 1
     fi
 
     _tm::plugins::reload_all_enabled

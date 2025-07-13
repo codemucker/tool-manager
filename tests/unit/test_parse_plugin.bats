@@ -1,7 +1,7 @@
 #!/usr/bin/env env-tm-bats
 
 source "${TM_LIB_BASH}/lib.source.sh"
-_tm::source::include_once @tm/lib.log.sh @tm/lib.parse.sh
+_include_once @tm/lib.log.sh @tm/lib.parse.sh
 
 # Mock _fail to prevent script exit on expected failures
 _fail() {

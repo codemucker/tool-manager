@@ -29,6 +29,12 @@ _tm::invoke_or(){
     "$@"
 }
 
+#
+# Ensure all the required programs are installed
+#
+# Args
+# $1... all the programs will be checked one at a time. Will fail if non could be installed
+#
 _tm::invoke::require(){
     local prog
     for prog in "$@"; do

@@ -47,7 +47,7 @@ By default we use the Google script conventions.
 - We use bats for testing by default (but support a bunch of test runners)
 - Unit tests go into tests/unit
 - Integration tests go into tests/integration
-- Tests are run via `tm-dev-tests` (run inside bash and be sure to `source TM_HOME/.bashrc`)
+- Tests are run via `tm-dev-test` (run inside bash and be sure to `source TM_HOME/.bashrc`)
 - A shell linter 'shellcheck', can be run via `tm-dev-shellcheck`. This will find all the files, or pass the path of the file to check as a singular arg `tm-dev-shellcheck <path/to/file>`
 - New code **must** include tests. Retrofit tests where you can, or where there are bugs. Do NOT remove existing tests ever.
 

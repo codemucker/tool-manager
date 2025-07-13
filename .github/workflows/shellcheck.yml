@@ -15,6 +15,6 @@ jobs:
       - name: ShellCheck
         run: source .bashrc && tm-dev-shellcheck --severity error
       - name: Run tests
-        run: source .bashrc && tm-dev-tests
+        run: source .bashrc && tm-dev-test
         env:
           TERM: xterm

@@ -1,20 +1,13 @@
-_tm::prog::bashcov(){
-    if ! command -v bashcov &> /dev/null; then
-        _tm::prog::bashcov::install
-    fi
-    bashcov "$@"
-}
-
-_tm::prog::bashcov::install() {
+_tm::install::bashcov() {
     if command -v bashcov &>/dev/null; then
         return
     fi
     _info "bashcov not found. Attempting to install..."
 
     if [[ "$(uname)" == "Darwin" ]] && command -v brew &>/dev/null; then
-        _tm::log::info "Attempting to install bashcov with Homebrew..."
-        if brew install bashcov; then
-            _tm::log::info "bashcov installed successfully via brew."
+        _info "Attempting to install bashcov with Homebrew..."
+        if _tm::invoke brew install bashcov; then
+            _info "bashcov installed successfully via brew."
             return 0
         fi
         _warn "'brew install bashcov' failed. Will try other methods."

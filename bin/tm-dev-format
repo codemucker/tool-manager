@@ -34,7 +34,6 @@ main() {
   local -a bats_files=()
   mapfile -t bash_files <<<"${files[all_bash_files]}"
   mapfile -t bats_files <<<"${files[all_bats_files]}"
-  local passed=1
   if [[ ${#bash_files[@]} -gt 0 ]]; then
     if _is_debug; then
       _debug "bash_files='$(
@@ -51,11 +50,10 @@ main() {
         echo "${bats_files[*]}"
       )'"
     fi
-    if ! shfmt "${shfmt_opts[@]}" --language-dialect bats "${bats_files[@]}"; then
-      passed=0
-    fi
+    shfmt "${shfmt_opts[@]}" --language-dialect bats "${bats_files[@]}"
   fi
   _info "script formatting done for '${what}'"
+  # if no changes applied, no point showing this message
   if [[ ${args[apply]} != "1" ]]; then
     _info "Pass in '--apply' to have these changes applied"
   fi

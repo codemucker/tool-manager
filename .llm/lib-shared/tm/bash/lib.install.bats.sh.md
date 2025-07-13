@@ -15,7 +15,7 @@ tags:
 ---
 
 ## Overview
-This library provides a single function, `_tm::prog::bats::install`, responsible for setting up the BATS (Bash Automated Testing System) framework. It ensures that `bats-core`, `bats-support`, and `bats-assert` are available for use in test scripts, installing them from their official GitHub repositories if they are not already present.
+This library provides a single function, `_tm::install::bats`, responsible for setting up the BATS (Bash Automated Testing System) framework. It ensures that `bats-core`, `bats-support`, and `bats-assert` are available for use in test scripts, installing them from their official GitHub repositories if they are not already present.
 
 ## Design Philosophy
 The script is designed to be an on-demand installer and environment loader for the BATS testing ecosystem. It abstracts the setup process away from the actual test scripts. A test runner script can simply call this one function to guarantee that the necessary testing tools are installed and loaded into the current shell session. The components are installed into the tool manager's shared packages directory (`$TM_PACKAGES_DIR`), avoiding the need for global system-wide installation and potential version conflicts.
@@ -32,8 +32,8 @@ This function is intended to be called from a test runner script or from the `se
 #!/usr/bin/env tm-bash
 
 # In a test runner script or setup_file function
-_tm::source::include_once @tm/lib.prog.bats.sh
-_tm::prog::bats::install
+_tm::source::include_once @tm/lib.invoke.sh
+_tm::invoke::ensure_installed bats
 
 # Now the test environment is ready, and you can run bats tests
 # or use bats assertion functions.
@@ -46,4 +46,4 @@ _tm::prog::bats::install
 ```
 
 ## Related
-- This library is a key component of the `tm-dev-tests` command, which uses it to prepare the environment before executing test suites.
+- This library is a key component of the `tm-dev-test` command, which uses it to prepare the environment before executing test suites.

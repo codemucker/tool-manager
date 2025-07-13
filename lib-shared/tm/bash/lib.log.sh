@@ -645,7 +645,7 @@ _tm::log::push_name(){
 }
 
 #
-# Append the given name to the end of the current log name, using a ':' separator
+# Append the given name to the end of the current log name, using a '/' separator
 #
 # Call '_tm::log::pop' to restore to the previous log name
 #
@@ -654,7 +654,7 @@ _tm::log::push_name(){
 #
 _tm::log::push_child(){
   if [[ "$1" != "$TM_LOG_NAME" ]]; then
-    local new_name="$TM_LOG_NAME:$1"
+    local new_name="$TM_LOG_NAME/$1"
     __tm_log_names+=("$TM_LOG_NAME")
     TM_LOG_NAME="$new_name"
   fi

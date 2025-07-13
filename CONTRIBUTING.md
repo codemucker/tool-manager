@@ -25,7 +25,7 @@ To run the checks locally:
 
 ```bash
 tm-dev-shellcheck
-tm-dev-tests
+tm-dev-test
 ```
 
 ## Coding Style

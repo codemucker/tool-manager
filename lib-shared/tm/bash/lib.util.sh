@@ -78,16 +78,16 @@ _confirm(){
         read -r yn
         case "${yn}" in
             [yYtT]*|1)
-                return $_true
+                return 0
                 ;;
             [nNFf]*|0)
-                return $_false
+                return 1
                 ;;
             *)
                 # Fallback to default if piped input is invalid/empty
                 case "${default_val}" in
-                    [yYtT]*|1) return $_true ;;
-                    *) return $_false ;;
+                    [yYtT]*|1) return 0 ;;
+                    *) return 1 ;;
                 esac
                 ;;
         esac
@@ -109,9 +109,9 @@ _confirm(){
     esac
     _read_yn "$prompt" yn "${default_val}"
     if [[ "${yn}" == 'y' ]]; then
-      return $_true
+      return 0
     else
-      return $_false
+      return 1
     fi
 }
 # Prompt user for a yes or no ([yYtT]*|1) or [nNfF]*|0, and keep prompting until they choose one or the other (or ctrl+c)

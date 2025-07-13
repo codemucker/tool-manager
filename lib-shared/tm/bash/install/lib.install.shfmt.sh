@@ -1,11 +1,5 @@
-_tm::prog::shfmt(){
-    if ! command -v shfmt &> /dev/null; then
-        _tm::prog::shfmt::install
-    fi
-    shfmt "$@"
-}
 
-_tm::prog::shfmt::install(){
+_tm::install::shfmt(){
     if  command -v shfmt &> /dev/null; then
         return
     fi
@@ -18,7 +12,7 @@ _tm::prog::shfmt::install(){
             echo "shfmt installed successfully via Go."
             return 0
         else
-            echo "Failed to install shfmt via Go. Falling back to OS-specific package managers." >&2
+            _error "Failed to install shfmt via Go. Falling back to OS-specific package managers." >&2
         fi
     fi
 
@@ -33,16 +27,16 @@ _tm::prog::shfmt::install(){
             elif command -v pacman &> /dev/null; then
                 sudo pacman -S --noconfirm shfmt
             else
-                echo "ERROR: No supported package manager found for shfmt installation on Linux." >&2
+                _error "ERROR: No supported package manager found for shfmt installation on Linux." >&2
                 return 1 # Indicate failure
             fi
             ;;
         Darwin*)
             _include_once @tm/lib.prog.brew.sh
-            _tm::prog::brew install shfmt
+            _tm::invoke brew install shfmt
             ;;
         *)
-            echo "ERROR: Unsupported operating system: $OS_NAME for shfmt installation." >&2
+            _error "ERROR: Unsupported operating system: $OS_NAME for shfmt installation." >&2
             return 1 # Indicate failure
             ;;
     esac

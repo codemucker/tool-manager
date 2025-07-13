@@ -46,4 +46,4 @@ tm-dev-shellcheck --format json
 ```
 
 ## Related
-- `bin/tm-dev-tests` (For running functional/unit tests)
+- `bin/tm-dev-test` (For running functional/unit tests)

@@ -422,14 +422,14 @@ _tm::plugins::install_from_git() {
   if _confirm "really install '${qname}' into '${install_dir}' from '${git_repo}', version '${version}'?"; then
     if _tm::plugins::__clone_and_install plugin_details "${git_repo}" "${version}"; then
       _info "successfully installed"
-      return $_true
+      return 0
     else
       _error "error installing plugin"
-      return $_false
+      return 1
     fi
   else
     _info "skipping install"
-    return $_false
+    return 1
   fi
 }
 
@@ -443,7 +443,7 @@ _tm::plugins::install_from_registry() {
 
   if [[ -z $qualified_name ]]; then
     _error "Plugin name is required. Input: '$qualified_name'"
-    return $_false
+    return 1
   fi
 
   local -A plugin=()
@@ -487,7 +487,7 @@ _tm::plugins::install_from_registry() {
       local plugin_cfg_commit="${plugin_details[commit]:-}" # Commit from INI is default
     else
       _error "Could not find plugin details in '$plugin_conf_file'"
-      return $_false
+      return 1
     fi
 
     # If a version was specified in the input, it overrides the commit from INI
@@ -499,11 +499,11 @@ _tm::plugins::install_from_registry() {
     fi
     # local plugin_cfg_desc="${plugin_details[desc]}" # desc is available if needed
     if _tm::plugins::__clone_and_install plugin "${plugin_cfg_repo}" "${plugin_cfg_commit}"; then
-      return $_true
+      return 0
     fi
   done
   _error "Could not install plugin '$plugin_name' (from input '$qualified_name')"
-  return $_false
+  return 1
 }
 
 #
@@ -552,11 +552,13 @@ _tm::plugins::__clone_and_install() {
       _info "Plugin '$plugin_name' installed successfully into '$plugin_dir'."
       local install_conf="${plugin_to_clone[install_conf]}"
       mkdir -p "$(dirname "$install_conf")"
-      echo "install_date='$(date +'%Y-%m-%d.%H:%M:%S.%3N')'" >"$install_conf"
-      echo "plugin_home='${plugin_dir}'" >>"$install_conf"
-      echo "git_repo='${repo}'" >>"$install_conf"
-      echo "git_commit='${commit}'" >>"$install_conf"
-      echo "plugin_id='${plugin_to_clone[id]}'" >>"$install_conf"
+      {
+        echo "install_date='$(date +'%Y-%m-%d.%H:%M:%S.%3N')'"
+        echo "plugin_home='${plugin_dir}'"
+        echo "git_repo='${repo}'"
+        echo "git_commit='${commit}'"
+        echo "plugin_id='${plugin_to_clone[id]}'"
+      } >"$install_conf"
 
       # Attempt to enable the plugin after successful installation using the original qualified name
       if _confirm "enable plugin? (no prefix)"; then
@@ -744,7 +746,7 @@ _tm::plugins::__get_by_name() {
           match="${matches[$((choice - 1))]:-}" || true
           if [[ ${choice} -gt 0 ]] && [[ ${choice} -le $max_num ]] && [[ -n ${match} ]]; then
             echo "${match}"
-            return $_true
+            return 0
           else
             >&2 echo "invalid choice"
             choice=''

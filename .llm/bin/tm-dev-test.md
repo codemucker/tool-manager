@@ -1,6 +1,6 @@
 ---
-title: tm-dev-tests
-path: bin/tm-dev-tests
+title: tm-dev-test
+path: bin/tm-dev-test
 type: script
 purpose: Runs automated tests for the Tool Manager core or a specified plugin.
 dependencies:
@@ -23,7 +23,7 @@ The script is designed to be a flexible and easy-to-use test harness. It automat
 
 ## Key Logic
 1.  **Argument Parsing:** The script parses arguments to determine the test target (`--plugin`), a pattern to filter specific test files (`--test`), and whether to run in parallel (`--parallel`).
-2.  **BATS Installation Check:** It calls `_tm::prog::bats::install` to ensure the BATS testing framework is installed, cloning it if necessary.
+2.  **BATS Installation Check:** It calls `_tm::invoke::ensure_installed bats` to ensure the BATS testing framework is installed, cloning it if necessary.
 3.  **Target Resolution:** It determines the directory containing the tests to be run:
     *   If no target is given or if it's `tool-manager`, it uses the core test directory (`$TM_HOME/tests`).
     *   If the target is a path, it uses that path directly.
@@ -38,16 +38,16 @@ The script is designed to be a flexible and easy-to-use test harness. It automat
 ## Usage
 ```bash
 # Run all tests for the core tool-manager project
-tm-dev-tests
+tm-dev-test
 
 # Run all tests for a specific plugin
-tm-dev-tests my-vendor/my-plugin
+tm-dev-test my-vendor/my-plugin
 
 # Run tests from a specific directory
-tm-dev-tests ./path/to/some/tests
+tm-dev-test ./path/to/some/tests
 
 # Run tests in parallel
-tm-dev-tests --parallel my-vendor/my-plugin
+tm-dev-test --parallel my-vendor/my-plugin
 ```
 
 ## Related

@@ -1,11 +1,4 @@
-_tm::prog::shellcheck(){
-    if ! command -v shellcheck &> /dev/null; then
-        _tm::prog::shellcheck::install
-    fi
-    shellcheck "$@"
-}
-
-_tm::prog::shellcheck::install(){
+_tm::install::shellcheck(){
   if  command -v shellcheck &> /dev/null; then
     return
   fi
@@ -24,13 +17,7 @@ _tm::prog::shellcheck::install(){
         brew install shellcheck
     else
         _warn "Could not find a supported package manager (apt-get, dnf, yum, pacman, apk, brew) to install shellcheck."
-        _warn "Please install shellcheck manually."
+        _warn "Need to install shellcheck manually."
         return 1
-    fi
-
-    if ! command -v shellcheck &> /dev/null; then
-        _fail "Failed to install shellcheck."
-    else
-        _info "shellcheck installed successfully."
     fi
 }

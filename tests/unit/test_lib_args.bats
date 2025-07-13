@@ -1,7 +1,7 @@
 #!/usr/bin/env env-tm-bats
 
 source "${TM_LIB_BASH}/lib.source.sh"
-_tm::source::include_once @tm/lib.log.sh @tm/lib.validate.sh @tm/lib.args.sh
+_include_once @tm/lib.log.sh @tm/lib.validate.sh @tm/lib.args.sh
 
 # Load necessary libraries for testing
 # lib.source.sh must be loaded first as it provides _tm::source::include_once
@@ -56,12 +56,13 @@ setup() {
   [ "${args[name]}" = "John Doe" ]
 }
 
-#@test "_parse_args: Handles required argument (missing) should fail" {
-#  declare -A args
-#  run _parse_args --opt-name ',long=name,required,desc=Your name' --result args --
-#  [ "$status" -ne 0 ]
-#  [[ "$output" =~ "ERROR! Required option '--name' is missing" ]]
-#}
+@test "_parse_args: Handles required argument (missing) should fail" {
+  skip "disabled"
+  declare -A args
+  run _parse_args --opt-name ',long=name,required,desc=Your name' --result args --
+  [ "$status" -ne 0 ]
+  [[ $output =~ "ERROR! Required option '--name' is missing" ]]
+}
 
 @test "_parse_args: Handles default value for optional argument" {
   declare -A args
@@ -103,21 +104,23 @@ setup() {
   [ "${args[command]}" = "run --flag arg2" ]
 }
 
-#@test "_parse_args: Handles multi-valued argument" {
-#  declare -A args
-#  _parse_args \
-#    --opt-include ',long=include,multi,desc=Include path' \
-#    --result args -- --include "path1" --include "path2"
-#  [ "${args[include]}" = "path1 path2" ]
-#}
+@test "_parse_args: Handles multi-valued argument" {
+  skip "disabled"
+  declare -A args
+  _parse_args \
+    --opt-include ',long=include,multi,desc=Include path' \
+    --result args -- --include "path1" --include "path2"
+  [ "${args[include]}" = "path1 path2" ]
+}
 
-#@test "_parse_args: Handles multi-valued argument with custom separator" {
-#  declare -A args
-#  _parse_args \
-#    --opt-include '|long=include|multi|multi-sep=;|desc=Include path' \
-#    --result args -- --include "path1" --include "path2"
-#  [ "${args[include]}" = "path1;path2" ]
-#}
+@test "_parse_args: Handles multi-valued argument with custom separator" {
+  skip "disabled"
+  declare -A args
+  _parse_args \
+    --opt-include '|long=include|multi|multi-sep=;|desc=Include path' \
+    --result args -- --include "path1" --include "path2"
+  [ "${args[include]}" = "path1;path2" ]
+}
 
 @test "_parse_args: Handles allowed values (valid)" {
   declare -A args
@@ -127,74 +130,82 @@ setup() {
   [ "${args[mode]}" = "dev" ]
 }
 
-#@test "_parse_args: Handles allowed values (invalid) should fail" {
-#  declare -A args
-#  run _parse_args \
-#    --opt-mode '|long=mode|allowed=dev,prod|desc=Mode' \
-#    --result args -- --mode "test"
-#  [ "$status" -ne 0 ]
-#  [[ "$output" =~ "invalid value 'test' for 'mode'. Valid values are: dev,prod" ]]
-#}
+@test "_parse_args: Handles allowed values (invalid) should fail" {
+  skip "disabled"
+  declare -A args
+  run _parse_args \
+    --opt-mode '|long=mode|allowed=dev,prod|desc=Mode' \
+    --result args -- --mode "test"
+  [ "$status" -ne 0 ]
+  [[ $output =~ "invalid value 'test' for 'mode'. Valid values are: dev,prod" ]]
+}
 
-#@test "_parse_args: Handles validators (valid)" {
-#  declare -A args
-#  _parse_args \
-#    --opt-version '|long=version|validators=+alphanumeric|desc=Version' \
-#    --result args -- --version "1.2.3"
-#  [ "${args[version]}" = "1.2.3" ]
-#}
+@test "_parse_args: Handles validators (valid)" {
+  skip "disabled"
+  declare -A args
+  _parse_args \
+    --opt-version '|long=version|validators=+alphanumeric|desc=Version' \
+    --result args -- --version "1.2.3"
+  [ "${args[version]}" = "1.2.3" ]
+}
 
-#@test "_parse_args: Handles validators (invalid) should fail" {
-#  declare -A args
-#  run _parse_args \
-#    --opt-version ',long=version,validators=+numbers,desc=Version' \
-#    --result args -- --version "abc"
-#  [ "$status" -ne 0 ]
-#  [[ "$output" =~ "Validation failed for 'version' with value 'abc'. Validator '+numbers' failed." ]]
-#}
+@test "_parse_args: Handles validators (invalid) should fail" {
+  skip "disabled"
+  declare -A args
+  run _parse_args \
+    --opt-version ',long=version,validators=+numbers,desc=Version' \
+    --result args -- --version "abc"
+  [ "$status" -ne 0 ]
+  [[ $output =~ "Validation failed for 'version' with value 'abc'. Validator '+numbers' failed." ]]
+}
 
-#@test "_parse_args: Handles unknown arguments with --unknown-args" {
-#  declare -A args
-#  _parse_args \
-#    --unknown-args-key extra_args \
-#    --result args -- --known "value" --unknown-flag --another-unknown "another_value"
-#  [ "${args[known]}" = "value" ]
-#  [ "${args[extra_args]}" = "--unknown-flag	--another-unknown	another_value" ]
-#}
+@test "_parse_args: Handles unknown arguments with --unknown-args" {
+  skip "disabled"
+  declare -A args
+  _parse_args \
+    --unknown-args-key extra_args \
+    --result args -- --known "value" --unknown-flag --another-unknown "another_value"
+  [ "${args[known]}" = "value" ]
+  [ "${args[extra_args]}" = "--unknown-flag	--another-unknown	another_value" ]
+}
 
-#@test "_parse_args: Handles unknown arguments with --unknown-args and no key" {
-#  declare -A args
-#  _parse_args \
-#    --unknown-args-key \
-#    --result args -- --known "value" --unknown-flag --another-unknown "another_value"
-#  [ "${args[known]}" = "value" ]
-#  [ "${args[unknown]}" = "--unknown-flag	--another-unknown	another_value" ]
-#}
+@test "_parse_args: Handles unknown arguments with --unknown-args and no key" {
+  skip "disabled"
+  declare -A args
+  _parse_args \
+    --unknown-args-key \
+    --result args -- --known "value" --unknown-flag --another-unknown "another_value"
+  [ "${args[known]}" = "value" ]
+  [ "${args[unknown]}" = "--unknown-flag	--another-unknown	another_value" ]
+}
 
-#@test "_parse_args: Handles help flag (-h) and exits" {
-#  declare -A args
-#  run _parse_args --opt-test ',long=test' --result args -- -h
-#  [ "$status" -eq 1 ]
-#  [[ "$output" =~ "USAGE" ]]
-#}
+@test "_parse_args: Handles help flag (-h) and exits" {
+  skip "disabled"
+  declare -A args
+  run _parse_args --opt-test ',long=test' --result args -- -h
+  [ "$status" -eq 1 ]
+  [[ $output =~ "USAGE" ]]
+}
 
-#@test "_parse_args: Handles help flag (--help) and exits" {
-#  declare -A args
-#  run _parse_args --opt-test ',long=test' --result args -- --help
-#  [ "$status" -eq 1 ]
-#  [[ "$output" =~ "USAGE" ]]
-#}
+@test "_parse_args: Handles help flag (--help) and exits" {
+  skip "disabled"
+  declare -A args
+  run _parse_args --opt-test ',long=test' --result args -- --help
+  [ "$status" -eq 1 ]
+  [[ $output =~ "USAGE" ]]
+}
 
-#@test "_parse_args: Handles help-on-error flag" {
-#declare -A args
-#  run _parse_args \
-#    --opt-name ',long=name,required,desc=Your name' \
-#    --help-on-error \
-#    --result args --
-#  [ "$status" -ne 0 ]
-#  [[ "$output" =~ "ERROR! Required option '--name' is missing" ]]
-#  [[ "$output" =~ "USAGE" ]]
-#}
+@test "_parse_args: Handles help-on-error flag" {
+  skip "disabled"
+  declare -A args
+  run _parse_args \
+    --opt-name ',long=name,required,desc=Your name' \
+    --help-on-error \
+    --result args --
+  [ "$status" -ne 0 ]
+  [[ $output =~ "ERROR! Required option '--name' is missing" ]]
+  [[ $output =~ "USAGE" ]]
+}
 
 @test "_parse_args: Handles help-tip flag" {
   declare -A args
@@ -228,25 +239,27 @@ setup() {
   [[ $output =~ "My custom help string." ]]
 }
 
-#@test "_parse_args: Handles duplicate short option should fail" {
-#  declare -A args
-#  run _parse_args \
-#    --opt-file1 ',short=f,long=file1' \
-#    --opt-file2 ',short=f,long=file2' \
-#    --result args -- -f "test.txt"
-#  [ "$status" -ne 0 ]
-#  [[ "$output" =~ "Duplicate short option '-f' for option keys 'file1' and 'file2'" ]]
-#}
+@test "_parse_args: Handles duplicate short option should fail" {
+  skip "disabled"
+  declare -A args
+  run _parse_args \
+    --opt-file1 ',short=f,long=file1' \
+    --opt-file2 ',short=f,long=file2' \
+    --result args -- -f "test.txt"
+  [ "$status" -ne 0 ]
+  [[ $output =~ "Duplicate short option '-f' for option keys 'file1' and 'file2'" ]]
+}
 
-#@test "_parse_args: Handles duplicate long option should fail" {
-#  declare -A args
-#  run _parse_args \
-#    --opt-file1 ',long=file,short=f1' \
-#    --opt-file2 ',long=file,short=f2' \
-#    --result args -- --file "test.txt"
-#  [ "$status" -ne 0 ]
-#  [[ "$output" =~ "Duplicate long option '--file' for option keys 'file1' and 'file2'" ]]
-#}
+@test "_parse_args: Handles duplicate long option should fail" {
+  skip "disabled"
+  declare -A args
+  run _parse_args \
+    --opt-file1 ',long=file,short=f1' \
+    --opt-file2 ',long=file,short=f2' \
+    --result args -- --file "test.txt"
+  [ "$status" -ne 0 ]
+  [[ $output =~ "Duplicate long option '--file' for option keys 'file1' and 'file2'" ]]
+}
 
 @test "_parse_args: Handles duplicate remainder option should fail" {
   declare -A args
@@ -258,16 +271,17 @@ setup() {
   [[ $output =~ "Duplicate remainder (option spec flag 'remainder') keys 'rem1' and 'rem2'" ]]
 }
 
-#@test "_parse_args: Handles unknown option spec key with ignore-spec-errors (unique)" {
-#  declare -A args
-#  _parse_args \
-#    --ignore-spec-errors \
-#    --opt-test_unknown_ignore ',unknown=value|long=test_unknown_ignore' \
-#    --result args -- --test_unknown_ignore "value"
-#  [ "$status" -eq 0 ]
-#  [ "${args[test_unknown_ignore]}" = "value" ]
-#  [[ "$output" =~ "Unknown command args spec option 'unknown'" ]]
-#}
+@test "_parse_args: Handles unknown option spec key with ignore-spec-errors (unique)" {
+  skip "disabled"
+  declare -A args
+  _parse_args \
+    --ignore-spec-errors \
+    --opt-test_unknown_ignore ',unknown=value|long=test_unknown_ignore' \
+    --result args -- --test_unknown_ignore "value"
+  [ "$status" -eq 0 ]
+  [ "${args[test_unknown_ignore]}" = "value" ]
+  [[ $output =~ "Unknown command args spec option 'unknown'" ]]
+}
 
 @test "_parse_args: Handles unknown option spec key without ignore-spec-errors should fail (unique)" {
   declare -A args
@@ -350,35 +364,38 @@ setup() {
   [ -z "${args[name_empty]}" ]
 }
 
-#@test "_parse_args: Handles empty input for flag argument (unique)" {
-#  declare -A args
-#  _parse_args \
-#    --opt-verbose_empty ',long=verbose_empty,flag,desc=Verbose output' \
-#    --result args --
-#  [ "${args[verbose_empty]}" = "0" ]
-#}
+@test "_parse_args: Handles empty input for flag argument (unique)" {
+  skip "disabled"
+  declare -A args
+  _parse_args \
+    --opt-verbose_empty ',long=verbose_empty,flag,desc=Verbose output' \
+    --result args --
+  [ "${args[verbose_empty]}" = "0" ]
+}
 
-#@test "_parse_args: Handles multiple short options with values (unique)" {
-#  declare -A args
-#  _parse_args \
-#    --opt-a_val ',short=a,long=arg_a_val' \
-#    --opt-b_val ',short=b,long=arg_b_val' \
-#    --result args -- -a "val_a" -b "val_b"
-#  [ "${args[arg_a_val]}" = "val_a" ]
-#  [ "${args[arg_b_val]}" = "val_b" ]
-#}
+@test "_parse_args: Handles multiple short options with values (unique)" {
+  skip "disabled"
+  declare -A args
+  _parse_args \
+    --opt-a_val ',short=a,long=arg_a_val' \
+    --opt-b_val ',short=b,long=arg_b_val' \
+    --result args -- -a "val_a" -b "val_b"
+  [ "${args[arg_a_val]}" = "val_a" ]
+  [ "${args[arg_b_val]}" = "val_b" ]
+}
 
-#@test "_parse_args: Handles mixed short flags and options with values (unique)" {
-#  declare -A args
-#  _parse_args \
-#    --opt-a_mixed_flag ',short=a,flag' \
-#    --opt-b_mixed_val ',short=b,long=arg_b_mixed_val' \
-#    --opt-c_mixed_flag ',short=c,flag' \
-#    --result args -- -a -b "val_b" -c
-#  [ "${args[a_mixed_flag]}" = "1" ]
-#  [ "${args[arg_b_mixed_val]}" = "val_b" ]
-#  [ "${args[c_mixed_flag]}" = "1" ]
-#}
+@test "_parse_args: Handles mixed short flags and options with values (unique)" {
+  skip "disabled"
+  declare -A args
+  _parse_args \
+    --opt-a_mixed_flag ',short=a,flag' \
+    --opt-b_mixed_val ',short=b,long=arg_b_mixed_val' \
+    --opt-c_mixed_flag ',short=c,flag' \
+    --result args -- -a -b "val_b" -c
+  [ "${args[a_mixed_flag]}" = "1" ]
+  [ "${args[arg_b_mixed_val]}" = "val_b" ]
+  [ "${args[c_mixed_flag]}" = "1" ]
+}
 
 @test "_parse_args: Handles option spec with custom separator for allowed values (unique)" {
   declare -A args
@@ -388,22 +405,24 @@ setup() {
   [ "${args[color_sep]}" = "green" ]
 }
 
-#@test "_parse_args: Handles option spec with custom separator for allowed values (invalid) (unique)" {
-#  declare -A args
-#  run _parse_args \
-#    --opt-color_sep_invalid ',long=color_sep_invalid,allowed=;red;green;blue|desc=Color' \
-#    --result args -- --color_sep_invalid "yellow"
-#  [ "$status" -ne 0 ]
-#  [[ "$output" =~ "invalid value 'yellow' for 'color_sep_invalid'. Valid values are: red;green;blue" ]]
-#}
+@test "_parse_args: Handles option spec with custom separator for allowed values (invalid) (unique)" {
+  skip "disabled"
+  declare -A args
+  run _parse_args \
+    --opt-color_sep_invalid ',long=color_sep_invalid,allowed=;red;green;blue|desc=Color' \
+    --result args -- --color_sep_invalid "yellow"
+  [ "$status" -ne 0 ]
+  [[ $output =~ "invalid value 'yellow' for 'color_sep_invalid'. Valid values are: red;green;blue" ]]
+}
 
-#@test "_parse_args: Handles option spec with custom separator for multi-sep (unique)" {
-#  declare -A args
-#  _parse_args \
-#    --opt-items_multi_sep ',long=items_multi_sep,multi,multi-sep=,,desc=Items' \
-#    --result args -- --items_multi_sep "item1" --items_multi_sep "item2"
-#  [ "${args[items_multi_sep]}" = "item1,item2" ]
-#}
+@test "_parse_args: Handles option spec with custom separator for multi-sep (unique)" {
+  skip "disabled"
+  declare -A args
+  _parse_args \
+    --opt-items_multi_sep ',long=items_multi_sep,multi,multi-sep=,,desc=Items' \
+    --result args -- --items_multi_sep "item1" --items_multi_sep "item2"
+  [ "${args[items_multi_sep]}" = "item1,item2" ]
+}
 
 @test "_parse_args: Handles option spec with default value and no user input (unique 2)" {
   declare -A args
@@ -429,31 +448,34 @@ setup() {
   [ "${args[id_valid_unique_3]}" = "abc123XYZ" ]
 }
 
-#@test "_parse_args: Handles validators (invalid) should fail (unique 2)" {
-#  declare -A args
-#  run _parse_args \
-#    --opt-id_invalid_unique_4 ',long=id_invalid_unique_4,validators=+numbers,desc=ID' \
-#    --result args -- --id_invalid_unique_4 "abc"
-#  [ "$status" -ne 0 ]
-#  [[ "$output" =~ "Validation failed for 'id_invalid_unique_4' with value 'abc'. Validator '+numbers' failed." ]]
-#}
+@test "_parse_args: Handles validators (invalid) should fail (unique 2)" {
+  skip "disabled"
+  declare -A args
+  run _parse_args \
+    --opt-id_invalid_unique_4 ',long=id_invalid_unique_4,validators=+numbers,desc=ID' \
+    --result args -- --id_invalid_unique_4 "abc"
+  [ "$status" -ne 0 ]
+  [[ $output =~ "Validation failed for 'id_invalid_unique_4' with value 'abc'. Validator '+numbers' failed." ]]
+}
 
-#@test "_parse_args: Handles multiple validators and valid input (unique 2)" {
-#  declare -A args
-#  _parse_args \
-#    --opt-code_valid_multi_unique_3 ',long=code_valid_multi_unique_3,validators=+alphanumeric,+nowhitespace|desc=Code' \
-#    --result args -- --code_valid_multi_unique_3 "ABC123def"
-#  [ "${args[code_valid_multi_unique_3]}" = "ABC123def" ]
-#}
+@test "_parse_args: Handles multiple validators and valid input (unique 2)" {
+  skip "disabled"
+  declare -A args
+  _parse_args \
+    --opt-code_valid_multi_unique_3 ',long=code_valid_multi_unique_3,validators=+alphanumeric,+nowhitespace|desc=Code' \
+    --result args -- --code_valid_multi_unique_3 "ABC123def"
+  [ "${args[code_valid_multi_unique_3]}" = "ABC123def" ]
+}
 
-#@test "_parse_args: Handles multiple validators and invalid input (unique 2)" {
-#  declare -A args
-#  run _parse_args \
-#    --opt-code_invalid_multi_unique_4 ',long=code_invalid_multi_unique_4,validators=+alphanumeric,+nowhitespace|desc=Code' \
-#    --result args -- --code_invalid_multi_unique_4 "ABC 123"
-#  [ "$status" -ne 0 ]
-#  [[ "$output" =~ "Validation failed for 'code_invalid_multi_unique_4' with value 'ABC 123'. Validator '+nowhitespace' failed." ]]
-#}
+@test "_parse_args: Handles multiple validators and invalid input (unique 2)" {
+  skip "disabled"
+  declare -A args
+  run _parse_args \
+    --opt-code_invalid_multi_unique_4 ',long=code_invalid_multi_unique_4,validators=+alphanumeric,+nowhitespace|desc=Code' \
+    --result args -- --code_invalid_multi_unique_4 "ABC 123"
+  [ "$status" -ne 0 ]
+  [[ $output =~ "Validation failed for 'code_invalid_multi_unique_4' with value 'ABC 123'. Validator '+nowhitespace' failed." ]]
+}
 
 @test "_parse_args: Handles negative validator and valid input (unique 2)" {
   declare -A args
@@ -463,14 +485,15 @@ setup() {
   [ "${args[name_neg_valid_unique_3]}" = "John Doe" ]
 }
 
-#@test "_parse_args: Handles negative validator and invalid input (unique 2)" {
-#  declare -A args
-#  run _parse_args \
-#    --opt-name_neg_invalid_unique_4 ',long=name_neg_invalid_unique_4,validators=-noslash|desc=Name' \
-#    --result args -- --name_neg_invalid_unique_4 "John/Doe"
-#  [ "$status" -ne 0 ]
-#  [[ "$output" =~ "Validation failed for 'name_neg_invalid_unique_4' with value 'John/Doe'. Validator '-noslash' failed." ]]
-#}
+@test "_parse_args: Handles negative validator and invalid input (unique 2)" {
+  skip "disabled"
+  declare -A args
+  run _parse_args \
+    --opt-name_neg_invalid_unique_4 ',long=name_neg_invalid_unique_4,validators=-noslash|desc=Name' \
+    --result args -- --name_neg_invalid_unique_4 "John/Doe"
+  [ "$status" -ne 0 ]
+  [[ $output =~ "Validation failed for 'name_neg_invalid_unique_4' with value 'John/Doe'. Validator '-noslash' failed." ]]
+}
 
 @test "_parse_args: Handles regex validator and valid input (unique 2)" {
   declare -A args
@@ -480,24 +503,26 @@ setup() {
   [ "${args[pattern_valid_unique_3]}" = "abc" ]
 }
 
-#@test "_parse_args: Handles regex validator and invalid input (unique 2)" {
-#  declare -A args
-#  run _parse_args \
-#    --opt-pattern_invalid_unique_4 ',long=pattern_invalid_unique_4,validators=+re:^[a-z]+$|desc=Pattern' \
-#    --result args -- --pattern_invalid_unique_4 "ABC"
-#  [ "$status" -ne 0 ]
-#  [[ "$output" =~ "Validation failed for 'pattern_invalid_unique_4' with value 'ABC'. Validator '+re:^[a-z]+$' failed." ]]
-#}
+@test "_parse_args: Handles regex validator and invalid input (unique 2)" {
+  skip "disabled"
+  declare -A args
+  run _parse_args \
+    --opt-pattern_invalid_unique_4 ',long=pattern_invalid_unique_4,validators=+re:^[a-z]+$|desc=Pattern' \
+    --result args -- --pattern_invalid_unique_4 "ABC"
+  [ "$status" -ne 0 ]
+  [[ $output =~ "Validation failed for 'pattern_invalid_unique_4' with value 'ABC'. Validator '+re:^[a-z]+$' failed." ]]
+}
 
-#@test "_parse_args: Handles option spec with group (unique 2)" {
-#  declare -A args
-#  run _parse_args \
-#    --opt-test_group_unique_3 ',long=test_group_unique_3,group=Test Options|desc=Test option' \
-#    --result args -- -h
-#  [ "$status" -eq 1 ]
-#  [[ "$output" =~ "Test Options options" ]]
-#  [[ "$output" =~ "--test_group_unique_3: <value>" ]]
-#}
+@test "_parse_args: Handles option spec with group (unique 2)" {
+  skip "disabled"
+  declare -A args
+  run _parse_args \
+    --opt-test_group_unique_3 ',long=test_group_unique_3,group=Test Options|desc=Test option' \
+    --result args -- -h
+  [ "$status" -eq 1 ]
+  [[ $output =~ "Test Options options" ]]
+  [[ $output =~ "--test_group_unique_3: <value>" ]]
+}
 
 @test "_parse_args: Handles option spec with example (unique 2)" {
   declare -A args
@@ -508,14 +533,15 @@ setup() {
   [[ $output =~ 'E.g. --test "value"' ]]
 }
 
-#@test "_parse_args: Handles option spec with value name (unique 2)" {
-#  declare -A args
-#  run _parse_args \
-#    --opt-test_value_name_unique_3 ',long=test_value_name_unique_3,value=my_value|desc=Test option' \
-#    --result args -- -h
-#  [ "$status" -eq 1 ]
-#  [[ "$output" =~ "--test_value_name_unique_3: <my_value>" ]]
-#}
+@test "_parse_args: Handles option spec with value name (unique 2)" {
+  skip "disabled"
+  declare -A args
+  run _parse_args \
+    --opt-test_value_name_unique_3 ',long=test_value_name_unique_3,value=my_value|desc=Test option' \
+    --result args -- -h
+  [ "$status" -eq 1 ]
+  [[ $output =~ "--test_value_name_unique_3: <my_value>" ]]
+}
 
 @test "_parse_args: Handles option spec with no short or long name (defaults to key) and greedy (unique 4)" {
   declare -A args
@@ -525,16 +551,17 @@ setup() {
   [ "${args[myremainder_greedy_unique_5]}" = "arg1 --flag" ]
 }
 
-#@test "_parse_args: Handles option spec with no short or long name (defaults to key) and ignore-spec-errors (unique 4)" {
-#  declare -A args
-#  _parse_args \
-#    --ignore-spec-errors \
-#    --opt-myoption_ignore_unique_4 ',unknown=value|desc=My option' \
-#    --result args -- --myoption_ignore_unique_4 "value"
-#  [ "$status" -eq 0 ]
-#  [ "${args[myoption_ignore_unique_4]}" = "value" ]
-#  [[ "$output" =~ "Unknown command args spec option 'unknown'" ]]
-#}
+@test "_parse_args: Handles option spec with no short or long name (defaults to key) and ignore-spec-errors (unique 4)" {
+  skip "disabled"
+  declare -A args
+  _parse_args \
+    --ignore-spec-errors \
+    --opt-myoption_ignore_unique_4 ',unknown=value|desc=My option' \
+    --result args -- --myoption_ignore_unique_4 "value"
+  [ "$status" -eq 0 ]
+  [ "${args[myoption_ignore_unique_4]}" = "value" ]
+  [[ $output =~ "Unknown command args spec option 'unknown'" ]]
+}
 
 @test "_parse_args: Handles option spec with no short or long name (defaults to key) and unknown-args (unique 4)" {
   declare -A args
@@ -546,16 +573,17 @@ setup() {
   [ "${args[unknown]}" = "--unknown_unique_4\tval" ]
 }
 
-#@test "_parse_args: Handles option spec with no short or long name (defaults to key) and help-on-error (unique 4)" {
-#  declare -A args
-#  run _parse_args \
-#    --opt-myrequired_help_unique_4 ',required|desc=My required option' \
-#    --help-on-error \
-#    --result args --
-#  [ "$status" -ne 0 ]
-#  [[ "$output" =~ "ERROR! Required option '--myrequired_help_unique_4' is missing" ]]
-#  [[ "$output" =~ "USAGE" ]]
-#}
+@test "_parse_args: Handles option spec with no short or long name (defaults to key) and help-on-error (unique 4)" {
+  skip "disabled"
+  declare -A args
+  run _parse_args \
+    --opt-myrequired_help_unique_4 ',required|desc=My required option' \
+    --help-on-error \
+    --result args --
+  [ "$status" -ne 0 ]
+  [[ $output =~ "ERROR! Required option '--myrequired_help_unique_4' is missing" ]]
+  [[ $output =~ "USAGE" ]]
+}
 
 @test "_parse_args: Handles option spec with no short or long name (defaults to key) and help-tip (unique 4)" {
   declare -A args
