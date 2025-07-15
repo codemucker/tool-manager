@@ -1,5 +1,5 @@
 #
-# Library to provide logging (and stacktrace) related funtionality
+# Library to provide logging (and stacktrace) related functionality
 #
 
 if command -v _tm::log::set_opts &>/dev/null; then
@@ -28,7 +28,7 @@ COLOR_RED='\033[0;31m'
 COLOR_RED_BOLD='\033[1;31m'
 COLOR_YELLOW='\033[0;33m'
 COLOR_NONE='\033[0m' # No Color
-BOLD=$(tput bold)
+BOLD=$(tput bold 2>/dev/null || echo '')
 
 TM_LOG_NAME="${TM_LOG_NAME:-$(basename ${BASH_SOURCE[${#BASH_SOURCE[@]}-1]})}"
 if ([[ "$TM_LOG_NAME" == ".bashrc" ]] || [[ "$TM_LOG_NAME" == "bash" ]]); then
@@ -645,7 +645,7 @@ _tm::log::push_name(){
 }
 
 #
-# Append the given name to the end of the current log name, using a ':' separator
+# Append the given name to the end of the current log name, using a '/' separator
 #
 # Call '_tm::log::pop' to restore to the previous log name
 #
@@ -654,7 +654,7 @@ _tm::log::push_name(){
 #
 _tm::log::push_child(){
   if [[ "$1" != "$TM_LOG_NAME" ]]; then
-    local new_name="$TM_LOG_NAME:$1"
+    local new_name="$TM_LOG_NAME/$1"
     __tm_log_names+=("$TM_LOG_NAME")
     TM_LOG_NAME="$new_name"
   fi

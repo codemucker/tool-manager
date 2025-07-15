@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+#
+# For testing performance. Run with 'time'
+
+
+echo "tm-echo-bash: $*"

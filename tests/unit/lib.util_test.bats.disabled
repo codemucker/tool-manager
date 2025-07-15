@@ -1,0 +1,28 @@
+# Test file for core utility functions
+
+setup() {
+  # Load the utility library
+  source "$TM_HOME/lib-shared/tm/bash/lib.util.sh"
+}
+
+@test "_realpath should resolve absolute path" {
+  run _realpath "/tmp"
+  [ "$status" -eq 0 ]
+  [ "$output" = "/tmp" ]
+}
+
+@test "_realpath should resolve relative path" {
+  run _realpath "."
+  [ "$status" -eq 0 ]
+  [ "$output" = "$PWD" ]
+}
+
+@test "_confirm should return true for 'y'" {
+  run _confirm <<<"y"
+  [ "$status" -eq 0 ]
+}
+
+@test "_confirm should return false for 'n'" {
+  run _confirm <<<"n"
+  [ "$status" -eq 1 ]
+}

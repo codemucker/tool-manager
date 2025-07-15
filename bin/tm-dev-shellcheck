@@ -1,0 +1,71 @@
+#!/usr/bin/env env-tm-bash
+#
+# Run shellcheck on all the scripts
+#
+# Usage: tm-dev-shellcheck [plugin_name|tool-manager]
+#
+
+_tm::source::include_once .tm.script.sh .tm.plugin.sh .tm.plugins.sh .tm.tests.sh
+
+_trap_error
+
+declare -A args
+_parse_args \
+  --file "${BASH_SOURCE[0]}" \
+  --opt-what "|remainder|short=w|desc=The plugin, 'tool-manager', dir, or file to check. If empty, test the tool-manager. Can pass a path to the check dir" \
+  --opt-enable "|short=o|group=shellcheck |desc=passed to shellcheck as the '--enable' option" \
+  --opt-exclude "|short=e|group=shellcheck|desc=passed to shellcheck as the '--exclude' option" \
+  --opt-format "|short=f|group=shellcheck|desc=passed to shellcheck as the '--format' option|default=tty" \
+  --opt-severity "|short=S|group=shellcheck|desc=passed to shellcheck as the '--severity' option" \
+  --opt-shell "|short=s|group=shellcheck|desc=passed to shellcheck as the '--shell' option|default=bash" \
+  --opt-external-sources "|short=x|group=shellcheck|desc=passed to shellcheck as the '--external-sources' option" \
+  --result args \
+  -- "$@"
+
+main() {
+
+  _tm::invoke::ensure_installed shellcheck
+
+  local what="${args[what]}"
+  local -A files
+  _tm::tests::find files --what "${what}"
+  what="${files[what]}"
+
+  local sources=() # todo: used by shellcheck to find sourced files
+
+  _info "checking scripts using shellcheck..."
+
+  local -a files_to_check=()
+  mapfile -t files_to_check <<<"${files[all_bash_files]}"
+
+  local -a shellcheck_opts=()
+  if [[ ${#sources[@]} -gt 0 ]]; then
+    shellcheck_opts+=(--source-path="$(
+      IFS=:
+      echo "${sources[*]}"
+    )")
+  fi
+  local opt_value
+  for opt in "include" "exclude" "format" "severity" "shell"; do
+    opt_value="${args["${opt}"]:-}"
+    if [[ -n ${opt_value} ]]; then
+      shellcheck_opts+=("--${opt}" "${opt_value}")
+    fi
+  done
+  if [[ "${args["${external-sources}"]:-}" ]]; then
+    shellcheck_opts+=("--${external-sources}")
+  fi
+
+  if [[ ${#files_to_check[@]} -gt 0 ]]; then
+    if _is_debug; then
+      _debug "files_to_check='$(
+        IFS=$'\n'
+        echo "${files_to_check[*]}"
+      )'"
+    fi
+    _tm::invoke shellcheck "${shellcheck_opts[@]}" "${files_to_check[@]}"
+  fi
+  _info "shellcheck done for '${what}'"
+}
+
+main "$@"

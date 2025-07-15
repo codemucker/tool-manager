@@ -131,7 +131,7 @@ _tm::parse::git_url(){
 #   - `cfg_sh`: Path to the plugin's merged shell configuration file (to apply all the config)
 #   - `state_dir`: Path to the plugin's state dir (where it can save persistent state)
 #   - `cache_dir`: Path to the plugin's cache dir (where it can save cached data)
-#   - `packages_dir`: Path to the plugin's packaages dir (where it can install things to)
+#   - `packages_dir`: Path to the plugin's packages dir (where it can install things to)
 #   - `tm`: Boolean, true if this is the tool-manager plugin itself.
 #
 # Usage:
@@ -159,8 +159,6 @@ _tm::parse::plugin(){
 #  _tm::parse::plugin_name parts "prefix:bar"
 #  _tm::parse::plugin_name parts "prefix:vendor/bar@123"
 #  _tm::parse::plugin_name parts "prefix__bar"
-
-#
 _tm::parse::plugin_name(){
   local -n result_ref="$1" # expect it to be an associative array
   result_ref=()
@@ -216,7 +214,7 @@ _tm::parse::plugin_name(){
   fi
 
   if [[ -z "$name" ]]; then
-    _fail "Invalid plugin name format.Is empty. From input name'${parse_name}'"
+    _fail "Invalid plugin name format. Is empty. From input name'${parse_name}'"
   fi
 
   # Validate name, vendor, and version formats
@@ -282,7 +280,7 @@ _tm::parse::plugin_id(){
   result_ref[space]="$space" # Fix: Set space in result_ref
 
   if [[ -z "$name" ]]; then
-    _fail "Invalid plugin name format.Is empty. From id '${parse_id}'"
+    _fail "Invalid plugin name format. Is empty. From id '${parse_id}'"
   fi
 
   # Validate name, vendor, and version formats
@@ -423,7 +421,26 @@ _tm::parse::__set_plugin_derived_vars(){
   result_ref_derived[cfg_spec]="${result_ref_derived[install_dir]}/plugin.cfg.yaml"
   result_ref_derived[cfg_dir]="$TM_PLUGINS_CFG_DIR/${qpath}"
   result_ref_derived[cfg_sh]="$TM_PLUGINS_CFG_DIR/${qpath}/config.sh" # plugin specific main config file
-  result_ref_derived[state_dir]="$TM_PLUGINS_STATE_DIR/${qpath}" # where the plugin should store persistant stae
+  result_ref_derived[state_dir]="$TM_PLUGINS_STATE_DIR/${qpath}" # where the plugin should store persistent state
   result_ref_derived[cache_dir]="$TM_PLUGINS_CACHE_DIR/${qpath}" # the plugins cache dir, for data that can be lost and regenerated
   result_ref_derived[packages_dir]="$TM_PLUGINS_PACKAGES_DIR/${qpath}" # where to install plugin specific deps/progs
+}
+
+_to_boolean(){
+  _tm::parse::boolean "${1:-}"
+}
+#
+# Convert a boolean value to 1 or 0
+#
+# Arguments:
+# $1 - the value to parse. Case insensitive. Converts true|t|yes|enabled|1|yeah into '1', '0' in all other cases
+#
+_tm::parse::boolean(){
+  local value="${1:-}}"
+  case "${value,,}" in # bash lowercase
+    true|t|1|yes|enabled|yeah|yeah-but-nah)
+        echo "1";;
+    *)
+      echo "0";;
+  esac
 }

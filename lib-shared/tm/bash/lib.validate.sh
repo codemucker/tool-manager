@@ -39,7 +39,7 @@ _tm::validate::key_value(){
 
       case "${validator}" in
         re:*)
-          local custom_regexp="^${validator#re:}+$"
+          local custom_regexp="${validator#re:}"
           _finest "using re:${custom_regexp}"
           if [[ "$match" == "1" ]]; then
             if [[ ! "$value" =~ ${custom_regexp} ]]; then
@@ -116,6 +116,7 @@ _tm::validate::__init(){
       [plugin-prefix]="^[a-zA-Z0-9-]+$|be alphanumeric or dashes" \
       [space-key]="^[a-zA-Z0-9][\.a-zA-Z0-9-]+[a-zA-Z0-9]$|be alphanumeric, dashes, or dots. Must start with a alphanumeric" \
       [name]="^[\.a-zA-Z0-9-]+$|be alphanumeric, dashes, dots" \
+      [boolean]="^(1|0|true|false|yes|no|enabled|disabled|yeah|nah)$|be a boolean" \
   )
   fi
 }

@@ -8,8 +8,6 @@
 
 _tm::source::include .tm.script.sh
 
-_info "Updating tool-manager in "$TM_HOME""
-cd "$TM_HOME"
+_info "Updating tool-manager in '$TM_HOME'"
+cd "$TM_HOME" || exit
 git pull --ff-only
-
-

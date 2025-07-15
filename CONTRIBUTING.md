@@ -18,6 +18,15 @@ Thank you for considering contributing! This document outlines how to set up the
    ```bash
    sudo apt-get install shellcheck
    ```
+## Running Tests
+
+The project uses [ShellCheck](https://www.shellcheck.net/) and [Bats](https://github.com/bats-core/bats-core) for basic testing.
+To run the checks locally:
+
+```bash
+tm-dev-shellcheck
+tm-dev-test
+```
 
 ## Coding Style
 

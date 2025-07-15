@@ -1,0 +1,101 @@
+#!/usr/bin/env env-tm-bash
+#
+# Runs tests for a given plugin or for the tool-manager itself.
+#
+# Usage: tm-dev-test [plugin_name|tool-manager]
+#
+
+_tm::source::include_once .tm.script.sh .tm.plugin.sh .tm.plugins.sh .tm.tests.sh
+
+_trap_error
+
+declare -A args
+_parse_args \
+  --file "${BASH_SOURCE[0]}" \
+  --opt-what "|remainder|short=w|desc=The plugin, 'tool-manager', dir or file to test. If empty, test the tool-manager. Can pass a path to the tests dir" \
+  --opt-test "|short=t|desc=The name of the test to match on. Will have '*' pre/post appended" \
+  --opt-fix "|short=f|default=1|allowed=0,1,true,false|default=1|validator=boolean|desc=Auto fix and script issues that can be fixed such as execute perms etc" \
+  --opt-parallel "|flag|short=para|desc=If to run the tests in parallel" \
+  --result args \
+  -- "$@"
+
+main() {
+  local parallel="${args[parallel]}"
+  local what="${args[what]}"
+  local test_filter="${args[test]}"
+  local auto_fix="$(_tm::parse::boolean "${args[fix]}")"
+
+  _tm::invoke::ensure_installed bats
+
+  local -A files
+  _tm::tests::find files --what "${what}" --test "${test_filter}"
+  what="${files[what]}"
+  local -a test_files_sh=()
+  local -a bats_targets=()
+  mapfile -t test_files_sh <<<"${files[test_bash_files]}"
+  mapfile -t bats_targets <<<"${files[test_bats_targets]}"
+
+  local coverage_root_dir="." # todo: calc this!
+
+  local failures=0
+  # -- shell tests --
+  for test_file in "${test_files_sh[@]}"; do
+    if [[ -z $test_file ]]; then
+      continue
+    fi
+    if [[ ${parallel} == "1" ]]; then
+      (
+        _info "--- Running tests in: $test_file ---"
+        if [[ ! -x $test_file ]] && [[ ${auto_fix} == "1" ]]; then
+          _info "fixing executable flag on '${test_file}'"
+          chmod +x "$test_file" # auto set executable bit
+        fi
+        (__with_coverage "$coverage_root_dir" "$test_file" || failures=1) &
+        _info "--- Finished tests in: $test_file ---"
+      ) &
+    else
+      _info "--- Running tests in: $test_file ---"
+      if [[ ! -x $test_file ]] && [[ ${auto_fix} == "1" ]]; then
+        _info "fixing executable flag on '${test_file}'"
+        chmod +x "$test_file" # auto set executable bit
+      fi
+      __with_coverage "$coverage_root_dir" "$test_file" || failures=1
+      _info "--- Finished tests in: $test_file ---"
+    fi
+  done
+
+  # -- bats tests --
+  if [[ ${#bats_targets[@]} -gt 0 ]]; then
+    if [[ ${parallel} == "1" ]]; then
+      _info "--- Running bats tests ---"
+      __with_coverage "$coverage_root_dir" _tm::invoke bats "${bats_targets[@]}" || failures=1
+      _info "--- Finished bats tests ---"
+    else
+      _info "--- Running bats tests ---"
+      __with_coverage "$coverage_root_dir" _tm::invoke bats "${bats_targets[@]}" || failures=1
+      _info "--- Finished bats tests ---"
+    fi
+  fi
+
+  # wait for completion
+  if [[ ${parallel} == "1" ]]; then
+    _info "waiting for parallel tests to complete..."
+    wait
+  fi
+  _info "All tests for '$what' completed."
+
+  if [[ ${failures} == "1" ]]; then
+    _fail "There were test failures!"
+  fi
+}
+
+__with_coverage() {
+  local root_dir="$1"
+  shift
+  # add bashcov coverage
+  #_tm::invoke bashcov --root "$root_dir" -- "$@"
+  #_tm::invoke bashcov -- "$@"
+  "$@"
+}
+
+main "$@"

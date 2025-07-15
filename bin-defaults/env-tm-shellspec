@@ -16,55 +16,56 @@ script_cmd_args=()
 # This assumes the script path is the first argument that exists as a file and is executable,
 # and is not the runner itself ($0). This is a common and robust heuristic.
 script_index=-1
-for i in $(seq 1 $#); do # Loop through 1-based argument indices
-    arg="${!i}" # Get the argument value
-    if [[ -f "$arg" && -x "$arg" && "$arg" != "$0" ]]; then
-        script_index="$i"
-        break
-    fi
+for i in $( # Loop through 1-based argument indices
+  seq 1 $#
+); do
+  arg="${!i}" # Get the argument value
+  if [[ -f $arg && -x $arg && $arg != "$0" ]]; then
+    script_index="$i"
+    break
+  fi
 done
 
-if [[ "$script_index" -eq -1 ]]; then
-    _fail "Error: Could not determine the script path in env-tm-bash." >&2
+if [[ $script_index -eq -1 ]]; then
+  _fail "Error: Could not determine the script path in env-tm-bash." >&2
 fi
 
 # Capture runner arguments (everything before the script path)
 if [[ $((script_index - 1)) -ge 1 ]]; then
-    for i in $(seq 1 $((script_index - 1))); do
-        runner_args+=("${!i}")
-    done
+  for i in $(seq 1 $((script_index - 1))); do
+    runner_args+=("${!i}")
+  done
 fi
-
 
 # The script path itself
 script_path="${!script_index}"
 
-if [[ -z "$script_path" ]]; then
+if [[ -z $script_path ]]; then
   _fail "ERROR: Usage: env-tm-bats <script_path.bats> [args...]"
 fi
 
-if [[ ! -f "$script_path" ]]; then
-  _fail  "ERROR: Script not found at '$script_path'"
+if [[ ! -f $script_path ]]; then
+  _fail "ERROR: Script not found at '$script_path'"
 fi
 
 # Capture arguments passed to the script on the command line (everything after the script path)
 if [[ $((script_index + 1)) -le $# ]]; then
-    script_cmd_args=("${@:$((script_index + 1))}")
+  script_cmd_args=("${@:$((script_index + 1))}")
 fi
 
 # Setup shellspec if not already installed
 SHELLSPEC_INSTALL_DIR="$TM_PACKAGES_DIR/shellspec"
-if ! command -v shellspec &> /dev/null; then
-    if [ ! -f "$SHELLSPEC_INSTALL_DIR/shellspec" ]; then
-        _info "shellspec not found. Downloading from web..."
-        mkdir -p "$SHELLSPEC_INSTALL_DIR"
-        curl -fsSL https://git.io/shellspec | sh -s -- -y -d "$SHELLSPEC_INSTALL_DIR" &> /dev/null
-        _info "installed shellspec"
-    fi
-    export PATH="$SHELLSPEC_INSTALL_DIR/bin:$PATH"
+if ! command -v shellspec &>/dev/null; then
+  if [ ! -f "$SHELLSPEC_INSTALL_DIR/shellspec" ]; then
+    _info "shellspec not found. Downloading from web..."
+    mkdir -p "$SHELLSPEC_INSTALL_DIR"
+    curl -fsSL https://git.io/shellspec | sh -s -- -y -d "$SHELLSPEC_INSTALL_DIR" &>/dev/null
+    _info "installed shellspec"
+  fi
+  export PATH="$SHELLSPEC_INSTALL_DIR/bin:$PATH"
 fi
 
-TM_LOG_NAME="$(basename "$script_path")"
+export TM_LOG_NAME="$(basename "$script_path")"
 set -- "${script_cmd_args[@]}" # set the '$@' args for the plugin script
 
 exec shellspec "${runner_args[@]}" "$script_path" "${script_cmd_args[@]}"

@@ -14,48 +14,48 @@ _tm::source::include .tm.script.sh .tm.plugin.sh .tm.plugins.sh
 
 declare -A args
 _parse_args \
-    --file "${BASH_SOURCE[0]}" \
-    --opt-plugins "|remainder|multi|short=p|long=plugin|value=PLUGIN|desc=The plugin(s) to disable. Of the form : 'prefix:vendor/name'|example=foo:acme/do-it  acme/do-it |validators=plugin-name" \
-    --opt-prefix "|desc=The plugin prefix|validators=plugin-prefix" \
-    --opt-vendor "|short=v|desc=The plugin vendor|validators=plugin-vendor" \
-    --opt-space "|short=s|desc=The space to disable this in|validators=space-key" \
-    --opt-all "|flag|desc=If to apply to all installed plugins or not" \
-    --result args \
-    -- "$@"
+  --file "${BASH_SOURCE[0]}" \
+  --opt-plugins "|remainder|multi|short=p|long=plugin|value=PLUGIN|desc=The plugin(s) to disable. Of the form : 'prefix:vendor/name'|example=foo:acme/do-it  acme/do-it |validators=plugin-name" \
+  --opt-prefix "|desc=The plugin prefix|validators=plugin-prefix" \
+  --opt-vendor "|short=v|desc=The plugin vendor|validators=plugin-vendor" \
+  --opt-space "|short=s|desc=The space to disable this in|validators=space-key" \
+  --opt-all "|flag|desc=If to apply to all installed plugins or not" \
+  --result args \
+  -- "$@"
 
-main(){
+main() {
   vendor_prefix=''
-  if [[ -n "${args[vendor]}" ]]; then
-     vendor_prefix="${args[vendor]}/"
+  if [[ -n ${args[vendor]} ]]; then
+    vendor_prefix="${args[vendor]}/"
   fi
 
   all_prefix=''
-  if [[ -n "${args[prefix]}" ]]; then
-      all_prefix+="${args[prefix]}:"
+  if [[ -n ${args[prefix]} ]]; then
+    all_prefix+="${args[prefix]}:"
   fi
 
-  if [[ "${args[all]}" == "1" ]]; then
-      _info "Disabling all plugins by removing '$TM_PLUGINS_ENABLED_DIR'"
-      if _rm -fR "$TM_PLUGINS_ENABLED_DIR"; then
-          _info "Successfully removed all enabled plugins."
-      else
-          _error "Failed to remove all enabled plugins in '$TM_PLUGINS_ENABLED_DIR'."
-          exit 1
-      fi
+  if [[ ${args[all]} == "1" ]]; then
+    _info "Disabling all plugins by removing '$TM_PLUGINS_ENABLED_DIR'"
+    if _rm -fR "$TM_PLUGINS_ENABLED_DIR"; then
+      _info "Successfully removed all enabled plugins."
+    else
+      _error "Failed to remove all enabled plugins in '$TM_PLUGINS_ENABLED_DIR'."
+      exit 1
+    fi
   else
-      IFS=' ' read -r -a plugin_names <<< "${args[plugins]}"
-      if [[  "${#plugin_names[@]}" -eq 0 ]]; then
-          echo "No plugins provided"
-          exit 1
-      else
-          declare -A plugin
-          for name in "${plugin_names[@]}"; do
-              local qname="$(_tm::plugins::enabled::get_by_name "${all_prefix}${vendor_prefix}${name}")"
-              local -A plugin
-              _tm::parse::plugin plugin "$qname"
-              _tm::plugin::disable plugin
-          done
-      fi
+    IFS=' ' read -r -a plugin_names <<<"${args[plugins]}"
+    if [[ ${#plugin_names[@]} -eq 0 ]]; then
+      echo "No plugins provided"
+      exit 1
+    else
+      declare -A plugin
+      for name in "${plugin_names[@]}"; do
+        local qname="$(_tm::plugins::enabled::get_by_name "${all_prefix}${vendor_prefix}${name}")"
+        local -A plugin
+        _tm::parse::plugin plugin "$qname"
+        _tm::plugin::disable plugin
+      done
+    fi
   fi
 
   tm-reload

@@ -16,80 +16,79 @@ _trap_error
 
 declare -A args
 _parse_args \
-    --file "${BASH_SOURCE[0]}" \
-    --opt-plugins "|remainder|multi|short=p|long=plugin|value=PLUGIN|validators=plugin-name|desc=The plugin(s) to enable.|example='myplugin' 'prefix:myplugin' 'myplugin@v1.2' 'prefix:myplugin@v1.2.3' 'prefix:vendor/myplugin' 'vendor/myplugin' 'prefix:vendo/myplugin@version'"  \
-    --opt-vendor "|short=v|desc=The plugin vendor|validators=plugin-vendor" \
-    --opt-prefix "|desc=A prefix to add to the plugin scripts|validators=plugin-prefix" \
-    --opt-space "|short=s|desc=The space to install this in|validators=space-key" \
-    --result args \
-    -- "$@"
+  --file "${BASH_SOURCE[0]}" \
+  --opt-plugins "|remainder|multi|short=p|long=plugin|value=PLUGIN|validators=plugin-name|desc=The plugin(s) to enable.|example='myplugin' 'prefix:myplugin' 'myplugin@v1.2' 'prefix:myplugin@v1.2.3' 'prefix:vendor/myplugin' 'vendor/myplugin' 'prefix:vendo/myplugin@version'" \
+  --opt-vendor "|short=v|desc=The plugin vendor|validators=plugin-vendor" \
+  --opt-prefix "|desc=A prefix to add to the plugin scripts|validators=plugin-prefix" \
+  --opt-space "|short=s|desc=The space to install this in|validators=space-key" \
+  --result args \
+  -- "$@"
 
-main(){
+main() {
   plugins="${args[plugins]:-}"
   vendor_prefix=''
-  if [[ -n "${args[vendor]}" ]]; then
-      vendor_prefix+="${args[vendor]}/"
+  if [[ -n ${args[vendor]} ]]; then
+    vendor_prefix+="${args[vendor]}/"
   fi
 
   all_prefix=''
-  if [[ -n "${args[prefix]}" ]]; then
-      all_prefix+="${args[prefix]}:"
+  if [[ -n ${args[prefix]} ]]; then
+    all_prefix+="${args[prefix]}:"
   fi
 
-
   _reload=0
-  if [[ -n "${plugins}" ]]; then
-      IFS=' ' read -r -a plugin_names <<< "${args[plugins]}"
-      declare -A plugin
-      for plugin_name in "${plugin_names[@]}"; do
-          plugin_name="$all_prefix$vendor_prefix$plugin_name"
-          if _tm::plugins::install "${plugin_name}"; then
-              _reload=1
+  if [[ -n ${plugins} ]]; then
+    IFS=' ' read -r -a plugin_names <<<"${args[plugins]}"
+    declare -A plugin
+    for plugin_name in "${plugin_names[@]}"; do
+      plugin_name="$all_prefix$vendor_prefix$plugin_name"
+      if _tm::plugins::install "${plugin_name}"; then
+        _reload=1
+      else
+        local -A plugin
+        _tm::parse::plugin plugin "${plugin_name}"
+        local github_url="git@github.com:${plugin[vendor]}/${plugin[name]}.git#${plugin[version]}"
+        if [[ ${plugin_name} != *"git.com"* ]] && _confirm "The plugin was not found in the plugin registry, try to install from github directly? ($github_url)"; then
+          if _tm::plugins::install "${github_url}"; then
+            _reload=1
           else
-            local -A plugin
-            _tm::parse::plugin plugin "${plugin_name}"
-            local github_url="git@github.com:${plugin[vendor]}/${plugin[name]}.git#${plugin[version]}"
-            if [[ ! "${plugin_name}" =~ *"git.com"* ]] && _confirm "The plugin was not found in the plugin registry, try to install from github directly? ($github_url)"; then
-              if _tm::plugins::install "${github_url}"; then
-                  _reload=1
-              else
-                _error "Failed to install plugin: '${plugin_name}'"
-              fi
-            else
-              _error "Failed to install plugin: '${plugin_name}'"
-            fi
+            _error "Failed to install plugin: '${plugin_name}'"
           fi
-      done
+        else
+          _error "Failed to install plugin: '${plugin_name}'"
+        fi
+      fi
+    done
   else
-      plugins_to_install=""
-      while true; do
-          _read "Which plugin(s) to install (space-separated, empty to list available)? : ${vendor_prefix}" plugins_to_install
-          if [[ -z "$plugins_to_install" ]]; then
-              _info "No input. Listing available plugins. To install, provide a plugin name or a Git repository URL."
-              _info "Examples: 'myplugin', 'myorg/myplugin', 'git@github.com:myorg/myplugin.git'"
-              tm-plugin-ls --available
-              # Loop continues, re-prompting
-          else
-              # User provided input, break from prompt loop
-              break
-          fi
-      done
+    plugins_to_install=""
+    while true; do
+      _read "Which plugin(s) to install (space-separated, empty to list available)? : ${vendor_prefix}" plugins_to_install
+      if [[ -z $plugins_to_install ]]; then
+        _info "No input. Listing available plugins. To install, provide a plugin name or a Git repository URL."
+        _info "Examples: 'myplugin', 'myorg/myplugin', 'git@github.com:myorg/myplugin.git'"
+        tm-plugin-ls --available
+        # Loop continues, re-prompting
+      else
+        # User provided input, break from prompt loop
+        break
+      fi
+    done
 
-      # Process the space-separated string of plugin specifications
-      declare qname
-      for qname in $plugins_to_install; do # Relies on word splitting
-          if [[ -n "$qname" ]]; then # Check if the part is not empty
-               if _tm::plugins::install "$vendor_prefix$qname"; then
-                  _reload=1
-               else
-                  _error "Failed to install plugin: '${vendor_prefix}${qname}'"
-               fi
-          fi
-      done
+    # Process the space-separated string of plugin specifications
+    declare qname
+    for qname in $plugins_to_install; do # Relies on word splitting
+      if [[ -n $qname ]]; then           # Check if the part is not empty
+        if _tm::plugins::install "$vendor_prefix$qname"; then
+          _reload=1
+        else
+          _error "Failed to install plugin: '${vendor_prefix}${qname}'"
+        fi
+      fi
+    done
   fi
 
   if [[ $_reload == 1 ]]; then
-      tm-reload
+    tm-reload
   fi
 }
 

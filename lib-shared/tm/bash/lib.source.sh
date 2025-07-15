@@ -31,8 +31,8 @@ _include_once() {
 # by user scripts, in which case the entry point is the function, not the 'source path/to/this/script'
 # and hence we need to check the init was carried out.
 #
-# This is mor magic than most other functions, as it is assumed in other cases that the lib.log.sh and lib.source.sh
-# are loaded. However lib.source.sh can be invoked before everythign has been setup, so needs to be more aware of boot
+# This is more magic than most other functions, as it is assumed in other cases that the lib.log.sh and lib.source.sh
+# are loaded. However lib.source.sh can be invoked before everything has been setup, so needs to be more aware of boot
 # strapping sequencing and the like, and handle the case where not everything has been setup yet.
 #
 #
@@ -112,8 +112,16 @@ _tm::source::__include(){
         # TODO: find the scripts home
         calling_script="${BASH_SOURCE[1]}"
         if [[ -n "$TM_PLUGIN_HOME" ]] && [[ "${calling_script}" == "${TM_PLUGINS_INSTALL_DIR}"/* ]]; then
-          # use the wrapper set 'TM_PLUGIN_HOME' to point to the current dir
-          _tm::__source "$once" "$TM_PLUGIN_HOME/lib-shared/bash/${lib_name}" # TM_PLUGIN_HOME should be set by the wrapper scripts
+          # todo: use the script wrapper set 'TM_PLUGIN_HOME' to point to the current dir?
+          # it could point to the shared libs, or the internal libs
+          for lib_path in "lib/bash/${lib_name}" "lib-shared/bash/${lib_name}" "lib/${lib_name}"; do
+            local lib_file="$TM_PLUGIN_HOME/${lib_path}"
+            if [[ -f "${lib_file}" ]]; then
+              _tm::__source "$once" "${lib_file}" # TM_PLUGIN_HOME should be set by the wrapper scripts
+              break
+            fi
+          done
+          _fail "Could not source '$file'. Not found. Looked for 'lib/bash/${lib_name}', 'lib/shared/bash/${lib_name}', and 'lib/${lib_name}"
         elif [[ "${calling_script}" == "${TM_PLUGINS_LIB_DIR}"/* ]]; then
           # we are being called by a shared lib script, so the lib name should be relative to the lib's home bin dir
           # shared scripts live in '<plugin-home>/lib-shared/bash' So we go up two, then head into the 'bin dir

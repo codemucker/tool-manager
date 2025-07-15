@@ -12,25 +12,25 @@ _tm::source::include .tm.script.sh .tm.space.sh
 
 declare -A args
 _parse_args \
-    --file "${BASH_SOURCE[0]}" \
-    --opt-key "|remainder|short=k|value=KEY|desc=The space key|validator=space-key" \
-    --opt-guid "|short=g|value=GUID|desc=The space guid" \
-    --result args \
-    -- "$@"
+  --file "${BASH_SOURCE[0]}" \
+  --opt-key "|remainder|short=k|value=KEY|desc=The space key|validator=space-key" \
+  --opt-guid "|short=g|value=GUID|desc=The space guid" \
+  --result args \
+  -- "$@"
 
-main(){
-    if [[ -z "${args[key]:-}" ]] && [[ -z "${args[guid]:-}" ]]; then
-        _fail "no key or guid provided"
-    fi
-    local space_guid="${args[guid]:-}"
-    local space_key="${args[key]:-}"
-    local space_file=""
-    if [[ -n "$space_guid" ]]; then
-      space_file="$(_tm::space::file::get_by_guid "$space_guid")"
-    else
-      space_file="$(_tm::space::file::get_by_key "$space_key")"
-    fi
-    _tm::space::launch_by_file "${space_file}"
+main() {
+  if [[ -z ${args[key]:-} ]] && [[ -z ${args[guid]:-} ]]; then
+    _fail "no key or guid provided"
+  fi
+  local space_guid="${args[guid]:-}"
+  local space_key="${args[key]:-}"
+  local space_file=""
+  if [[ -n $space_guid ]]; then
+    space_file="$(_tm::space::file::get_by_guid "$space_guid")"
+  else
+    space_file="$(_tm::space::file::get_by_key "$space_key")"
+  fi
+  _tm::space::launch_by_file "${space_file}"
 }
 
 main "$@"

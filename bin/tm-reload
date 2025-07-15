@@ -9,43 +9,43 @@ _tm::source::include_once .tm.script.sh .tm.plugin.sh .tm.plugins.sh .tm.common.
 
 declare -A args
 _parse_args \
-    --file "${BASH_SOURCE[0]}" \
-    --opt-plugins "|remainder|multi|short=p|value=PLUGIN|desc=The plugins to reload. Or all if left blank|validators=plugin-name" \
-    --opt-vendor "|short=v|desc=The plugin vendor|validators=plugin-vendor" \
-    --opt-fix "|flag|desc=(TODO)Fix any issues, like broken links etc" \
-    --opt-scripts "|flag|short=s|desc=Only regenerate the plugin scripts, not reload the entire plugin" \
-    --opt-yes "|flag|short=y|desc=If set, confirm all prompts" \
-    --opt-clear "|flag|short=c|desc=If set, also clear the caches" \
-    --result args \
-    -- "$@"
+  --file "${BASH_SOURCE[0]}" \
+  --opt-plugins "|remainder|multi|short=p|value=PLUGIN|desc=The plugins to reload. Or all if left blank|validators=plugin-name" \
+  --opt-vendor "|short=v|desc=The plugin vendor|validators=plugin-vendor" \
+  --opt-fix "|flag|desc=(TODO)Fix any issues, like broken links etc" \
+  --opt-scripts "|flag|short=s|desc=Only regenerate the plugin scripts, not reload the entire plugin" \
+  --opt-yes "|flag|short=y|desc=If set, confirm all prompts" \
+  --opt-clear "|flag|short=c|desc=If set, also clear the caches" \
+  --result args \
+  -- "$@"
 
 vendor_prefix=''
-if [[ -n "${args[vendor]}" ]]; then
-    vendor_prefix+="${args[vendor]}/"
+if [[ -n ${args[vendor]} ]]; then
+  vendor_prefix+="${args[vendor]}/"
 fi
 
-[[ "${args[scripts]}" == "1" ]] && scripts=1 || scripts=0 
+[[ ${args[scripts]} == "1" ]] && scripts=1 || scripts=0
 auto_yes="${args[yes]}"
 
-if [[ "${args[clear]}" == '1' ]]; then
+if [[ ${args[clear]} == '1' ]]; then
   _info "Clearing cache dir '${TM_CACHE_DIR}'"
   _rm -fR "${TM_CACHE_DIR}"
 fi
-IFS=' ' read -r -a plugin_names <<< "${args[plugins]:-}"
-if [[ ${#plugin_names[@]} -gt 0 ]]; then   # reload just the given plugin(s)
-    declare -A plugin_details
-    for plugin_name in "${plugin_names[@]}"; do
-        _tm::parse::plugin plugin_details "${vendor_prefix}${plugin_name}"
-        if [[ $scripts == 1 ]]; then
-            _tm::plugin::regenerate_wrapper_scripts plugin_details
-        else
-            _tm::plugin::reload plugin_details "$auto_yes"
-        fi
-    done
-else
+IFS=' ' read -r -a plugin_names <<<"${args[plugins]:-}"
+if [[ ${#plugin_names[@]} -gt 0 ]]; then # reload just the given plugin(s)
+  declare -A plugin_details
+  for plugin_name in "${plugin_names[@]}"; do
+    _tm::parse::plugin plugin_details "${vendor_prefix}${plugin_name}"
     if [[ $scripts == 1 ]]; then
-        _tm::plugins::regenerate_all_wrapper_scripts
+      _tm::plugin::regenerate_wrapper_scripts plugin_details
     else
-        _tm::boot::reload
+      _tm::plugin::reload plugin_details "$auto_yes"
     fi
+  done
+else
+  if [[ $scripts == 1 ]]; then
+    _tm::plugins::regenerate_all_wrapper_scripts
+  else
+    _tm::boot::reload
+  fi
 fi

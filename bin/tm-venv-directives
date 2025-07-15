@@ -9,54 +9,53 @@
 
 _include .tm.script.sh .tm.venv.directives.sh
 
-
 declare -A args
 _parse_args \
-    --file "${BASH_SOURCE[0]}" \
-    --opt-file "|remainder|multi|short=f|value=FILE|desc=The file to parse|" \
-    --opt-dest "|short=d|desc=The dest file to output to. If not set, output to stdout" \
-    --opt-validate "|flag|short=v|desc=Whether to validate the extracted directives" \
-    --result args \
-    -- "$@"
+  --file "${BASH_SOURCE[0]}" \
+  --opt-file "|remainder|multi|short=f|value=FILE|desc=The file to parse|" \
+  --opt-dest "|short=d|desc=The dest file to output to. If not set, output to stdout" \
+  --opt-validate "|flag|short=v|desc=Whether to validate the extracted directives" \
+  --result args \
+  -- "$@"
 
 dest="${args[dest]:-}"
 validate="${args[validate]}"
 
-main(){
-    local -a directives
-    mapfile -t directives < <(_tm::venv::extract_directives "${args[file]}")
+main() {
+  local -a directives
+  mapfile -t directives < <(_tm::venv::extract_directives "${args[file]}")
 
-    local -A supported_directives=(\
-        [hashbang]='the script runner (bash, env-tm-bash, python, ...)' \
-        [venv]='the venv to use (none|plugin|script)' \
-        [venv:type]='venv provider (python, uv, docker, vm...)' \
-        [python]='the python version to use' \
-        [config]='a required config key' \
-        [pip]='pip requirement' \
-        [tpkg]='tool-manager package' \        
-    )
-    if [[ "${validate}" == "1" ]]; then
-        local failed=0
-        for directive in "${directives[@]}"; do
-            local name value
-            IFS='=' read -r name value <<< "${directive}"
-            local desc="${supported_directives["${name}"]:-}"
-            if [[ -z "${desc}" ]]; then
-                _error "Unknown directive '${name}' ($directive)"
-                failed=1
-            fi
-        done
-        if [[ "${failed}" == "1" ]]; then
-            _fail "'$(_realpath "${file}")' contains unsupported directives"
-        fi
+  local -A supported_directives=(
+    [hashbang]='the script runner (bash, env-tm-bash, python, ...)'
+    [venv]='the venv to use (none|plugin|script)'
+    ['venv:type']='venv provider (python, uv, docker, vm...)'
+    [python]='the python version to use'
+    [config]='a required config key'
+    [pip]='pip requirement'
+    [tpkg]='tool-manager package'
+  )
+  if [[ ${validate} == "1" ]]; then
+    local failed=0
+    for directive in "${directives[@]}"; do
+      local name value
+      IFS='=' read -r name value <<<"${directive}"
+      local desc="${supported_directives["${name}"]:-}"
+      if [[ -z ${desc} ]]; then
+        _error "Unknown directive '${name}' ($directive)"
+        failed=1
+      fi
+    done
+    if [[ ${failed} == "1" ]]; then
+      _fail "'$(_realpath "${file}")' contains unsupported directives"
     fi
+  fi
 
-    if [[ -n "${dest}" ]]; then
-        mkdir -p "$(dirname "${dest}")"
-        printf "%s\n" "${directives[@]}" > "${dest}"
-    else
-        printf "%s\n" "${directives[@]}"
-    fi
+  if [[ -n ${dest} ]]; then
+    mkdir -p "$(dirname "${dest}")"
+    printf "%s\n" "${directives[@]}" >"${dest}"
+  else
+    printf "%s\n" "${directives[@]}"
+  fi
 }
 
 main "$@"

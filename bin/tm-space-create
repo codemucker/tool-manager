@@ -7,22 +7,22 @@ _tm::source::include .tm.script.sh .tm.space.sh
 
 declare -A args
 _parse_args \
-    --file "${BASH_SOURCE[0]}" \
-    --help-tip \
-    --opt-key "|remainder|short=k|value=NAME|desc=The space key (namespace, dot separated, no spaces)|validators=space-key" \
-    --opt-guid "|short=g|value=GUID|desc=The space guid" \
-    --opt-label "|short=l|value=LABEL|desc=The human friendly space label" \
-    --opt-parent-key "|multi|short=pk|value=KEY|desc=The parent key|validators=space-key" \
-    --opt-parent-guid "|multi|short=pq|value=GUID|desc=The parent guid" \
-    --opt-dir "|short=d|desc=The (custom) directory to save the space in, else the default is used" \
-    --opt-clone "|flag|group=config|desc=If to clone config (default)" \
-    --opt-inherit "|flag|group=config|desc=If to inherit config(changes in parent are reflected in child on restart)" \
-    --opt-run "|short=r|desc=Where we run this|allowed=local,cloud|default=local" \
-    --opt-isolation "|desc=How this space is isolated|allowed=native,chroot,docker,vm|default=native" \
-    --result args \
-    -- "$@"
+  --file "${BASH_SOURCE[0]}" \
+  --help-tip \
+  --opt-key "|remainder|short=k|value=NAME|desc=The space key (namespace, dot separated, no spaces)|validators=space-key" \
+  --opt-guid "|short=g|value=GUID|desc=The space guid" \
+  --opt-label "|short=l|value=LABEL|desc=The human friendly space label" \
+  --opt-parent-key "|multi|short=pk|value=KEY|desc=The parent key|validators=space-key" \
+  --opt-parent-guid "|multi|short=pq|value=GUID|desc=The parent guid" \
+  --opt-dir "|short=d|desc=The (custom) directory to save the space in, else the default is used" \
+  --opt-clone "|flag|group=config|desc=If to clone config (default)" \
+  --opt-inherit "|flag|group=config|desc=If to inherit config(changes in parent are reflected in child on restart)" \
+  --opt-run "|short=r|desc=Where we run this|allowed=local,cloud|default=local" \
+  --opt-isolation "|desc=How this space is isolated|allowed=native,chroot,docker,vm|default=native" \
+  --result args \
+  -- "$@"
 
-main(){
+main() {
   local space_key space_label
 
   __prompt_value space_key "${args[key]:-}" "space key"
@@ -33,45 +33,46 @@ main(){
   # todo: look in space file for custom dir
   local space_dir="$TM_SPACE_DIR/${space_key}"
 
-  if [[ -f "$space_file" ]]; then
-      if _confirm "space already exists ('$space_file'), delete existing?"; then
-        _rm -f "$space_file"
-        _rm -fR "$space_dir" || true
-      else
-        exit 1
-      fi
+  if [[ -f $space_file ]]; then
+    if _confirm "space already exists ('$space_file'), delete existing?"; then
+      _rm -f "$space_file"
+      _rm -fR "$space_dir" || true
+    else
+      exit 1
+    fi
   fi
-  if [[ -d "$space_dir" ]]; then
-      _fail  "space with this key already exists ('$space_dir'), aborting"
+  if [[ -d $space_dir ]]; then
+    _fail "space with this key already exists ('$space_dir'), aborting"
   fi
 
   mkdir -p "$TM_SPACE_DIR"
 
   # our definition of the space
-  echo "key=${space_key}" > "$space_file"
-  echo "guid=${space_uuid}" >> "$space_file"
-  echo "label=\"${space_label}\"" >> "$space_file"
-  echo "dir=\"$space_dir\"" >> "$space_file"
-  echo "active=false" >> "$space_file"
-
+  {
+    echo "key=${space_key}"
+    echo "guid=${space_uuid}"
+    echo "label=\"${space_label}\""
+    echo "dir=\"$space_dir\""
+    echo "active=false"
+  } >"$space_file"
   mkdir -p "$space_dir"
 
   # internal to the space (defaults)
   local space_ini="$space_dir/.space.${__TM_CONF_EXT}"
-  echo "key=${space_key}" > "$space_ini"
-  echo "guid=${space_uuid}" >> "$space_ini"
-  echo "label=\"${space_label}\"" >> "$space_ini"
+  echo "key=${space_key}" >"$space_ini"
+  echo "guid=${space_uuid}" >>"$space_ini"
+  echo "label=\"${space_label}\"" >>"$space_ini"
 
   _todo "implement me!"
 }
 
-__prompt_value(){
-    local -n value_ref="$1"
-    value_ref="$2"
-    local prompt="$3"
-    while [[ -z "$value_ref"  ]]; do
-        _read "$prompt:" value_ref
-    done
+__prompt_value() {
+  local -n value_ref="$1"
+  value_ref="$2"
+  local prompt="$3"
+  while [[ -z $value_ref ]]; do
+    _read "$prompt:" value_ref
+  done
 }
 
 main "$@"

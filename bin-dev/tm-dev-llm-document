@@ -1,0 +1,211 @@
+#!/usr/bin/env env-tm-bash
+
+# Purpose: Manages in-code documentation (BashDoc) for shell functions.
+#
+# Modes:
+#   --lint: Scans and reports documentation status.
+#   --fix: Adds missing BashDoc templates.
+#   --prompt <function>: Generates an LLM prompt to document a function.
+#   --plugin <id>: (Not implemented) Hook for plugin functionality.
+
+set -euo pipefail
+
+PROJECT_ROOT="${TM_HOME}"
+# ---
+# CORE LOGIC
+# ---
+
+cd "${PROJECT_ROOT}"
+
+_get_all_shell_files() {
+  find bin bin-dev lib-shared -type f \( -name "*.sh" -o -name "tm-*" \) -not -path 'bin-experimental/*'
+}
+
+_get_all_functions() {
+  local file
+  while read -r file; do
+    grep -E '^[a-zA-Z0-9_]+[a-zA-Z0-9_-]*\(\)\s*\{' "$file" | sed 's/() {//' | sed 's/ {//' | while read -r func; do
+      echo "$file:$func"
+    done
+  done < <(_get_all_shell_files)
+}
+
+# ---
+# LINT MODE
+# ---
+
+_get_doc_status() {
+  local file="$1"
+  local function_name="$2"
+  local doc_block
+  doc_block=$(sed -n "/^${function_name}()/,/}/p" "$file" | sed -n '1,/# @status/p' | grep '# @status')
+  if [[ -z "$doc_block" ]]; then
+    echo "ERROR"
+  else
+    echo "$doc_block" | awk '{print $3}'
+  fi
+}
+
+_lint_mode() {
+  local file_and_func
+  local error_found=0
+  while read -r file_and_func; do
+    local file="${file_and_func%%:*}"
+    local func="${file_and_func#*:}"
+    local status
+    status=$(_get_doc_status "$file" "$func")
+    
+    case "$status" in
+      stub|ai-generated)
+        echo "WARN: $file:$func - $status"
+        ;;
+      human-reviewed)
+        echo "OK: $file:$func - $status"
+        ;;
+      *)
+        echo "ERROR: $file:$func - Missing BashDoc"
+        error_found=1
+        ;;
+    esac
+  done < <(_get_all_functions)
+  
+  if [[ "$error_found" -eq 1 ]]; then
+    exit 1
+  fi
+}
+
+# ---
+# FIX MODE
+# ---
+
+_get_bashdoc_template() {
+cat <<'EOF'
+#
+# @description A brief, one-sentence description of the function's purpose.
+# @arg1 name: Description of the first argument.
+# @stdout Describes what the function prints to standard output on success.
+# @stderr Describes what the function prints to standard error on failure.
+# @exitcode 0 on success.
+# @exitcode 1 if <condition>.
+# @see A reference to a related function or document.
+# @status stub
+#
+EOF
+}
+
+_fix_mode() {
+  local file_and_func
+  while read -r file_and_func; do
+    local file="${file_and_func%%:*}"
+    local func="${file_and_func#*:}"
+    local status
+    status=$(_get_doc_status "$file" "$func")
+
+    if [[ "$status" == "ERROR" ]]; then
+      echo "FIXING: $file:$func"
+      local line_number
+      line_number=$(grep -n "^${func}()" "$file" | cut -d: -f1)
+      local template
+      template=$(_get_bashdoc_template)
+      # This is a bit tricky, we need to insert the template before the function
+      # We will use sed to do this
+      sed -i "${line_number}i\\${template}" "$file"
+    fi
+  done < <(_get_all_functions)
+}
+
+# ---
+# PROMPT MODE
+# ---
+
+_get_function_source() {
+  local file="$1"
+  local function_name="$2"
+  sed -n "/^${function_name}()/,/}/p" "$file"
+}
+
+_prompt_mode() {
+  local function_name="$1"
+  local file_and_func
+  file_and_func=$( _get_all_functions | grep ":${function_name}$" )
+
+  if [[ -z "$file_and_func" ]]; then
+    echo "Error: Function '$function_name' not found." >&2
+    exit 1
+  fi
+
+  local file="${file_and_func%%:*}"
+  local func="${file_and_func#*:}"
+  local source_code
+  source_code=$(_get_function_source "$file" "$func")
+  local template
+  template=$(_get_bashdoc_template | sed 's/stub/ai-generated/')
+
+  cat <<EOF
+Please analyze the following bash function and provide a complete BashDoc comment block.
+The function is: ${func}
+The file is: ${file}
+
+Source Code:
+\`\`\`bash
+${source_code}
+\`\`\`
+
+Here is the BashDoc template to fill out:
+\`\`\`bash
+${template}
+\`\`\`
+EOF
+}
+
+
+# ---
+# MAIN
+# ---
+
+_usage() {
+  grep '^# ' < "$0"
+}
+
+main() {
+  if [[ $# -eq 0 ]]; then
+    _usage
+    exit 1
+  fi
+
+  local mode="$1"
+  shift
+
+  case "$mode" in
+    --lint)
+      _lint_mode
+      ;;
+    --fix)
+      _fix_mode
+      ;;
+    --prompt)
+      local function_name="${1:-'__echo_to_stdout'}"
+      if [[ -z "$function_name" ]]; then
+        echo "Error: Missing function name for --prompt" >&2
+        _usage
+        exit 1
+      fi
+      _prompt_mode "$function_name"
+      ;;
+    -p|--plugin)
+      local plugin_id="$1"
+      if [[ -z "$plugin_id" ]]; then
+        echo "Error: Missing plugin_id for --plugin" >&2
+        _usage
+        exit 1
+      fi
+      echo "Plugin support is not yet implemented."
+      ;;
+    *)
+      _usage
+      exit 1
+      ;;
+  esac
+}
+
+main "$@"

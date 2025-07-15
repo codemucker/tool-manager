@@ -73,6 +73,26 @@ _confirm(){
     local prompt="${1}"
     local default_val="${2:-}"
     local yn=''
+
+    if ! [[ -t 0 ]]; then
+        read -r yn
+        case "${yn}" in
+            [yYtT]*|1)
+                return 0
+                ;;
+            [nNFf]*|0)
+                return 1
+                ;;
+            *)
+                # Fallback to default if piped input is invalid/empty
+                case "${default_val}" in
+                    [yYtT]*|1) return 0 ;;
+                    *) return 1 ;;
+                esac
+                ;;
+        esac
+    fi
+
     case "${default_val}" in
       [yYtT]*|1)
         prompt+=" [Yn]"
@@ -374,7 +394,7 @@ _tm::util::array::get_first(){
       return
     fi
   done
-   _fail "Coud not find any values with keys matching one of ($*)"
+   _fail "Could not find any values with keys matching one of ($*)"
 }
 
 # Cross-platform function to get file modification time

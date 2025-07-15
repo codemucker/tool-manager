@@ -5,7 +5,7 @@
 # Usage: tm-edit [plugin_basename] [editor_command]
 #
 # Arguments:
-#  $1 - plugin_basename: You can provide a partial plugin name and ths script will find the plugin
+#  $1 - plugin_basename: You can provide a partial plugin name and this script will find the plugin
 #  $2 -  editor_command: Optional. The editor command to use (e.g., "vi", "nano", "code").
 #                   Defaults to $EDITOR, then 'vi', then 'nano'.
 #
@@ -14,60 +14,61 @@ _tm::source::include .tm.script.sh .tm.cfg.sh .tm.plugins.sh
 # --- Argument Parsing ---
 declare -A args
 _parse_args \
-    --file "${BASH_SOURCE[0]}" \
-    --opt-tm        "|flag|long=tm|short=t|desc=When set, edit tool-manager" \
-    --opt-plugin    "|remainder|short=p|value=PLUGIN-NAME|desc=The plugin to edit. Partial matches supported|example='some-plugin','tm-install'" \
-    --opt-editor    "|short=e|desc=The editor to use|multi" \
-    --opt-console   "|short=c|flag|desc=Use the console" \
-    --result args \
-    -- "$@"
+  --file "${BASH_SOURCE[0]}" \
+  --opt-tm "|flag|long=tm|short=t|desc=When set, edit tool-manager" \
+  --opt-plugin "|remainder|short=p|value=PLUGIN-NAME|desc=The plugin to edit. Partial matches supported|example='some-plugin','tm-install'" \
+  --opt-editor "|short=e|desc=The editor to use|multi" \
+  --opt-console "|short=c|flag|desc=Use the console" \
+  --result args \
+  -- "$@"
 
 name="${args[plugin]:-}"
 editor_cmd="${args[editor]:-"$(_tm::cfg::get_editor)"}"
 console="${args[console]}"
-if [[ "${console}" == "1" ]]; then
-    editor_cmd="bash"
+if [[ ${console} == "1" ]]; then
+  editor_cmd="bash"
 fi
 
-main(){
+main() {
   local -A plugin
 
-  if [[ -z "$name" ]] && [[ -n "${args[tm]}" ]] then
-      name="$__TM_NAME"
+  if [[ -z $name ]] && [[ -n ${args[tm]} ]]; then
+    name="$__TM_NAME"
   fi
-  if [[ "$name" == "$__TM_NAME" ]] || [[ -z "$name" ]] then
-      _tm::parse::plugin plugin "$__TM_PLUGIN_ID"
+  if [[ $name == "$__TM_NAME" ]] || [[ -z $name ]]; then
+    _tm::parse::plugin plugin "$__TM_PLUGIN_ID"
   else
-      local qname="$(_tm::plugins::enabled::get_by_name "${name}")"
-      _tm::parse::plugin plugin "$qname"
+    local qname
+    qname="$(_tm::plugins::enabled::get_by_name "${name}")"
+    _tm::parse::plugin plugin "$qname"
   fi
   # go to the the tool's home dir
   local dir="${plugin[install_dir]}"
   if ! cd "$dir"; then
     _fail "Could not cd to $dir"
   fi
-  if [[ "$editor_cmd" == 'bash' ]]; then
+  if [[ $editor_cmd == 'bash' ]]; then
+    _info "Opening directory '$dir' using editor '$editor_cmd'"
+    "$editor_cmd"
+  elif [[ $editor_cmd == 'code' ]]; then
+    # use a workpace file (or disable?
+    _tm::cfg::load --tm --key "TM_VSCODE_EDIT_USING_WORKSPACE" --default "1" --prompt
+    if [[ ${TM_VSCODE_EDIT_USING_WORKSPACE} == "1" ]]; then
+      local workspace_file="${TM_CACHE_DIR}/workspace/${plugin[qpath]}/${plugin[vendor]}_${plugin[name]}"
+      if [[ -n ${plugin[prefix]} ]]; then
+        workspace_file+="__${plugin[prefix]}"
+      fi
+      workspace_file+=".code-workspace"
+      _info "Opening directory '$dir' using editor '$editor_cmd' and workspace file '${workspace_file}'"
+      __generate_vscode_workspace_file plugin "${workspace_file}"
+      "$editor_cmd" "${workspace_file}"
+    else
       _info "Opening directory '$dir' using editor '$editor_cmd'"
-      "$editor_cmd"
-  elif [[ "$editor_cmd" == 'code' ]]; then
-        # use a workpace file (or disable?
-        _tm::cfg::load --tm --key "TM_VSCODE_EDIT_USING_WORKSPACE" --default "1" --prompt
-        if [[ "${TM_VSCODE_EDIT_USING_WORKSPACE}" == "1" ]]; then
-          local workspace_file="${TM_CACHE_DIR}/workspace/${plugin[qpath]}/${plugin[vendor]}_${plugin[name]}"
-          if [[ -n "${plugin[prefix]}" ]]; then
-             workspace_file+="__${plugin[prefix]}"
-          fi
-          workspace_file+=".code-workspace"
-          _info "Opening directory '$dir' using editor '$editor_cmd' and workspace file '${workspace_file}'"
-          __generate_vscode_workspace_file plugin "${workspace_file}"
-          "$editor_cmd" "${workspace_file}"
-        else
-            _info "Opening directory '$dir' using editor '$editor_cmd'"
-          "$editor_cmd" .
-        fi
+      "$editor_cmd" .
+    fi
   else
-      _info "Opening directory '$dir' using editor '$editor_cmd'"
-      "$editor_cmd" . # Open current directory
+    _info "Opening directory '$dir' using editor '$editor_cmd'"
+    "$editor_cmd" . # Open current directory
   fi
 
 }
@@ -79,13 +80,13 @@ main(){
 # $1 - the plugin data array
 # $2 - the workspace file
 #
-__generate_vscode_workspace_file(){
+__generate_vscode_workspace_file() {
   local -n plugin_ref="$1"
   local output_file="$2"
   mkdir -p "$(dirname "${output_file}")"
 
-  if [[ "${plugin_ref[install_dir]}"  == "${TM_HOME}" ]]; then
-cat << EOF > "${output_file}"
+  if [[ ${plugin_ref[install_dir]} == "${TM_HOME}" ]]; then
+    cat <<EOF >"${output_file}"
 {
   "folders": [
     {
@@ -136,7 +137,7 @@ cat << EOF > "${output_file}"
 }
 EOF
   else
-cat << EOF > "${output_file}"
+    cat <<EOF >"${output_file}"
 {
   "folders": [
     {

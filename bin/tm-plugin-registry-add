@@ -7,27 +7,27 @@ _tm::source::include_once .tm.script.sh
 
 declare -A args
 _parse_args \
-    --file "${BASH_SOURCE[0]}" \
-    --opt-file "|short=f|remainder|desc=The registry file to add|required" \
-    --opt-name "|short=n|desc=Name to import the file as. Defaults to the file's basename" \
-    --result args \
-    -- "$@"
+  --file "${BASH_SOURCE[0]}" \
+  --opt-file "|short=f|remainder|desc=The registry file to add|required" \
+  --opt-name "|short=n|desc=Name to import the file as. Defaults to the file's basename" \
+  --result args \
+  -- "$@"
 
 import_file="${args[file]}"
 file_name="${args[name]:-"$(basename "${import_file}")"}"
 dest_file="${TM_PLUGINS_REGISTRY_DIR}/${file_name}"
 
-if [[ ! "${dest_file}" == *".${__TM_CONF_EXT}" ]]; then
-    dest_file+=".${__TM_CONF_EXT}"
+if [[ ${dest_file} != *".${__TM_CONF_EXT}" ]]; then
+  dest_file+=".${__TM_CONF_EXT}"
 fi
 
 _info "adding '${import_file}' to '${dest_file}'"
 
-if [[ -f "${dest_file}"  ]]; then
+if [[ -f ${dest_file} ]]; then
   _warn "Registry file '${dest_file}' already exists. Existing files [$(ls "${TM_PLUGINS_REGISTRY_DIR}")]"
   if ! _confirm "Overwrite?"; then
-     _info "Aborting"
-     exit 1
+    _info "Aborting"
+    exit 1
   fi
 fi
 

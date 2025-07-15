@@ -1,0 +1,62 @@
+#!/usr/bin/env env-tm-bash
+
+# Purpose: This script generates a MermaidJS graph diagram of the codebase's dependency structure.
+# Args: None
+# Example: ./tm-dev-llm-diagram
+
+# shellcheck source=/dev/null
+source "$TM_BIN/.tm.common.sh"
+
+PROJECT_ROOT="${TM_HOME}"
+
+cd "${PROJECT_ROOT}"
+
+main() {
+  echo "graph TD"
+  
+  local search_dirs=("bin" "bin-dev" "lib-shared")
+  
+  for dir in "${search_dirs[@]}"; do
+    find "$dir" -type f \( -name "*.sh" -o -path "bin/tm-*" ! -name "*.*" \) -not -path 'bin-experimental/*' | while read -r file; do
+      local from
+      from=$(normalize_path "$file")
+      
+      grep -E '^_include|_include_once|source' "$file" | while read -r line; do
+        local to_file
+        to_file=$(echo "$line" | awk '{print $2}' | sed "s/['\"]//g")
+        
+        # Expand environment variables
+        eval "to_file=\"$to_file\""
+        
+        if [[ -f "$to_file" ]]; then
+          local resolved_path
+          resolved_path=$(realpath --relative-to=. "$to_file")
+          local to
+          to=$(normalize_path "$resolved_path")
+          echo "    $from --> $to;"
+        fi
+      done
+    done
+  done
+}
+
+normalize_path() {
+  local path=$1
+  path=${path#./}
+  path=${path//\//_}
+  path=${path//-/_}
+  path=${path//.sh/}
+  path=${path//\./_}
+
+  if [[ ${path:0:4} == "bin_" ]]; then
+    echo "B_${path:4}"
+  elif [[ ${path:0:11} == "lib_shared_" ]]; then
+    path=${path:11}
+    path=${path//tm_bash_/}
+    echo "L_${path}"
+  else
+    echo "$path"
+  fi
+}
+
+main "$@"

@@ -30,20 +30,20 @@ _tm::source::include .tm.script.sh .tm.plugins.sh @tm/lib.file.ini.sh
 # --- Argument Parsing ---
 declare -A args
 _parse_args \
-    --file "${BASH_SOURCE[0]}" \
-    --opt-format    "|group=formatting|short=f|desc=output format|allowed=plain,csv,tsv,json,pretty|default=pretty" \
-    --opt-name      "|flag|group=formatting|short=n|desc=Output only plugin names" \
-    --opt-id        "|flag|group=formatting|desc=Output only plugin ids" \
-    --opt-dir       "|flag|group=formatting|desc=Output only full plugin installation directory paths." \
-    --opt-scripts   "|flag|group=formatting|short=s|desc=(TODO) Output plugin scripts." \
-    --opt-all       "|flag|group=filter|desc=Show all plugins" \
-    --opt-available "|flag|group=filter|short=a|desc=Filter by all available plugins (from INIs, default filter)." \
-    --opt-enabled   "|flag|group=filter|short=e|desc=Filter by enabled plugins only." \
-    --opt-disabled  "|flag|group=filter|short=d|desc=Filter by disabled plugins only." \
-    --opt-installed "|flag|group=filter|short=i|desc=Filter by installed plugins only." \
-    --opt-match     "|short=m|desc=match a plugin name"\
-    --result args \
-    -- "$@"
+  --file "${BASH_SOURCE[0]}" \
+  --opt-format "|group=formatting|short=f|desc=output format|allowed=plain,csv,tsv,json,pretty|default=pretty" \
+  --opt-name "|flag|group=formatting|short=n|desc=Output only plugin names" \
+  --opt-id "|flag|group=formatting|desc=Output only plugin ids" \
+  --opt-dir "|flag|group=formatting|desc=Output only full plugin installation directory paths." \
+  --opt-scripts "|flag|group=formatting|short=s|desc=(TODO) Output plugin scripts." \
+  --opt-all "|flag|group=filter|desc=Show all plugins" \
+  --opt-available "|flag|group=filter|short=a|desc=Filter by all available plugins (from INIs, default filter)." \
+  --opt-enabled "|flag|group=filter|short=e|desc=Filter by enabled plugins only." \
+  --opt-disabled "|flag|group=filter|short=d|desc=Filter by disabled plugins only." \
+  --opt-installed "|flag|group=filter|short=i|desc=Filter by installed plugins only." \
+  --opt-match "|short=m|desc=match a plugin name" \
+  --result args \
+  -- "$@"
 
 _first_element_printed=0
 _counter=0
@@ -57,82 +57,79 @@ declare -A _plugins_seen_by_qname=()
 #   $1: A nameref to an associative array containing plugin details.
 # Returns:
 #   0 if the plugin matches or no match argument is provided, 1 otherwise.
-if [[ -n "${args[match]}" ]]; then
-    declare match="${args[match]}"
-    _match(){
-        local -n plugin_match="$1"
-        local qname="${plugin_match[qname]:-}"
-        if [[ "${qname}" == *$match* ]]; then
-            return 0
-        else
-            return 1
-        fi
-    }
+if [[ -n ${args[match]} ]]; then
+  declare match="${args[match]}"
+  _match() {
+    local -n plugin_match="$1"
+    local qname="${plugin_match[qname]:-}"
+    if [[ ${qname} == *$match* ]]; then
+      return 0
+    else
+      return 1
+    fi
+  }
 else
-    _match(){
-        return 0
-    }
+  _match() {
+    return 0
+  }
 fi
 
-
 main() {
-    _debug "listing matching plugins..."
+  _debug "listing matching plugins..."
 
-    if [[ -n "${args[scripts]:-}" ]]; then
-        ls "$TM_PLUGINS_BIN_DIR" | sort -u
-        return
-    fi
+  if [[ -n ${args[scripts]:-} ]]; then
+    ls "$TM_PLUGINS_BIN_DIR" | sort -u
+    return
+  fi
 
-    local format="${args[format]:-}"
-    # Formatter determination
-    _actual_formatter="__callback_format_pretty" # Default
+  local format="${args[format]:-}"
+  # Formatter determination
+  _actual_formatter="__callback_format_pretty" # Default
 
-    case "$format" in
-        tsv) _actual_formatter="__callback_format_tsv" ;;
-        csv) _actual_formatter="__callback_format_csv" ;;
-        json) _actual_formatter="__callback_format_json" ;;
-        plain) _actual_formatter="__callback_format_plain" ;;
-        pretty) _actual_formatter="__callback_format_pretty" ;;
-    esac
+  case "$format" in
+    tsv) _actual_formatter="__callback_format_tsv" ;;
+    csv) _actual_formatter="__callback_format_csv" ;;
+    json) _actual_formatter="__callback_format_json" ;;
+    plain) _actual_formatter="__callback_format_plain" ;;
+    pretty) _actual_formatter="__callback_format_pretty" ;;
+  esac
 
-    if [[ -n "${args[name]:-}" ]]; then _actual_formatter="__callback_format_name"; fi
-    if [[ -n "${args[dir]:-}" ]]; then _actual_formatter="__callback_format_dir"; fi
-    if [[ -n "${args[id]:-}" ]]; then _actual_formatter="__callback_format_id"; fi
-    if [[ -n "${args[scripts]:-}" ]]; then _actual_formatter="__callback_format_scripts"; fi
+  if [[ -n ${args[name]:-} ]]; then _actual_formatter="__callback_format_name"; fi
+  if [[ -n ${args[dir]:-} ]]; then _actual_formatter="__callback_format_dir"; fi
+  if [[ -n ${args[id]:-} ]]; then _actual_formatter="__callback_format_id"; fi
+  if [[ -n ${args[scripts]:-} ]]; then _actual_formatter="__callback_format_scripts"; fi
 
+  local filtered=0
+  if [[ -n ${args[all]:-} ]]; then
+    _list_enabled_plugins
+    args[enabled]="1"
+    args[installed]="1"
+    args[disabled]="1"
+    args[available]="1"
+  fi
 
-    local filtered=0
-    if [[ -n "${args[all]:-}" ]]; then
-        _list_enabled_plugins
-        args[enabled]="1"
-        args[installed]="1"
-        args[disabled]="1"
-        args[available]="1"
-    fi
-
-    if [[ -n "${args[enabled]:-}" ]]; then
-        _list_enabled_plugins
-        filtered=1
-    fi
-    if [[ -n "${args[installed]:-}" ]]; then
-        _list_installed_plugins
-        filtered=1
-    fi
-    if [[ -n "${args[disabled]:-}" ]]; then
-        _list_disabled_plugins
-        filtered=1
-    fi
-    if [[ -n "${args[available]:-}" ]]; then
-        _list_available_plugins
-        filtered=1
-    fi
-    if [[ $filtered == 0 ]]; then
-        _list_installed_plugins
-    fi
+  if [[ -n ${args[enabled]:-} ]]; then
+    _list_enabled_plugins
+    filtered=1
+  fi
+  if [[ -n ${args[installed]:-} ]]; then
+    _list_installed_plugins
+    filtered=1
+  fi
+  if [[ -n ${args[disabled]:-} ]]; then
+    _list_disabled_plugins
+    filtered=1
+  fi
+  if [[ -n ${args[available]:-} ]]; then
+    _list_available_plugins
+    filtered=1
+  fi
+  if [[ $filtered == 0 ]]; then
+    _list_installed_plugins
+  fi
 }
 
 # --- Formatting Callback Functions ---
-
 
 #
 # $1: plugin associative array
@@ -142,48 +139,48 @@ main() {
 # Arguments:
 #   $1: A nameref to an associative array containing plugin details.
 __callback_format_pretty() {
-    local -n plug_details="$1"
+  local -n plug_details="$1"
 
-    _counter=$((_counter+1))
-    
-    local qname="${plug_details[qname]}"    # INI section name
-    local repo="${plug_details[repo]:-}"
-    local repo_commit="${plug_details[commit]:-}"
-    local repo_branch="${plug_details[branch]:-}"
-    local desc="${plug_details[desc]:-}"
-    local run_mode="${plug_details[run_mode]:-}"
-    local plugin_dir="${plug_details[install_dir]}"
-    local enabled_dir="${plug_details[enabled_dir]}"
-    local is_installed=false
-    local is_enabled=false
-    local status_string=""
+  _counter=$((_counter + 1))
 
-    if [[ "$repo_commit" == "$repo_branch" ]]; then
-        repo_commit="HEAD"
-    fi
+  local qname="${plug_details[qname]}" # INI section name
+  local repo="${plug_details[repo]:-}"
+  local repo_commit="${plug_details[commit]:-}"
+  local repo_branch="${plug_details[branch]:-}"
+  local desc="${plug_details[desc]:-}"
+  local run_mode="${plug_details[run_mode]:-}"
+  local plugin_dir="${plug_details[install_dir]}"
+  local enabled_dir="${plug_details[enabled_dir]}"
+  local is_installed=false
+  local is_enabled=false
+  local status_string=""
 
-    [[ -d "$plugin_dir" ]] && is_installed=true || is_installed=false
-    [[ -L "$enabled_dir" ]] && [[ $is_installed == true ]] && is_enabled=true || is_enabled=false
+  if [[ $repo_commit == "$repo_branch" ]]; then
+    repo_commit="HEAD"
+  fi
 
-    if [[ "$is_enabled" == true ]]; then 
-        status_string="enabled";
-    elif [[ "$is_installed" ==  true ]]; then 
-        status_string="disabled"; 
-    else
-        status_string="available"; 
-    fi
+  [[ -d $plugin_dir ]] && is_installed=true || is_installed=false
+  [[ -L $enabled_dir ]] && [[ $is_installed == true ]] && is_enabled=true || is_enabled=false
 
-    echo "$_counter. $qname"
-    echo "      desc:        ${desc:-none}"
-    echo "      status:      $status_string"
-    echo "      installed:   $is_installed"
-    echo "      enabled:     $is_enabled"     
-    echo "      install dir: $plugin_dir"
-    if [[ -n "${repo}" ]]; then
-        echo "      repo:        ${repo:-N/A}   (branch: ${repo_branch:-N/A} / commit: ${repo_commit:-HEAD})"
-    else
-        echo "      repo:        none"
-    fi
+  if [[ $is_enabled == true ]]; then
+    status_string="enabled"
+  elif [[ $is_installed == true ]]; then
+    status_string="disabled"
+  else
+    status_string="available"
+  fi
+
+  echo "$_counter. $qname"
+  echo "      desc:        ${desc:-none}"
+  echo "      status:      $status_string"
+  echo "      installed:   $is_installed"
+  echo "      enabled:     $is_enabled"
+  echo "      install dir: $plugin_dir"
+  if [[ -n ${repo} ]]; then
+    echo "      repo:        ${repo:-N/A}   (branch: ${repo_branch:-N/A} / commit: ${repo_commit:-HEAD})"
+  else
+    echo "      repo:        none"
+  fi
 }
 
 # Formats plugin details to output only the plugin name.
@@ -191,8 +188,8 @@ __callback_format_pretty() {
 # Arguments:
 #   $1: A nameref to an associative array containing plugin details.
 __callback_format_name() {
-    local -n plug_details="$1"
-    echo "${plug_details[qname]}"
+  local -n plug_details="$1"
+  echo "${plug_details[qname]}"
 }
 
 # Formats plugin details to output only the installation directory path.
@@ -200,13 +197,13 @@ __callback_format_name() {
 # Arguments:
 #   $1: A nameref to an associative array containing plugin details.
 __callback_format_dir() {
-    local -n plug_details="$1"
-    echo "${plug_details[install_dir]}"
+  local -n plug_details="$1"
+  echo "${plug_details[install_dir]}"
 }
 
 __callback_format_id() {
-    local -n plug_details="$1"
-    echo "${plug_details[id]}"
+  local -n plug_details="$1"
+  echo "${plug_details[id]}"
 }
 
 # Formats plugin details into a plain, tab-separated format.
@@ -214,7 +211,7 @@ __callback_format_id() {
 # Arguments:
 #   $1: A nameref to an associative array containing plugin details.
 __callback_format_plain() {
-    _format_with "$1" 'plain'
+  _format_with "$1" 'plain'
 }
 
 # Formats plugin details into a Tab Separated Value (TSV) format.
@@ -222,7 +219,7 @@ __callback_format_plain() {
 # Arguments:
 #   $1: A nameref to an associative array containing plugin details.
 __callback_format_tsv() {
-    _format_with "$1" 'tsv'
+  _format_with "$1" 'tsv'
 }
 
 # Formats plugin details into a Comma Separated Value (CSV) format.
@@ -230,11 +227,11 @@ __callback_format_tsv() {
 # Arguments:
 #   $1: A nameref to an associative array containing plugin details.
 __callback_format_csv() {
-    _format_with "$1" 'csv'
+  _format_with "$1" 'csv'
 }
 
 __callback_format_json() {
-    _format_with "$1" 'json'
+  _format_with "$1" 'json'
 }
 
 #
@@ -243,43 +240,43 @@ __callback_format_json() {
 # $3 - the filed separator to use (defaults to tab '\t'). Only for text plain output
 #
 _format_with() {
-    local -n plug_details="$1"
-    local format="$2"
-    local sep="${2:-\t}"
+  local -n plug_details="$1"
+  local format="$2"
+  local sep="${2:-\t}"
 
-    local id="${plug_details[id]}"
-    local qname="${plug_details[qname]}"
-    local repo="${plug_details[repo]:-}"
-    local repo_commit="${plug_details[commit]:-}"
-    local repo_branch="${plug_details[branch]:-}"
-    local desc="${plug_details[desc]:-}"
-    local run_mode="${plug_details[run_mode]:-}"
-    local vendor="${plug_details[vendor]:-default}"
-    local name="${plug_details[name]}"
+  local id="${plug_details[id]}"
+  local qname="${plug_details[qname]}"
+  local repo="${plug_details[repo]:-}"
+  local repo_commit="${plug_details[commit]:-}"
+  local repo_branch="${plug_details[branch]:-}"
+  local desc="${plug_details[desc]:-}"
+  local run_mode="${plug_details[run_mode]:-}"
+  local vendor="${plug_details[vendor]:-default}"
+  local name="${plug_details[name]}"
 
-    local plugin_dir="${plug_details[install_dir]}"
-    local enabled_dir="${plug_details[enabled_dir]}"
-    local is_installed=false
-    local is_enabled=false
-    local status_string=""
+  local plugin_dir="${plug_details[install_dir]}"
+  local enabled_dir="${plug_details[enabled_dir]}"
+  local is_installed=false
+  local is_enabled=false
+  local status_string=""
 
-    [[ -d "$plugin_dir" ]] && is_installed=true || is_installed=false
-    [[ -L "$enabled_dir" ]] && [[ $is_installed == true ]] && is_enabled=true || is_enabled=false
+  [[ -d $plugin_dir ]] && is_installed=true || is_installed=false
+  [[ -L $enabled_dir ]] && [[ $is_installed == true ]] && is_enabled=true || is_enabled=false
 
-    if [[ "$is_enabled" == true ]]; then 
-        status_string="enabled";
-    elif [[ "$is_installed" ==  true ]]; then 
-        status_string="installed"; 
+  if [[ $is_enabled == true ]]; then
+    status_string="enabled"
+  elif [[ $is_installed == true ]]; then
+    status_string="installed"
+  fi
+
+  if [[ $format == "json" ]]; then
+    sep='"'
+    if [[ $_first_element_printed == 1 ]]; then
+      echo -n ","
+    else
+      _first_element_printed=1
     fi
-
-    if [[ "$format" == "json" ]]; then
-          sep="\""
-        if [[ $_first_element_printed == 1 ]]; then
-             echo -n ","
-        else
-            _first_element_printed=1
-        fi
-          cat << EOF
+    cat <<EOF
 {
     ${sep}qname${sep}=${sep}${qname}${sep},
     ${sep}vendor${sep}=${sep}${vendor}${sep},
@@ -295,61 +292,61 @@ _format_with() {
     ${sep}id${sep}=${sep}${id}${sep}
 }
 EOF
-    elif [[ "$format" == "plain" ]];then
-        sep='\t'
-        if [[ $_first_element_printed != 1 ]]; then
-            _first_element_printed=1
-            echo -e "qualified_name${sep}vendor${sep}name${sep}install_dir${sep}repo${sep}branch${sep}commit${sep}desc${sep}status${sep}installed${sep}enabled${sep}id"
-        fi
-        echo -e "$qname${sep}${vendor}${sep}${name}${sep}$plugin_dir${sep}${repo:-}${sep}${repo_branch:-NA}${sep}${repo_commit:-NA}${sep}${desc:-NA}${sep}${status_string:-}${sep}${is_installed}${sep}${is_enabled}${sep}${id}"
-    else
-        # TODO: escape desc etc!
-        case "$format" in 
-            tsv) 
-                sep='\t'
-                ;;
-            csv) 
-                sep=','
-                ;;
-            *)
-                _fail "unsupported format '$format'"    
-        esac
-
-        if [[ $_first_element_printed != 1 ]]; then
-            _first_element_printed=1
-            echo -e "qualified_name${sep}vendor${sep}name${sep}install_dir${sep}repo${sep}branch${sep}commit${sep}desc${sep}status${sep}installed${sep}enabled${sep}id"
-        fi
-        echo -e "$qname${sep}${vendor}${sep}${name}${sep}$plugin_dir${sep}${repo:-}${sep}${repo_branch:-}${sep}${repo_commit:-}${sep}${desc:-}${sep}${status_string:-}${sep}${is_installed}${sep}${is_enabled}${sep}${id}"
+  elif [[ $format == "plain" ]]; then
+    sep='\t'
+    if [[ $_first_element_printed != 1 ]]; then
+      _first_element_printed=1
+      echo -e "qualified_name${sep}vendor${sep}name${sep}install_dir${sep}repo${sep}branch${sep}commit${sep}desc${sep}status${sep}installed${sep}enabled${sep}id"
     fi
+    echo -e "$qname${sep}${vendor}${sep}${name}${sep}$plugin_dir${sep}${repo:-}${sep}${repo_branch:-NA}${sep}${repo_commit:-NA}${sep}${desc:-NA}${sep}${status_string:-}${sep}${is_installed}${sep}${is_enabled}${sep}${id}"
+  else
+    # TODO: escape desc etc!
+    case "$format" in
+      tsv)
+        sep='\t'
+        ;;
+      csv)
+        sep=','
+        ;;
+      *)
+        _fail "unsupported format '$format'"
+        ;;
+    esac
+
+    if [[ $_first_element_printed != 1 ]]; then
+      _first_element_printed=1
+      echo -e "qualified_name${sep}vendor${sep}name${sep}install_dir${sep}repo${sep}branch${sep}commit${sep}desc${sep}status${sep}installed${sep}enabled${sep}id"
+    fi
+    echo -e "$qname${sep}${vendor}${sep}${name}${sep}$plugin_dir${sep}${repo:-}${sep}${repo_branch:-}${sep}${repo_commit:-}${sep}${desc:-}${sep}${status_string:-}${sep}${is_installed}${sep}${is_enabled}${sep}${id}"
+  fi
 }
 
 __callback_format_scripts() {
-    ls "$TM_PLUGINS_BIN_DIR" | sort -u
+  ls "$TM_PLUGINS_BIN_DIR" | sort -u
 }
-
 
 # Callback for --available filter (iterates INI entries)
 # Lists all plugins defined in INI configuration files.
 #
 # This function iterates through all available plugin INI entries and applies
 # the currently selected formatter to each plugin that matches the active filter.
-_list_available_plugins(){
-    local __filtered_callback
-    __filtered_callback(){
-        local -n details="$1"
+_list_available_plugins() {
+  local __filtered_callback
+  __filtered_callback() {
+    local -n details="$1"
 
-        if ! _match details; then
-            return
-        fi
+    if ! _match details; then
+      return
+    fi
 
-        local qname="${details[qname]}"
-        if [[ -n "${_plugins_seen_by_qname[${qname}]:-}" ]]; then
-            return
-        fi
-        _plugins_seen_by_qname[${qname}]=1
-        "$_actual_formatter" details
-    }
-    _tm::plugins::foreach_available_callback __filtered_callback
+    local qname="${details[qname]}"
+    if [[ -n ${_plugins_seen_by_qname[${qname}]:-} ]]; then
+      return
+    fi
+    _plugins_seen_by_qname[${qname}]=1
+    "$_actual_formatter" details
+  }
+  _tm::plugins::foreach_available_callback __filtered_callback
 }
 
 # Processor for --disabled filter
@@ -358,11 +355,11 @@ _list_available_plugins(){
 # This function retrieves a list of disabled plugin IDs and then processes
 # each plugin using the `__list_plugins` helper function.
 _list_disabled_plugins() {
-    local -A plugin
-    local -a disabled_plugin_ids
-    mapfile -t disabled_plugin_ids < <(_tm::plugins::find_all_disabled_plugin_ids)
-    _finest "installed plugin ids: ${disabled_plugin_ids[@]}"
-    __list_plugins disabled_plugin_ids
+  local -A plugin
+  local -a disabled_plugin_ids
+  mapfile -t disabled_plugin_ids < <(_tm::plugins::find_all_disabled_plugin_ids)
+  _finest "installed plugin ids: ${disabled_plugin_ids[*]}"
+  __list_plugins disabled_plugin_ids
 }
 
 # Processor for --installed filter
@@ -371,11 +368,11 @@ _list_disabled_plugins() {
 # This function retrieves a list of installed plugin IDs and then processes
 # each plugin using the `__list_plugins` helper function.
 _list_installed_plugins() {
-    local -A plugin
-    local -a installed_plugin_ids
-    mapfile -t installed_plugin_ids < <(_tm::plugins::find_all_installed_plugin_ids)
-    _finest "installed plugin ids: ${installed_plugin_ids[@]}"
-    __list_plugins installed_plugin_ids
+  local -A plugin
+  local -a installed_plugin_ids
+  mapfile -t installed_plugin_ids < <(_tm::plugins::find_all_installed_plugin_ids)
+  _finest "installed plugin ids: ${installed_plugin_ids[*]}"
+  __list_plugins installed_plugin_ids
 }
 
 # Processor for --enabled filter
@@ -384,44 +381,43 @@ _list_installed_plugins() {
 # This function retrieves a list of enabled plugin IDs and then processes
 # each plugin using the `__list_plugins` helper function.
 _list_enabled_plugins() {
-    local -A plugin
-    local -a enabled_plugin_ids
-    mapfile -t enabled_plugin_ids < <(_tm::plugins::find_all_enabled_plugin_ids)
-    _finest "enabled plugin ids: ${enabled_plugin_ids[@]}"
-    __list_plugins enabled_plugin_ids
+  local -A plugin
+  local -a enabled_plugin_ids
+  mapfile -t enabled_plugin_ids < <(_tm::plugins::find_all_enabled_plugin_ids)
+  _finest "enabled plugin ids: ${enabled_plugin_ids[*]}"
+  __list_plugins enabled_plugin_ids
 }
 
 # Processor for --installed filter
 __list_plugins() {
-    local -n plugin_ids="$1"
-    local -A plugin
-    for plugin_id in "${plugin_ids[@]}"; do
-        _tm::parse::plugin_id plugin "${plugin_id}"
+  local -n plugin_ids="$1"
+  local -A plugin
+  for plugin_id in "${plugin_ids[@]}"; do
+    _tm::parse::plugin_id plugin "${plugin_id}"
 
-        if ! _match plugin; then
-            continue
-        fi
+    if ! _match plugin; then
+      continue
+    fi
 
-        local qname="${plugin[qname]}"
-        if [[ -n "${_plugins_seen_by_qname[${qname}]:-}" ]]; then
-            continue
-        fi
-        _plugins_seen_by_qname[${qname}]=1
+    local qname="${plugin[qname]}"
+    if [[ -n ${_plugins_seen_by_qname[${qname}]:-} ]]; then
+      continue
+    fi
+    _plugins_seen_by_qname[${qname}]=1
 
-        local plugin_dir="${plugin[install_dir]}"
-        if [[ -d "${plugin_dir}" ]]; then
-            _pushd "${plugin_dir}"
-                if [[ -d ".git" ]]; then
-                    plugin[repo]="$(git config --get remote.origin.url || echo '')"
-                    plugin[branch]="$(git branch | cut -d ' ' -f2)"
-                    plugin[commit]="$(git rev-parse --short HEAD)"                
-                    plugin[desc]=""
-                fi
-            _popd
-        fi
-        "$_actual_formatter" plugin
-    done
+    local plugin_dir="${plugin[install_dir]}"
+    if [[ -d ${plugin_dir} ]]; then
+      _pushd "${plugin_dir}"
+      if [[ -d ".git" ]]; then
+        plugin[repo]="$(git config --get remote.origin.url || echo '')"
+        plugin[branch]="$(git branch | cut -d ' ' -f2)"
+        plugin[commit]="$(git rev-parse --short HEAD)"
+        plugin[desc]=""
+      fi
+      _popd
+    fi
+    "$_actual_formatter" plugin
+  done
 }
-
 
 main

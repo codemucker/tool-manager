@@ -15,6 +15,7 @@
 #
 source "$TM_HOME/.bashrc_script" || _fail "Failed to source TM_HOME/.bashrc_script"
 source "$TM_BIN/.tm.venv.sh"
+source "$TM_LIB_BASH/lib.invoke.sh"
 
 runner_args=()
 script_path=""
@@ -24,82 +25,45 @@ script_cmd_args=()
 # This assumes the script path is the first argument that exists as a file and is executable,
 # and is not the runner itself ($0). This is a common and robust heuristic.
 script_index=-1
-for i in $(seq 1 $#); do # Loop through 1-based argument indices
-    arg="${!i}" # Get the argument value
-    if [[ -f "$arg" && -x "$arg" && "$arg" != "$0" ]]; then
-        script_index="$i"
-        break
-    fi
+for i in $( # Loop through 1-based argument indices
+  seq 1 $#
+); do
+  arg="${!i}" # Get the argument value
+  if [[ -f $arg && -x $arg && $arg != "$0" ]]; then
+    script_index="$i"
+    break
+  fi
 done
 
-if [[ "$script_index" -eq -1 ]]; then
-    _fail "Error: Could not determine the script path in env-tm-bash." >&2
+if [[ $script_index -eq -1 ]]; then
+  _fail "Error: Could not determine the script path in env-tm-bash." >&2
 fi
 
 # Capture runner arguments (everything before the script path)
 if [[ $((script_index - 1)) -ge 1 ]]; then
-    for i in $(seq 1 $((script_index - 1))); do
-        runner_args+=("${!i}")
-    done
+  for i in $(seq 1 $((script_index - 1))); do
+    runner_args+=("${!i}")
+  done
 fi
-
 
 # The script path itself
 script_path="${!script_index}"
 
-if [[ -z "$script_path" ]]; then
+if [[ -z $script_path ]]; then
   _fail "ERROR: Usage: env-tm-bats <script_path.bats> [args...]"
 fi
 
-if [[ ! -f "$script_path" ]]; then
-  _fail  "ERROR: Script not found at '$script_path'"
+if [[ ! -f $script_path ]]; then
+  _fail "ERROR: Script not found at '$script_path'"
 fi
 
 # Capture arguments passed to the script on the command line (everything after the script path)
 if [[ $((script_index + 1)) -le $# ]]; then
-    script_cmd_args=("${@:$((script_index + 1))}")
-fi
-
-if ! command -v bats &> /dev/null; then
-    BATS_CORE_INSTALL_DIR="$TM_PACKAGES_DIR/bats-core"
-    # tm-install tpkg:@bats/bats-core
-    # tm-install tpkg:@bats/bats-support
-    # tm-install tpkg:@bats/bats-assert
-
-    if [ ! -d "$BATS_CORE_INSTALL_DIR" ]; then
-        _info "bats (bats-core) not found. Cloning from git..."
-        mkdir -p "$(dirname "$BATS_CORE_INSTALL_DIR")"
-        git clone https://github.com/bats-core/bats-core "$BATS_CORE_INSTALL_DIR" &> /dev/null
-        _info "installed bats-core"
-    fi
-    #_tm::path::add_path "${BATS_CORE_INSTALL_DIR}/bin"
-    export PATH="$PATH:${BATS_CORE_INSTALL_DIR}/bin"
-fi
-
-if ! command -v bats &> /dev/null; then
-    BATS_SUPPORT_INSTALL_DIR="$TM_PACKAGES_DIR/bats-support"
-    if [ ! -d "$BATS_SUPPORT_INSTALL_DIR" ]; then
-        _info "bats-support not found. Cloning from git..."
-        mkdir -p "$(dirname "$BATS_SUPPORT_INSTALL_DIR")"
-        git clone https://github.com/ztombol/bats-support.git "$BATS_SUPPORT_INSTALL_DIR" &> /dev/null
-        _info "installed bats-support"
-    fi
-    source "${BATS_SUPPORT_INSTALL_DIR}/load.bash"
-fi
-
-if ! command -v assert_failure &> /dev/null; then
-    BATS_ASSERT_INSTALL_DIR="$TM_PACKAGES_DIR/bats-assert"
-    if [ ! -d "$BATS_ASSERT_INSTALL_DIR" ]; then
-        _info "bats-assert not found. Cloning from git..."
-        mkdir -p "$(dirname "$BATS_ASSERT_INSTALL_DIR")"
-        git clone https://github.com/ztombol/bats-assert.git "$BATS_ASSERT_INSTALL_DIR" &> /dev/null
-        _info "installed bats-assert"
-    fi
-    source "${BATS_ASSERT_INSTALL_DIR}/load.bash"
+  script_cmd_args=("${@:$((script_index + 1))}")
 fi
 
 # we source it so we get better stack trace errors, and so we have better control of the env it runs in
-TM_LOG_NAME="$(basename "$script_path")"
+export TM_LOG_NAME="$(basename "$script_path")"
 set -- "${script_cmd_args[@]}" # set the '$@' args for the plugin script
 
-exec bats "${runner_args[@]}" "$script_path" "${script_cmd_args[@]}"
+_tm::invoke bats "${runner_args[@]}" "$script_path" "${script_cmd_args[@]}"

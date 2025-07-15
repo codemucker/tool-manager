@@ -1,0 +1,7 @@
+#!/usr/bin/env env-tm-bash
+#
+# Open a console in the given plugins home dir
+#
+#
+
+tm-edit --console "$@"

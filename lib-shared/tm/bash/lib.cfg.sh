@@ -69,7 +69,7 @@ _tm::cfg::__process() {
                       if [[ $is_get == 1 ]]; then
                         echo "$value"
                       fi
-                      return $_true
+                      return 0
                     fi
                 fi
                 break
@@ -89,6 +89,7 @@ _tm::cfg::__process() {
         --opt-required  "|short=r|flag|group=behaviour |desc=Whether the value is required. If no value, and required, then will prompt for it, or if in silent mode, fail. Default is off" \
         --opt-allowed   "|       |    |group=validation|desc=Allowed values|multi" \
         --opt-default   "|short=d|    |value=DEFAULT-VALUE|desc=The default value if not set" \
+        --opt-empty     "|       |flag|                |desc=An empty default value if set" \
         --opt-keys      "|short=k|remainder|long=key|value=KEY|desc=The key of the value to get|multi" \
         --opt-all       "|       |flag|desc=Get all the keys and values|" \
         --opt-note      "|       |    |desc=A note about this key. Only used when setting values |" \
@@ -98,7 +99,7 @@ _tm::cfg::__process() {
     if [[ -n "${args[all]:-}" ]]; then
       _todo "print all the variables for this plugin"
       echo "$(_tm::cfg::__load_cfg "$plugin_id";printenv)"
-      return $_true
+      return 0
     fi
 
     local prompt=1
@@ -111,6 +112,7 @@ _tm::cfg::__process() {
     local missing_keys=()
     local value
     local default_value="${args[default]}"
+    local empty="${args[empty]}"
     local note="${args[note]}"
 
     IFS=' ' read -ra keys <<< "${args[keys]}"
@@ -118,9 +120,8 @@ _tm::cfg::__process() {
     for key in "${keys[@]}"; do
         _trace "checking key '$key'"
         value="${!key:-}"
-        if [[ "${value:-}" == "" ]]; then
+        if [[ -z "${value:-}" ]]; then
             # key missing, load cfg
-            # find env files
             missing_keys+=("$key")
             _trace "missing key:$key"
         else
@@ -131,7 +132,7 @@ _tm::cfg::__process() {
     done
 
     if [[ ${#missing_keys[@]} == 0 ]]; then # no missing keys
-        return $_true
+        return 0
     fi
 
     declare -A plugin=()
@@ -140,7 +141,8 @@ _tm::cfg::__process() {
     local plugin_custom_cfg_file="$TM_PLUGINS_CFG_DIR/${plugin[qpath]}/config.sh"
     for key in "${missing_keys[@]}"; do
         if [[ "$prompt" == '0' ]] ; then
-            if [[ -n "$default_value" ]]; then # just use the default
+            if [[ -n "$default_value" ]] || [[ "$empty" == "1" ]]; then # just use the default
+                _finest "using default '$default_value'"
                 _finest "running: export $key=\"$default_value\""
                 eval "export $key=\"$default_value\""
                 if [[ $is_get == 1 ]]; then
@@ -159,8 +161,7 @@ _tm::cfg::__process() {
             _fail "No cfg with key '$key' set for plugin '${plugin[name]}', and no default supplied. Not in interactive shell so can't prompt"
         fi
         _tm::cfg::__prompt_for_key "${plugin[qname]}" "${plugin[qpath]}" "$plugin_custom_cfg_file" "$key" "$default_value" "$note"
-        # ensure the new key is rad by the caller
-
+        # ensure the new key can be read by the caller
         if [[ $is_get == 1 ]]; then
           echo "${!key:-}"
         fi
@@ -260,15 +261,15 @@ _tm::cfg::set_value(){
     local prefix="${parts[prefix]}"
     local qpath="${parts[qpath]}"
     local qname="${parts[qname]}"
-
-    local plugin_dir="$TM_PLUGINS_INSTALL_DIR/$plugin_name"
+    local plugin_dir="${parts[install_dir]}"
+    local plugin_custom_cfg_file="${parts[cfg_sh]}"
+  
     if [[ ! "$plugin_name" == "$__TM_NAME" ]] && [[ ! -d "$plugin_dir" ]]; then
         _fail "No plugin '$qname' installed. Expected dir '$plugin_dir'"
     fi
 
     cfg_key="${cfg_key^^}" # uppercase config keys
-
-    local plugin_custom_cfg_file="$TM_PLUGINS_CFG_DIR/${qpath}/.env"
+  
     _info "  Setting value in '$plugin_custom_cfg_file'"
     local current_value="${!cfg_key:-}"
     if [[ -f "$plugin_custom_cfg_file" ]]; then
@@ -434,7 +435,7 @@ _tm::cfg::__ensure_config_has_required_values(){
 
 #
 # Generate a hash unique for the given config files. If they change, so should the hash. It is not
-# cryptogrpahically secure, and it shold only be used for simple change detection
+# cryptographically secure, and it should only be used for simple change detection
 #
 _tm::cfg::__generate_hash_for(){
   local files=("$@") # All the passed in files
