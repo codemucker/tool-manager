@@ -41,7 +41,7 @@ readonly __TM_NO_VENDOR="default"
 readonly __TM_SEP_PREFIX_NAME=":" # prefix separator for plugin names
 readonly __TM_SEP_PREFIX_DIR="__" # for dirs (as we can't use the above)
 
-export TM_HOME="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+export TM_HOME="$HOME/.tool-manager"
 export TM_BIN="$TM_HOME/bin"
 export TM_LIB_BASH="$TM_HOME/lib-shared/tm/bash"
 readonly TM_BIN_DEFAULTS="$TM_HOME/bin-defaults" # scripts which are provided by default, but can be overridden by plugins

@@ -9,6 +9,7 @@
 #
 # Options:
 #   --force    Skip all confirmation prompts during uninstallation
+#
 
 set -e
 

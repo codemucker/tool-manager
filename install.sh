@@ -146,8 +146,7 @@ if ! _is_compatible_shell; then
       fi
 
       # Update user's bash_profile to add Homebrew's bin to PATH
-      home_bash_profile="$HOME/.bash_profile"
-      _add_homebrew_to_path "$home_bash_profile" 1
+      _add_homebrew_to_path "$HOME/.bash_profile" 1
 
       # Also update .bashrc to ensure PATH is set in both files
       _add_homebrew_to_path "$home_bashrc" 0
