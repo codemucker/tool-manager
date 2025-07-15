@@ -9,9 +9,21 @@
 
 [[ -n ${__TM_BOOTSTRAP_SH_INITED:-} ]] && return || __TM_BOOTSTRAP_SH_INITED=1
 
-if [[ ! "$(echo "${BASH_VERSION:-0}" | grep -e '^[5-9]\..*')" ]]; then
-  echo "ERROR: Incompatible bash version, expect bash version 5 or later, installed is '${BASH_VERSION:-0}'"
-  return 1 # If this script is meant to be sourced, 'return 1' is appropriate.
+# Determine which shell we're running in and check version requirements
+if [[ -n "${ZSH_VERSION:-}" ]] || [[ "$SHELL" == *"zsh"* ]]; then
+  # We're in zsh, which is compatible with our scripts
+  # No version check needed for zsh
+  :
+elif [[ -n "${BASH_VERSION:-}" ]]; then
+  # We're in bash, check for minimum version 5
+  if [[ ! "$(echo "${BASH_VERSION}" | grep -e '^[5-9]\..*')" ]]; then
+    echo "ERROR: Incompatible bash version, expect bash version 5 or later, installed is '${BASH_VERSION}'"
+    return 1 # If this script is meant to be sourced, 'return 1' is appropriate.
+  fi
+else
+  # Neither bash nor zsh detected
+  echo "WARNING: Unable to determine shell type. Neither BASH_VERSION nor ZSH_VERSION is set, and SHELL=$SHELL doesn't contain 'zsh'."
+  echo "This script is designed to work with bash 5+ or zsh. Continuing with caution..."
 fi
 
 TM_LOG_TIMINGS="${TM_LOG_TIMINGS:-}"
@@ -29,7 +41,7 @@ readonly __TM_NO_VENDOR="default"
 readonly __TM_SEP_PREFIX_NAME=":" # prefix separator for plugin names
 readonly __TM_SEP_PREFIX_DIR="__" # for dirs (as we can't use the above)
 
-export TM_HOME="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+export TM_HOME="$HOME/.tool-manager"
 export TM_BIN="$TM_HOME/bin"
 export TM_LIB_BASH="$TM_HOME/lib-shared/tm/bash"
 readonly TM_BIN_DEFAULTS="$TM_HOME/bin-defaults" # scripts which are provided by default, but can be overridden by plugins
